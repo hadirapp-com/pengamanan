@@ -1,0 +1,1 @@
+ALTER TABLE "pokayoke"."parts_print_history" ADD COLUMN "production_date" date;

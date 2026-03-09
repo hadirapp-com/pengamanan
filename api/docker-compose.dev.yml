@@ -1,0 +1,68 @@
+services:
+  # PostgreSQL 17 Database
+  postgres:
+    image: postgres:17-alpine
+    container_name: pokayoke-postgres-dev
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pokayoke_db
+      POSTGRES_INITDB_ARGS: "-E UTF8 --locale=en_US.UTF-8"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d pokayoke_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - pokayoke-network
+    restart: unless-stopped
+
+  # API Service (Development Mode)
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: pokayoke-api-dev
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/pokayoke_db
+      JWT_SECRET: ${JWT_SECRET:-dev_jwt_secret_change_in_production}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-dev_refresh_secret_change_in_production}
+      SMTP_HOST: ${SMTP_HOST:-smtp.zoho.com}
+      SMTP_PORT: ${SMTP_PORT:-465}
+      SMTP_SECURE: ${SMTP_SECURE:-true}
+      SMTP_USER: ${SMTP_USER}
+      SMTP_PASS: ${SMTP_PASS}
+      SMTP_FROM: ${SMTP_FROM}
+      SMTP_FROM_NAME: ${SMTP_FROM_NAME:-"Kasai Pokayoke Dev"}
+      BASE_URL: ${BASE_URL:-http://localhost:3000}
+      WHATSAPP_SERVICE_URL: ${WHATSAPP_SERVICE_URL:-http://host.docker.internal:4000}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - bun_cache:/root/.bun/install/cache
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - pokayoke-network
+    restart: unless-stopped
+    command: ["bun", "run", "dev"]
+
+volumes:
+  postgres_data:
+    driver: local
+  bun_cache:
+    driver: local
+
+networks:
+  pokayoke-network:
+    driver: bridge

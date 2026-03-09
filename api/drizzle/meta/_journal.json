@@ -1,0 +1,195 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1755097653577,
+      "tag": "0000_supreme_captain_stacy",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1755185012224,
+      "tag": "0001_dark_quasar",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1755211193309,
+      "tag": "0002_loving_eternals",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1755547529781,
+      "tag": "0003_pale_gamma_corps",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1755548154992,
+      "tag": "0004_lean_wendell_rand",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1756404420145,
+      "tag": "0005_perpetual_next_avengers",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1756405888082,
+      "tag": "0006_legal_moonstone",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1768219463732,
+      "tag": "0007_furry_cassandra_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1768235891704,
+      "tag": "0008_boring_taskmaster",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1768673072806,
+      "tag": "0009_optimal_banshee",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1768676795164,
+      "tag": "0010_amazing_tana_nile",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1769989065619,
+      "tag": "0011_chief_the_leader",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1770005856307,
+      "tag": "0012_smart_wrecking_crew",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1770151243332,
+      "tag": "0013_wide_mathemanic",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1770276499203,
+      "tag": "0014_cloudy_prima",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1770282472669,
+      "tag": "0015_smart_psylocke",
+      "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1770330008286,
+      "tag": "0016_medical_korath",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1770352261337,
+      "tag": "0017_slimy_cyclops",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1770363016276,
+      "tag": "0018_nostalgic_angel",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1770539997504,
+      "tag": "0019_hesitant_trish_tilby",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1770663886406,
+      "tag": "0020_eminent_lethal_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1770811754743,
+      "tag": "0021_open_callisto",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1770856166506,
+      "tag": "0022_silent_the_spike",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1770858178270,
+      "tag": "0023_tearful_hellfire_club",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1772340762803,
+      "tag": "0024_organic_silverclaw",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1772666824641,
+      "tag": "0025_typical_nova",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1772717098166,
+      "tag": "0026_spooky_sugar_man",
+      "breakpoints": true
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "pokayoke"."configs" ADD COLUMN "allow_delete" boolean DEFAULT false;

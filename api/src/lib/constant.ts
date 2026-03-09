@@ -1,0 +1,2 @@
+export const BARCODE_HPM_SUFFIX =
+  ' 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ!#$%&()+-/<>=?@[]^`\\:;_';

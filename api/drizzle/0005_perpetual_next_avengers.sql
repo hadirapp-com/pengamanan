@@ -1,0 +1,1 @@
+ALTER TABLE "pokayoke"."parts" ADD COLUMN "label_size" varchar(255);
