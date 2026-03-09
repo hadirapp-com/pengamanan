@@ -1,2 +1,0 @@
-ALTER TABLE "pokayoke"."deliveries" RENAME COLUMN "kasai_unique_barcode" TO "preparation_unique_barcode";--> statement-breakpoint
-ALTER TABLE "pokayoke"."deliveries" ADD COLUMN "delivery_unique_barcode" varchar(255);

@@ -1,1 +1,0 @@
-ALTER TABLE "pokayoke"."parts" ALTER COLUMN "color_code" DROP NOT NULL;

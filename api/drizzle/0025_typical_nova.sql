@@ -1,1 +1,0 @@
-ALTER TABLE "pokayoke"."parts" ADD COLUMN "label_color" varchar(255) DEFAULT 'White';

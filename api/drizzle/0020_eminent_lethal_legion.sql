@@ -1,1 +1,0 @@
-ALTER TABLE "pokayoke"."scan_lot_status" ADD COLUMN "add_column" varchar(255);
