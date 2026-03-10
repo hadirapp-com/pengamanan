@@ -40,6 +40,7 @@ export default function PetugasFormPage() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<PetugasFormValues>({
     resolver: zodResolver(petugasFormSchema) as any,
@@ -56,7 +57,7 @@ export default function PetugasFormPage() {
     queryFn: async () => {
       if (!id) throw new Error("Petugas ID is required");
       const response = await axiosInstance.get(`/api/petugas/${id}`);
-      return response.data;
+      return response.data.data;
     },
     enabled: isEdit,
   });
@@ -137,12 +138,25 @@ export default function PetugasFormPage() {
 
             <div className="space-y-2">
               <Label htmlFor="noHp">No. HP *</Label>
-              <Input id="noHp" type="text" placeholder="Masukkan nomor HP" disabled={isLoading} {...register("noHp")} className={errors.noHp ? "border-red-500" : ""} />
+              <Input
+                id="noHp"
+                type="text"
+                placeholder="Contoh: 628123456789"
+                disabled={isLoading}
+                {...register("noHp")}
+                className={errors.noHp ? "border-red-500" : ""}
+              />
               {errors.noHp && <p className="text-sm text-red-500">{errors.noHp.message}</p>}
+              {!errors.noHp && <p className="text-xs text-gray-500">Gunakan format 62 di depan (contoh: 628123456789)</p>}
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="isActive" {...register("isActive")} disabled={isLoading} />
+              <Switch
+                id="isActive"
+                checked={watch("isActive")}
+                onCheckedChange={(checked) => setValue("isActive", checked)}
+                disabled={isLoading}
+              />
               <Label htmlFor="isActive">Aktif</Label>
             </div>
 

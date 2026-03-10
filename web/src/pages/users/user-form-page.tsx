@@ -47,6 +47,7 @@ export default function UserFormPage() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors },
   } = useForm<UserFormValues>({
     resolver: zodResolver(userFormSchema),
@@ -66,7 +67,7 @@ export default function UserFormPage() {
     queryFn: async () => {
       if (!id) throw new Error("User ID is required");
       const response = await axiosInstance.get(`/api/users/${id}`);
-      return response.data;
+      return response.data.data;
     },
     enabled: isEdit,
   });
@@ -123,7 +124,7 @@ export default function UserFormPage() {
 
   const onSubmit = (data: UserFormValues) => {
     // Remove password if it's empty (edit mode)
-    if (isEdit && !data.password) {
+    if (isEdit && (!data.password || data.password.trim() === '')) {
       delete data.password;
     }
     if (isEdit) {
@@ -203,8 +204,8 @@ export default function UserFormPage() {
             <div className="space-y-2">
               <Label htmlFor="role">Role *</Label>
               <Select
+                value={watch("role") || "admin"}
                 onValueChange={(value) => setValue("role", value as "superadmin" | "admin")}
-                defaultValue="admin"
                 disabled={isLoading}
               >
                 <SelectTrigger className={errors.role ? "border-red-500" : ""}>
@@ -258,13 +259,16 @@ export default function UserFormPage() {
               <Input
                 id="phone"
                 type="text"
-                placeholder="Masukkan nomor telepon (opsional)"
+                placeholder="Contoh: 628123456789"
                 disabled={isLoading}
                 {...register("phone")}
                 className={errors.phone ? "border-red-500" : ""}
               />
               {errors.phone && (
                 <p className="text-sm text-red-500">{errors.phone.message}</p>
+              )}
+              {!errors.phone && (
+                <p className="text-xs text-gray-500">Gunakan format 62 di depan (contoh: 628123456789)</p>
               )}
             </div>
 

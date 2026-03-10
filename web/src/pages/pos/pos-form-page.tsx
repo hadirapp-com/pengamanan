@@ -35,7 +35,7 @@ export default function PosFormPage() {
   const { id } = useParams<{ id: string }>();
   const isEdit = !!id;
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<PosFormValues>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<PosFormValues>({
     resolver: zodResolver(posFormSchema) as any,
     defaultValues: { nama: "", lokasi: "", isActive: true },
   });
@@ -45,7 +45,7 @@ export default function PosFormPage() {
     queryFn: async () => {
       if (!id) throw new Error("Pos ID is required");
       const response = await axiosInstance.get(`/api/pos/${id}`);
-      return response.data;
+      return response.data.data;
     },
     enabled: isEdit,
   });
@@ -101,7 +101,12 @@ export default function PosFormPage() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="isActive" {...register("isActive")} disabled={isLoading} />
+              <Switch
+                id="isActive"
+                checked={watch("isActive")}
+                onCheckedChange={(checked) => setValue("isActive", checked)}
+                disabled={isLoading}
+              />
               <Label htmlFor="isActive">Aktif</Label>
             </div>
 

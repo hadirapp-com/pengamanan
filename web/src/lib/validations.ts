@@ -21,13 +21,19 @@ export type LoginFormValues = z.infer<typeof loginSchema>;
 
 export const userFormSchema = z.object({
   username: z.string().min(1, "Username harus diisi"),
-  password: z.string().min(6, "Password minimal 6 karakter").optional(),
+  password: z.string().max(255).optional(),
   role: z.enum(["superadmin", "admin"], {
     message: "Role harus dipilih",
   }),
   fullName: z.string().optional(),
   address: z.string().optional(),
-  phone: z.string().optional(),
+  phone: z.string().regex(/^62\d{8,12}$/, "Nomor HP harus diawali dengan 62 dan memiliki 10-14 digit").optional().or(z.literal("")),
+}).refine((data) => {
+  // Password is required for create, optional for update (empty string means no change)
+  return typeof data.password === 'undefined' || data.password === '' || data.password.length >= 6;
+}, {
+  message: "Password minimal 6 karakter",
+  path: ["password"],
 });
 
 export type UserFormValues = z.infer<typeof userFormSchema>;
@@ -48,8 +54,8 @@ export type ResetPasswordValues = z.infer<typeof resetPasswordSchema>;
 
 export const petugasFormSchema = z.object({
   nama: z.string().min(1, "Nama harus diisi"),
-  nik: z.string().min(1, "NIK harus diisi"),
-  noHp: z.string().min(1, "Nomor HP harus diisi"),
+  nik: z.string().length(16, "NIK harus 16 digit"),
+  noHp: z.string().regex(/^62\d{8,12}$/, "Nomor HP harus diawali dengan 62 dan memiliki 10-14 digit"),
   isActive: z.boolean().default(true),
 });
 
@@ -74,18 +80,18 @@ export type PosFormValues = z.infer<typeof posFormSchema>;
 export const qrFormSchema = z.object({
   nama: z.string().min(1, "Nama (block/rumah) harus diisi"),
   penanggungJawab: z.string().min(1, "Penanggung jawab harus diisi"),
-  validityStart: z.string().min(1, "Tanggal mulai berlaku harus diisi"),
-  validityEnd: z.string().min(1, "Tanggal selesai berlaku harus diisi"),
+  validFrom: z.string().min(1, "Tanggal mulai berlaku harus diisi"),
+  validUntil: z.string().min(1, "Tanggal selesai berlaku harus diisi"),
   isActive: z.boolean().default(true),
 }).refine(
   (data) => {
-    const start = new Date(data.validityStart);
-    const end = new Date(data.validityEnd);
+    const start = new Date(data.validFrom);
+    const end = new Date(data.validUntil);
     return start < end;
   },
   {
     message: "Tanggal selesai harus lebih besar dari tanggal mulai",
-    path: ["validityEnd"],
+    path: ["validUntil"],
   }
 );
 
@@ -96,8 +102,8 @@ export type QrFormValues = z.infer<typeof qrFormSchema>;
 // ============================================================================
 
 export const pengumumanSchema = z.object({
-  judul: z.string().min(1, "Judul harus diisi"),
-  isi: z.string().min(1, "Isi pengumuman harus diisi"),
+  title: z.string().min(1, "Judul harus diisi"),
+  content: z.string().min(1, "Isi pengumuman harus diisi"),
   priority: z.enum(["normal", "important", "urgent"], {
     message: "Prioritas harus dipilih",
   }),
