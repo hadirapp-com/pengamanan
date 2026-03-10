@@ -13,6 +13,7 @@ import {
   QrCode,
   Bell,
   ScrollText,
+  Settings,
 } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
 import { useSidebarStore } from "@/store/sidebar";
@@ -24,6 +25,7 @@ import { superadminMenus, adminMenus } from "@/config/constants";
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   LayoutDashboard,
   Users,
+  Settings,
   Shield,
   MapPin,
   QrCode,

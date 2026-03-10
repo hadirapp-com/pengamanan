@@ -31,6 +31,10 @@ import QrFormPage from "@/pages/qr/qr-form-page";
 import PengumumanTablePage from "@/pages/pengumuman/pengumuman-table-page";
 import PengumumanFormPage from "@/pages/pengumuman/pengumuman-form-page";
 
+// Configs
+import ConfigTablePage from "@/pages/configs/config-table-page";
+import ConfigFormPage from "@/pages/configs/config-form-page";
+
 // Logs
 import LogsTablePage from "@/pages/logs/logs-table-page";
 
@@ -50,6 +54,11 @@ export function BaseRouter() {
         <Route path="users" element={<UserTablePage />} />
         <Route path="users/create" element={<UserFormPage />} />
         <Route path="users/:id" element={<UserFormPage />} />
+
+        {/* Configs - Superadmin only */}
+        <Route path="configs" element={<ConfigTablePage />} />
+        <Route path="configs/create" element={<ConfigFormPage />} />
+        <Route path="configs/:id" element={<ConfigFormPage />} />
 
         {/* Petugas Jaga */}
         <Route path="petugas" element={<PetugasTablePage />} />

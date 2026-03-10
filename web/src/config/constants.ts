@@ -110,6 +110,14 @@ export const superadminMenus = [
     hasChildren: false,
   },
   {
+    title: 'Config',
+    href: '/app/configs',
+    icon: 'Settings',
+    label: 'Config',
+    disabled: false,
+    hasChildren: false,
+  },
+  {
     title: 'Petugas Jaga',
     href: '/app/petugas',
     icon: 'Shield',
