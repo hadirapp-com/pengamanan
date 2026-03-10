@@ -1224,6 +1224,47 @@ These items need to be implemented after the main sprint completion:
 
 ---
 
+#### Story B.8: Mobile PIN Expired Flow
+**Points**: 2
+**Priority**: High
+**Status**: ⏸️ Pending Sprint 3
+
+**Tasks**:
+- [ ] Implement JWT token expiry detection on mobile app
+- [ ] Create PIN re-entry screen/dialog
+  - [ ] Display message: "Session expired. Please enter PIN to continue."
+  - [ ] Add PIN input field (6 digits)
+  - [ ] Add submit button
+  - [ ] Add loading state
+  - [ ] Add error handling for invalid PIN
+- [ ] Block all app functionality when token is expired
+  - [ ] Prevent navigation to other screens
+  - [ ] Show PIN re-entry screen as modal/overlay
+  - [ ] Allow only PIN entry interaction
+- [ ] Handle successful PIN re-entry
+  - [ ] Call POST /api/mobile/auth/pin endpoint
+  - [ ] Replace old JWT token with new one
+  - [ ] Navigate back to previous screen or home
+  - [ ] Show success message
+- [ ] Handle failed PIN re-entry
+  - [ ] Show error message: "Invalid PIN"
+  - [ ] Allow retry
+- [ ] Test token expiry scenario
+  - [ ] Manual token expiry testing
+  - [ ] Test after 3 months (or simulate)
+  - [ ] Verify app blocks correctly
+  - [ ] Verify re-entry flow works
+
+**Definition of Done**:
+- When JWT token expires, PIN re-entry screen is shown
+- All app functionality is blocked until PIN is re-entered
+- PIN re-entry screen shows clear message
+- Valid PIN successfully renews token and unlocks app
+- Invalid PIN shows error and allows retry
+- Flow tested and working correctly
+
+---
+
 ### Backlog Summary
 
 | Story | Points | Priority | Status |
@@ -1235,9 +1276,10 @@ These items need to be implemented after the main sprint completion:
 | B.5 First Launch Popup | 2 | Medium | ⏸️ Pending Sprint 3 |
 | B.6 API Cleanup | 2 | Low | ✅ Complete |
 | B.7 Web Cleanup | 1 | Low | ⏸️ Pending |
+| B.8 PIN Expired Flow | 2 | High | ⏸️ Pending Sprint 3 |
 | **Completed** | **8** | | |
-| **Pending** | **4** | | |
-| **Total** | **12** | | |
+| **Pending** | **6** | | |
+| **Total** | **14** | | |
 
 ---
 

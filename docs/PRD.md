@@ -1,7 +1,7 @@
 # Product Requirement Document (PRD)
 ## Aplikasi Pengamanan Lebaran 2026
 
-**Version**: 1.1
+**Version**: 1.2
 **Date**: 10 Maret 2026
 **Status**: Draft
 
@@ -144,6 +144,12 @@ Sistem terintegrasi dengan fitur utama:
   - Server validates PIN and returns JWT token (valid for 3 months)
   - JWT token used for Authorization header on all mobile endpoints
   - Token stored locally for subsequent requests
+- **FR-MOB-006.1**: PIN expired flow
+  - When JWT token expires (after 3 months), show PIN re-entry screen
+  - User must enter PIN again to get new JWT token
+  - Block all app functionality until PIN is re-entered
+  - Display clear message: "Session expired. Please enter PIN to continue."
+  - After successful PIN entry, replace old token with new one
 
 #### 4.3.2 Configuration
 - **FR-MOB-006**: Set petugas jaga aktif
@@ -691,3 +697,4 @@ Warning     : #F59E0B (Yellow)
 |---------|------|--------|---------|
 | 1.0 | 10/03/2026 | Claude | Initial PRD |
 | 1.1 | 10/03/2026 | Claude | Add PIN auth, hadirapp signature, first launch popup |
+| 1.2 | 10/03/2026 | Claude | Add PIN expired/re-entry flow requirement |
