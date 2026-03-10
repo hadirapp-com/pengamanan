@@ -12,8 +12,9 @@ import { useAuthStore } from "@/store/auth";
 import { authEndpoint } from "@/config/endpoints";
 import { authRoutes } from "@/config/routes";
 
-export default function AppTemplate() {
+export function AppTemplate() {
   const location = useLocation();
+  const isHydrated = useAuthStore((state) => state.isHydrated);
   const setUser = useAuthStore((state) => state.setUser);
   const navigate = useNavigate();
   const { isError, data, isSuccess } = useQueryService(authEndpoint.me);
@@ -28,12 +29,21 @@ export default function AppTemplate() {
     }
   }, [isSuccess, data, setUser]);
 
+  // Don't render until store is hydrated
+  if (!isHydrated) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen w-full flex flex-col">
       <Header />
       <div className="flex w-full flex-1 h-[calc(100vh-6rem)]">
         <Sidebar />
-        <main className="flex-1 w-full overflow-auto">
+        <main className="flex-1 w-full overflow-auto md:p-6 lg:p-8 lg:px-8 xl:px-12 2xl:px-16">
           <Suspense fallback={<TableSkeleton />} key={location.key}>
             <Outlet />
           </Suspense>

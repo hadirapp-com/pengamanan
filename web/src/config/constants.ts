@@ -1,489 +1,199 @@
-// import { createScheduleHours } from '@/utils/time-picker-utils';
-
-import type { OpenDay } from '@/types/common';
+// ============================================================================
+// PENGAMANAN LEBARAN 2026 - CONSTANTS
+// ============================================================================
 
 export const GENERAL_SUCCESS_TEXT = 'Sukses';
 export const GENERAL_ERROR_TEXT = 'Terjadi kesalahan';
 
-export const GRADES = [
-  'I',
-  'II',
-  'III',
-  'IV',
-  'V',
-  'VI',
-  'VII',
-  'VIII',
-  'IX',
-  'X',
-  'XI',
-  'XII',
-];
-
-export const GRADE_LEVELS = {
-  SD: ['I', 'II', 'III', 'IV', 'V', 'VI'],
-  SMP: ['VII', 'VIII', 'IX'],
-  SMA: ['X', 'XI', 'XII'],
-};
-
-export const SCHOOL_LEVELS = ['SD', 'SMA', 'SMP'];
-
-export const GENDER = ['L', 'P'];
-
-export const accountTypeList = [
-  'school_admin',
-  'student',
-  'company_admin',
-  'parent',
-  'teacher',
-  'alumni',
-  'public',
-  'administrator',
-];
-
 export const DATA_TABLE_PAGE_SIZE_OPTIONS = [5, 10, 25, 50, 100];
 
-export const ACCOUNT_HAS_SETTING = ['company_admin', 'school_admin'];
+export const TOKEN_EXPIRED = 'TOKEN_EXPIRED';
 
-export const TOKEN_EXPIRED = 'FAST_JWT_EXPIRED';
+// ============================================================================
+// COLOR PALETTE
+// ============================================================================
+export const COLORS = {
+  primary: '#060273',      // Biru Tua
+  secondary: '#5F5DA6',    // Biru Medium
+  accent: '#040959',       // Biru Gelap
+  background: '#F2F2F2',   // Putih Abu
+  text: '#0D0D0D',         // Hitam
+  success: '#22C55E',      // Green
+  error: '#EF4444',        // Red
+  warning: '#F59E0B',      // Yellow
+} as const;
 
-export const CURRENT_ACADEMIC_YEAR = 'CURRENT_ACADEMIC_YEAR';
+// ============================================================================
+// USER ROLES
+// ============================================================================
+export const USER_ROLES = {
+  SUPERADMIN: 'superadmin',
+  ADMIN: 'admin',
+} as const;
 
-export const MIN_CALENDAR_YEAR = new Date().getFullYear() - 5;
-export const MIN_CALENDAR_YEAR_DOB = new Date().getFullYear() - 55;
-export const MAX_CALENDAR_YEAR = new Date().getFullYear() + 3;
-export const CURRENT_CALENDAR_YEAR = new Date().getFullYear();
-// export const SCHEDULE_HOURS = createScheduleHours();
-export const SCHEDULE_MINUTES = ['00', '15', '30', '45'];
-export const SCHEDULE_DAYS = [
-  { label: 'Senin', value: false },
-  { label: 'Selasa', value: false },
-  { label: 'Rabu', value: false },
-  { label: 'Kamis', value: false },
-  { label: 'Jumat', value: false },
-  { label: 'Sabtu', value: false },
-  { label: 'Minggu', value: false },
-];
+export const USER_ROLE_LABELS = {
+  superadmin: 'Superadmin',
+  admin: 'Admin',
+} as const;
 
-export const KEHADIRAN = {
-  S: 'Sakit',
-  I: 'Izin',
-  A: 'Alpa',
-  D: 'Dispensasi',
-  H: 'Hadir',
-};
+// ============================================================================
+// PETUGAS & POS STATUS
+// ============================================================================
+export const ACTIVE_STATUS = {
+  ACTIVE: true,
+  INACTIVE: false,
+} as const;
 
-export const defaultMenus = [
+// ============================================================================
+// PENGUMUMAN PRIORITY
+// ============================================================================
+export const PENGUMUMAN_PRIORITY = {
+  NORMAL: 'normal',
+  IMPORTANT: 'important',
+  URGENT: 'urgent',
+} as const;
+
+export const PENGUMUMAN_PRIORITY_LABELS = {
+  normal: 'Normal',
+  important: 'Penting',
+  urgent: 'Urgent',
+} as const;
+
+export const PENGUMUMAN_PRIORITY_COLORS = {
+  normal: 'default',
+  important: 'warning',
+  urgent: 'error',
+} as const;
+
+// ============================================================================
+// SCAN TYPE
+// ============================================================================
+export const SCAN_TYPE = {
+  MASUK: 'masuk',
+  KELUAR: 'keluar',
+} as const;
+
+export const SCAN_TYPE_LABELS = {
+  masuk: 'Masuk',
+  keluar: 'Keluar',
+} as const;
+
+export const SCAN_TYPE_COLORS = {
+  masuk: 'success',
+  keluar: 'error',
+} as const;
+
+// ============================================================================
+// SIDEBAR MENUS
+// ============================================================================
+export const superadminMenus = [
   {
     title: 'Dashboard',
-    href: '/app',
-    icon: 'dashboard',
+    href: '/app/dashboard',
+    icon: 'LayoutDashboard',
     label: 'Dashboard',
     disabled: false,
     hasChildren: false,
   },
   {
-    title: 'Permintaan Akses',
-    href: '/app/access-request',
-    icon: 'Key',
-    label: 'Key',
+    title: 'Users',
+    href: '/app/users',
+    icon: 'Users',
+    label: 'Users',
     disabled: false,
     hasChildren: false,
   },
-];
+  {
+    title: 'Petugas Jaga',
+    href: '/app/petugas',
+    icon: 'Shield',
+    label: 'Petugas Jaga',
+    disabled: false,
+    hasChildren: false,
+  },
+  {
+    title: 'Pos Jaga',
+    href: '/app/pos',
+    icon: 'MapPin',
+    label: 'Pos Jaga',
+    disabled: false,
+    hasChildren: false,
+  },
+  {
+    title: 'QR Codes',
+    href: '/app/qr',
+    icon: 'QrCode',
+    label: 'QR Codes',
+    disabled: false,
+    hasChildren: false,
+  },
+  {
+    title: 'Pengumuman',
+    href: '/app/pengumuman',
+    icon: 'Bell',
+    label: 'Pengumuman',
+    disabled: false,
+    hasChildren: false,
+  },
+  {
+    title: 'Logs',
+    href: '/app/logs',
+    icon: 'ScrollText',
+    label: 'Logs',
+    disabled: false,
+    hasChildren: false,
+  },
+] as const;
 
-export const schoolAdminMenus = [
+export const adminMenus = [
   {
     title: 'Dashboard',
-    href: '/app',
-    icon: 'dashboard',
+    href: '/app/dashboard',
+    icon: 'LayoutDashboard',
     label: 'Dashboard',
     disabled: false,
     hasChildren: false,
   },
   {
-    title: 'Permintaan Akses',
-    href: '/app/access-request',
-    icon: 'Key',
-    label: 'Key',
+    title: 'Petugas Jaga',
+    href: '/app/petugas',
+    icon: 'Shield',
+    label: 'Petugas Jaga',
     disabled: false,
     hasChildren: false,
   },
   {
-    title: 'Master Data',
-    href: '/app/master/academic-year',
-    icon: 'FolderCog',
-    label: 'FolderCog',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Tahun Ajaran',
-    href: '/app/master/academic-year',
-    icon: 'Dot',
-    label: '',
+    title: 'Pos Jaga',
+    href: '/app/pos',
+    icon: 'MapPin',
+    label: 'Pos Jaga',
     disabled: false,
     hasChildren: false,
   },
   {
-    title: 'Mata Pelajaran',
-    href: '/app/master/subject',
-    icon: 'Dot',
-    label: '',
+    title: 'QR Codes',
+    href: '/app/qr',
+    icon: 'QrCode',
+    label: 'QR Codes',
     disabled: false,
     hasChildren: false,
   },
   {
-    title: 'Kelas',
-    href: '/app/master/class',
-    icon: 'Dot',
-    label: '',
+    title: 'Pengumuman',
+    href: '/app/pengumuman',
+    icon: 'Bell',
+    label: 'Pengumuman',
     disabled: false,
     hasChildren: false,
   },
   {
-    title: 'Guru',
-    href: '/app/master/teacher',
-    icon: 'Dot',
-    label: '',
+    title: 'Logs',
+    href: '/app/logs',
+    icon: 'ScrollText',
+    label: 'Logs',
     disabled: false,
     hasChildren: false,
   },
-  {
-    title: 'Siswa',
-    href: '/app/master/student',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Alumni',
-    href: '/app/master/alumni',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Ujian',
-    href: '/app/master/exam',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Tugas',
-    href: '/app/master/task',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Tahun Berjalan',
-    href: '/app/trx/subject',
-    icon: 'CalendarDays',
-    label: 'CalendarDays',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Mata Pelajaran',
-    href: '/app/trx/subject',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Kelas',
-    href: '/app/trx/class',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Guru',
-    href: '/app/trx/teacher',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Siswa',
-    href: '/app/trx/student',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Jadwal',
-    href: '/app/trx/schedule',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  // {
-  //   title: 'Penilaian MaPel',
-  //   href: '/app/trx/subject-evaluation',
-  //   icon: 'Dot',
-  //   label: '',
-  //   disabled: false,
-  //   hasChildren: false,
-  // },
-  {
-    title: 'KBM',
-    href: '/app/kbm/subject-attendance',
-    icon: 'CalendarClock',
-    label: 'CalendarClock',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Absensi MaPel',
-    href: '/app/kbm/subject-attendance',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Absensi Harian',
-    href: '/app/kbm/daily-attendance',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  // {
-  //   title: 'Penilaian Siswa',
-  //   href: '/app/kbm/student-evaluation',
-  //   icon: 'Dot',
-  //   label: '',
-  //   disabled: false,
-  //   hasChildren: false,
-  // },
-  {
-    title: 'Laporan',
-    href: '/app/report/student-attendance-report',
-    icon: 'FileSpreadsheet',
-    label: 'FileSpreadsheet',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Absensi',
-    href: '/app/setting/school-config',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Pengaturan',
-    href: '/app/setting/school-config',
-    icon: 'Cog',
-    label: 'Cog',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Umum',
-    href: '/app/setting/school-config',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-];
+] as const;
 
-export const teacherMenus = [
-  {
-    title: 'Dashboard',
-    href: '/app',
-    icon: 'dashboard',
-    label: 'Dashboard',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Permintaan Akses',
-    href: '/app/access-request',
-    icon: 'Key',
-    label: 'Key',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Tahun Berjalan',
-    href: '/app/trx/subject',
-    icon: 'CalendarDays',
-    label: 'CalendarDays',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Jadwal',
-    href: '/app/trx/schedule',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'KBM',
-    href: '/app/kbm/subject-attendance',
-    icon: 'CalendarClock',
-    label: 'CalendarClock',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Absensi MaPel',
-    href: '/app/kbm/subject-attendance',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-];
-
-export const companyAdminMenus = [
-  {
-    title: 'Dashboard',
-    href: '/app',
-    icon: 'dashboard',
-    label: 'Dashboard',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Master Data',
-    href: '/app/master/branch',
-    icon: 'FolderCog',
-    label: 'FolderCog',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Cabang',
-    href: '/app/master/branch',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Staff',
-    href: '/app/master/staff',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Service',
-    href: '/app/master/service',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Akses',
-    href: '/app/master/access',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  {
-    title: 'Booking',
-    href: '/app/booking/booking',
-    icon: 'FolderCog',
-    label: 'FolderCog',
-    disabled: false,
-    hasChildren: true,
-  },
-  {
-    title: 'Cabang',
-    href: '/app/booking/booking',
-    icon: 'Dot',
-    label: '',
-    disabled: false,
-    hasChildren: false,
-  },
-  // {
-  //   title: 'Staff',
-  //   href: '/app/master/staff',
-  //   icon: 'Dot',
-  //   label: '',
-  //   disabled: false,
-  //   hasChildren: false,
-  // },
-  {
-    title: 'Permintaan Akses',
-    href: '/app/access-request',
-    icon: 'Key',
-    label: 'Key',
-    disabled: false,
-    hasChildren: false,
-  },
-];
-
-export type TNavItems = typeof defaultMenus;
-
-// Error constant
-export const ERROR_UPDATE_DELETE_REFERENCE = 'violates foreign key constraint';
-export const ERR_BAD_REQUEST = 'ERR_BAD_REQUEST';
-
-export const defaultOpenDays: Array<OpenDay> = [
-  {
-    dayName: 'senin',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-  {
-    dayName: 'selasa',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-  {
-    dayName: 'rabu',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-  {
-    dayName: 'kamis',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-  {
-    dayName: 'jumat',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-  {
-    dayName: 'sabtu',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-  {
-    dayName: 'minggu',
-    open: false,
-    start: '00:00',
-    end: '00:00',
-  },
-];
+export type TNavItems = typeof superadminMenus;

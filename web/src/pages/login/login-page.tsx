@@ -56,10 +56,7 @@ export default function LoginPage() {
     mutationFn: (data: UserLoginForm) =>
       axiosInstance<LoginResponse>({
         method: "POST",
-        data: {
-          ...data,
-          source: "web",
-        },
+        data,
         url: authEndpoint.login,
       }),
     onSuccess: (response) => {
@@ -119,7 +116,7 @@ export default function LoginPage() {
             <CardHeader>
               <div className="flex justify-center">
                 <img
-                  src="/company.png"
+                  src="/logo.png"
                   className="h-6 text-center"
                   alt="Company Logo"
                 />

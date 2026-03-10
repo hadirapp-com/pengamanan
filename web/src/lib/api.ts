@@ -80,21 +80,23 @@ export const axiosInstance = api;
 
 export const authApi = {
   login: (credentials: { username: string; password: string }) =>
-    api.post("/auth/login", credentials),
+    api.post("/api/auth/login", credentials),
+  logout: () => api.post("/api/auth/logout"),
+  me: () => api.get("/api/auth/me"),
   register: (data: {
     username: string;
     password: string;
     email?: string;
     fullName?: string;
-  }) => api.post("/auth/register", data),
+  }) => api.post("/api/auth/register", data),
 };
 
 export const userApi = {
   getUsers: (params?: { page?: number; limit?: number; search?: string }) =>
-    api.get("/users", { params }),
-  createUser: (data: unknown) => api.post("/users", data),
-  updateUser: (id: string, data: unknown) => api.put(`/users/${id}`, data),
-  deleteUser: (id: string) => api.delete(`/users/${id}`),
+    api.get("/api/users", { params }),
+  createUser: (data: unknown) => api.post("/api/users", data),
+  updateUser: (id: string, data: unknown) => api.put(`/api/users/${id}`, data),
+  deleteUser: (id: string) => api.delete(`/api/users/${id}`),
 };
 
 export const customerApi = {
