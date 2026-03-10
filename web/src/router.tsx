@@ -1,60 +1,82 @@
-// import { lazy } from "react";
-import { Route, Routes } from "react-router-dom";
+// ============================================================================
+// PENGAMANAN LEBARAN 2026 - ROUTER
+// ============================================================================
 
-// import Callback from '@/pages/callback';
-import Landing from "@/pages/landing";
-import DocumentationPage from "@/pages/documentation-page";
-import Login from "@/pages/login/login-page";
-import AppTemplate from "@/components/ui/layout/app-template";
-import Dashboard from "@/pages/home";
-import DeliveryTable from "@/pages/delivery/delivery-table";
-import CustomerTable from "@/pages/customer/customer-table";
-import CustomerForm from "@/pages/customer/customer-form";
-import UserForm from "@/pages/user/user-form";
-import UserTable from "@/pages/user/user-table";
-import PartsTable from "@/pages/parts/parts-table";
-import PartsForm from "@/pages/parts/parts-form";
-import { PartsPrintHistory } from "@/pages/parts/parts-print-history";
-import { LabelDesignPage } from "@/pages/label-design/label-design-page";
-import LogsTable from "@/pages/logs/logs-table";
-import LotManagementPage from "@/pages/scan-monitoring/scan-monitoring-page";
-import DeliveryOrderPage from "@/pages/delivery-order/delivery-order-page";
-import ConfigTable from "@/pages/config/config-table";
-import UserGuidePage from "@/pages/user-guide/user-guide-page";
-import { WhatsAppPage } from "@/pages/whatsapp/whatsapp-page";
-// import Register from '@/pages/register';
+import { Routes, Route, Navigate } from "react-router-dom";
+
+// Layouts
+import { AppTemplate } from "@/components/ui/layout/app-template";
+
+// Pages
+import LoginPage from "@/pages/auth/login-page";
+import DashboardPage from "@/pages/dashboard/dashboard-page";
+
+// Users (Superadmin only)
+import UserTablePage from "@/pages/users/user-table-page";
+import UserFormPage from "@/pages/users/user-form-page";
+
+// Petugas Jaga
+import PetugasTablePage from "@/pages/petugas/petugas-table-page";
+import PetugasFormPage from "@/pages/petugas/petugas-form-page";
+
+// Pos Jaga
+import PosTablePage from "@/pages/pos/pos-table-page";
+import PosFormPage from "@/pages/pos/pos-form-page";
+
+// QR Codes
+import QrTablePage from "@/pages/qr/qr-table-page";
+import QrFormPage from "@/pages/qr/qr-form-page";
+
+// Pengumuman
+import PengumumanTablePage from "@/pages/pengumuman/pengumuman-table-page";
+import PengumumanFormPage from "@/pages/pengumuman/pengumuman-form-page";
+
+// Logs
+import LogsTablePage from "@/pages/logs/logs-table-page";
 
 export function BaseRouter() {
   return (
     <Routes>
-      <Route path="/" element={<Landing />} />
-      <Route path="/dokumentasi" element={<DocumentationPage />} />
-      <Route path="/login" element={<Login />}></Route>
+      {/* Public Routes */}
+      <Route path="/login" element={<LoginPage />} />
+
+      {/* Protected Routes - App Layout */}
       <Route path="/app" element={<AppTemplate />}>
-        <Route path="" element={<Dashboard />} />
-        <Route path="delivery" element={<DeliveryTable />} />
-        <Route path="delivery/:customer" element={<DeliveryTable />} />
-        <Route path="customer" element={<CustomerTable />} />
-        <Route path="customer/create" element={<CustomerForm />} />
-        <Route path="customer/:id" element={<CustomerForm />} />
-        <Route path="parts" element={<PartsTable />} />
-        <Route path="parts/create" element={<PartsForm />} />
-        <Route path="parts/:id" element={<PartsForm />} />
-        <Route path="parts-print-history" element={<PartsPrintHistory />} />
-        <Route path="label-design" element={<LabelDesignPage />} />
-        <Route path="logs" element={<LogsTable />} />
-        <Route path="logs/:customer" element={<LogsTable />} />
-        <Route path="scan-monitoring" element={<LotManagementPage />} />
-        <Route path="scan-monitoring/:customer" element={<LotManagementPage />} />
-        <Route path="delivery-order" element={<DeliveryOrderPage />} />
-        <Route path="delivery-order/:customer" element={<DeliveryOrderPage />} />
-        <Route path="config" element={<ConfigTable />} />
-        <Route path="user-guide" element={<UserGuidePage />} />
-        <Route path="whatsapp" element={<WhatsAppPage />} />
-        <Route path="user" element={<UserTable />} />
-        <Route path="user/create" element={<UserForm />} />
-        <Route path="user/:id" element={<UserForm />} />
+        {/* Dashboard */}
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route index element={<DashboardPage />} />
+
+        {/* Users - Superadmin only */}
+        <Route path="users" element={<UserTablePage />} />
+        <Route path="users/create" element={<UserFormPage />} />
+        <Route path="users/:id" element={<UserFormPage />} />
+
+        {/* Petugas Jaga */}
+        <Route path="petugas" element={<PetugasTablePage />} />
+        <Route path="petugas/create" element={<PetugasFormPage />} />
+        <Route path="petugas/:id" element={<PetugasFormPage />} />
+
+        {/* Pos Jaga */}
+        <Route path="pos" element={<PosTablePage />} />
+        <Route path="pos/create" element={<PosFormPage />} />
+        <Route path="pos/:id" element={<PosFormPage />} />
+
+        {/* QR Codes */}
+        <Route path="qr" element={<QrTablePage />} />
+        <Route path="qr/create" element={<QrFormPage />} />
+        <Route path="qr/:id" element={<QrFormPage />} />
+
+        {/* Pengumuman */}
+        <Route path="pengumuman" element={<PengumumanTablePage />} />
+        <Route path="pengumuman/create" element={<PengumumanFormPage />} />
+        <Route path="pengumuman/:id" element={<PengumumanFormPage />} />
+
+        {/* Logs */}
+        <Route path="logs" element={<LogsTablePage />} />
       </Route>
+
+      {/* Redirect root to login */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   );
 }

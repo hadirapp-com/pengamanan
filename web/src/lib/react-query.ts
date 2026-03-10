@@ -42,13 +42,12 @@ export const useQueryService = (
       data: defaultData,
     };
   }
-  // console.log({'xxxx': query.data.data})
 
   return {
     ...query,
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    data: query.data?.data,
+    data: query.data?.data?.data,
   };
 };
 

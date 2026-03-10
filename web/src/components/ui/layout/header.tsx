@@ -41,7 +41,7 @@ export function Header({ title }: HeaderProps) {
     <header className="flex h-16 items-center border-b bg-card px-6 w-full relative">
       {/* Mobile: Centered logo */}
       <div className="flex-1 flex justify-center lg:justify-start">
-        <img src="/company.png" className="h-4 text-center" />
+        <img src="/logo.png" className="h-4 text-center" />
       </div>
 
       {/* Desktop: Title next to logo */}

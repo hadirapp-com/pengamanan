@@ -1,0 +1,45 @@
+name: CI/CD Main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    name: Build Project
+    runs-on: [self-hosted, linux, x64, pokayoke]
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: Set Node.js version
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build & deploy locally
+        run: |
+          pnpm build
+          sudo cp -r dist/* /var/www/html/
+        env:
+          VITE_APP_ENVIRONMENT: production
+          VITE_API_URL: http://172.20.88.203:8080
+      - name: Build for cloudflare pages
+        run: |
+          pnpm build
+        env:
+          VITE_APP_ENVIRONMENT: production
+          VITE_API_URL: https://kasai-public-api.hadirapp.com
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 05b0906ce2488aa5647a275a274c9436
+          projectName: kasai-public
+          directory: dist
+          branch: main

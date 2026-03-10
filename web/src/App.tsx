@@ -3,7 +3,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { Suspense } from "react";
 import { BrowserRouter } from "react-router-dom";
 
-import Loader from "@/components/ui/loader";
+import { Loader } from "@/components/ui/loader";
 import { Toaster } from "@/components/ui/sonner";
 
 import { BaseRouter } from "@/router";
