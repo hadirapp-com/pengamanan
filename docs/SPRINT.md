@@ -1087,7 +1087,8 @@ These items need to be implemented after the main sprint completion:
 - [x] Create POST `/api/mobile/auth/pin` endpoint
 - [x] Validate PIN from mobile request
 - [x] Generate JWT token with 3-month expiry
-- [x] Store PIN in database (added pin field to petugas_jaga)
+- [x] Store PIN in database (added configs table with global mobile_pin)
+- [x] Move PIN from petugas_jaga to configs table (global PIN)
 - [x] Return token response with expiresIn
 - [x] Document PIN authentication flow
 - [x] Add PIN validation schema with Zod
@@ -1097,6 +1098,8 @@ These items need to be implemented after the main sprint completion:
 - ✅ Invalid PIN returns proper error
 - ✅ JWT token valid for 3 months
 - ✅ Mobile can use token for Authorization header
+- ✅ PIN is global (stored in configs table), not per petugas
+- ✅ Migration generated and applied successfully
 
 ---
 
@@ -1315,3 +1318,82 @@ Story masuk Sprint jika:
 ---
 
 **Last Updated**: 10 Maret 2026
+
+---
+
+## Recent Progress Summary
+
+### Completed (10 Maret 2026)
+
+#### API Backend (Sprint 1)
+- ✅ Sprint 1 fully complete (36/36 points)
+- ✅ All API endpoints implemented and tested
+- ✅ Database schema with migrations
+- ✅ Authentication & authorization working
+- ✅ Seed data populated
+
+#### Enhancement Stories (Backlog)
+- ✅ **B.1** Mobile PIN Auth (3 pts) - Global PIN in configs table
+- ✅ **B.2** Mobile Auth Middleware (2 pts) - JWT validation on mobile endpoints
+- ✅ **B.3** Web Signature (1 pts) - Hadirapp signature on web admin
+- ✅ **B.6** API Cleanup (2 pts) - Removed unused routes and schemas
+- ✅ **B.8** PIN Expired Flow (2 pts) - Added to backlog and documented
+
+**Total Completed**: 46 points (Sprint 1: 36 + Backlog: 10)
+
+---
+
+## What's Next?
+
+### Immediate Priorities (Recommended Order)
+
+1. **Start Sprint 2: Web Admin Dashboard** 🚀 **RECOMMENDED NEXT**
+   - Focus: Build complete admin dashboard
+   - Duration: Week 3-4 (2 weeks)
+   - Points: 36
+   - Key Stories:
+     - Story 2.1: Project Setup & Base Layout (2 pts)
+     - Story 2.2: Authentication UI (3 pts)
+     - Story 2.3: Dashboard Home (3 pts)
+     - Story 2.4-2.9: CRUD UI for all entities (22 pts)
+     - Story 2.10-2.12: Polish & deployment (6 pts)
+
+2. **Quick Win: Story B.7 - Web Admin Cleanup** (Optional before Sprint 2)
+   - Points: 1
+   - Priority: Low
+   - Can be done quickly to clean up the web codebase
+   - Review and remove unused pages/components
+
+### Upcoming Work
+
+3. **Sprint 3: Android Mobile Application**
+   - Start after Sprint 2 completion
+   - Duration: Week 5-7 (3 weeks)
+   - Points: 46
+   - Will implement:
+     - QR scanning with camera
+     - Offline support
+     - Sync functionality
+     - **B.4** Mobile Signature
+     - **B.5** First Launch Popup
+     - **B.8** PIN Expired Flow
+
+### Current Status Summary
+
+| Component | Status | Progress | Next Action |
+|-----------|--------|----------|-------------|
+| **API Backend** | ✅ Complete | 36/36 pts | Ready for use |
+| **Web Admin** | 🔄 Not Started | 0/36 pts | **Start Sprint 2** |
+| **Mobile App** | ⏸️ Pending | 0/46 pts | After Sprint 2 |
+| **Backlog Items** | 🔄 In Progress | 8/14 pts | B.7 optional, rest in Sprint 3 |
+
+### Recommendation
+
+**Start Sprint 2 - Web Admin Dashboard now.** The API backend is complete and ready to be consumed. Building the web admin will:
+- Provide immediate value for admin users
+- Allow testing and validation of API endpoints
+- Complete the core system (API + Web)
+- Enable QR code management and reporting before building mobile app
+
+The mobile app can then be built with confidence knowing the backend and web admin are fully functional.
+
