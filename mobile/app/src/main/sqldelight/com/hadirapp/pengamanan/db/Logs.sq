@@ -1,0 +1,47 @@
+CREATE TABLE Logs (
+    id TEXT PRIMARY KEY,
+    qrCode TEXT NOT NULL,
+    guestName TEXT NOT NULL,
+    guestType TEXT NOT NULL,
+    scanType TEXT NOT NULL,
+    scannedAt TEXT NOT NULL,
+    petugasJagaId TEXT NOT NULL,
+    petugasJagaName TEXT NOT NULL,
+    posId TEXT NOT NULL,
+    posName TEXT NOT NULL,
+    posLocation TEXT NOT NULL,
+    synced INTEGER NOT NULL DEFAULT 0
+);
+
+selectAllLogs:
+SELECT * FROM Logs
+ORDER BY scannedAt DESC;
+
+selectLogsByPos:
+SELECT * FROM Logs
+WHERE posId = ?
+ORDER BY scannedAt DESC;
+
+selectLogsByDateRange:
+SELECT * FROM Logs
+WHERE scannedAt BETWEEN ? AND ?
+ORDER BY scannedAt DESC;
+
+selectUnsyncedLogs:
+SELECT * FROM Logs
+WHERE synced = 0;
+
+insertLog:
+INSERT INTO Logs (
+    id, qrCode, guestName, guestType, scanType, scannedAt,
+    petugasJagaId, petugasJagaName, posId, posName, posLocation, synced
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+updateLogSynced:
+UPDATE Logs SET synced = 1 WHERE id = ?;
+
+deleteLog:
+DELETE FROM Logs WHERE id = ?;
+
+deleteAllLogs:
+DELETE FROM Logs;

@@ -1,0 +1,10 @@
+## This file must *NOT* be checked into Version Control Systems,
+# as it contains information specific to your local configuration.
+#
+# Location of the Android SDK
+#sdk.dir=/path/to/android/sdk
+
+# API Base URL for development
+#api.base.url=http://10.0.2.2:3000
+#api.base.url=http://192.168.1.100:3000
+api.base.url=http://localhost:3000

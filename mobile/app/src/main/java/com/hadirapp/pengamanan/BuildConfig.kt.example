@@ -1,0 +1,12 @@
+package com.hadirapp.pengamanan
+
+// This is an example of how BuildConfig is generated
+// The actual BuildConfig is generated automatically by Gradle
+
+object BuildConfig {
+    const val DEBUG = false
+    const val API_BASE_URL = "http://localhost:3000/api"
+    const val APPLICATION_ID = "com.hadirapp.pengamanan"
+    const val VERSION_CODE = 1
+    const val VERSION_NAME = "1.0.0"
+}

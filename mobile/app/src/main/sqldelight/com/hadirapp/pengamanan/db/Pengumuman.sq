@@ -1,0 +1,25 @@
+CREATE TABLE Pengumuman (
+    id TEXT PRIMARY KEY,
+    judul TEXT NOT NULL,
+    isi TEXT NOT NULL,
+    prioritas TEXT NOT NULL,
+    createdAt TEXT NOT NULL,
+    createdBy TEXT NOT NULL
+);
+
+selectAllPengumuman:
+SELECT * FROM Pengumuman
+ORDER BY createdAt DESC;
+
+selectPengumumanById:
+SELECT * FROM Pengumuman WHERE id = ?;
+
+insertPengumuman:
+INSERT OR REPLACE INTO Pengumuman (id, judul, isi, prioritas, createdAt, createdBy)
+VALUES (?, ?, ?, ?, ?, ?);
+
+deletePengumuman:
+DELETE FROM Pengumuman WHERE id = ?;
+
+deleteAllPengumuman:
+DELETE FROM Pengumuman;

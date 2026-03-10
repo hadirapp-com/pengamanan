@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Pengamanan Lebaran</string>
+    <string name="scan_qr">Scan QR Code</string>
+    <string name="history">Riwayat</string>
+    <string name="announcements">Pengumuman</string>
+    <string name="welcome">Selamat Datang</string>
+    <string name="quick_actions">Aksi Cepat</string>
+    <string name="no_announcements">Belum ada pengumuman</string>
+    <string name="scan_success">Scan Berhasil!</string>
+    <string name="guest_in">Tamu Masuk</string>
+    <string name="guest_out">Tamu Keluar</string>
+    <string name="details">Detail</string>
+    <string name="back">Kembali</string>
+    <string name="loading">Memuat...</string>
+    <string name="error">Terjadi kesalahan</string>
+    <string name="retry">Coba Lagi</string>
+    <string name="qr_code">QR Code</string>
+    <string name="guest_name">Nama Tamu</string>
+    <string name="guest_type">Tipe Tamu</string>
+    <string name="petugas">Petugas Jaga</string>
+    <string name="pos">Pos</string>
+    <string name="scan_time">Waktu Scan</string>
+    <string name="unsynced">Belum disinkronkan (offline)</string>
+    <string name="scan_history">Riwayat Scan</string>
+    <string name="no_history">Belum ada riwayat scan</string>
+    <string name="priority_normal">NORMAL</string>
+    <string name="priority_penting">PENTING</string>
+    <string name="priority_urgent">URGENT</string>
+    <string name="created_by">Dibuat oleh</string>
+    <string name="created_at">Dibuat pada</string>
+</resources>

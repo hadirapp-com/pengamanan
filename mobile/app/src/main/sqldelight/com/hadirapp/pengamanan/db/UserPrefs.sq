@@ -1,0 +1,13 @@
+CREATE TABLE UserPrefs (
+    key TEXT PRIMARY KEY,
+    value TEXT NOT NULL
+);
+
+getPref:
+SELECT value FROM UserPrefs WHERE key = ?;
+
+setPref:
+INSERT OR REPLACE INTO UserPrefs (key, value) VALUES (?, ?);
+
+deletePref:
+DELETE FROM UserPrefs WHERE key = ?;
