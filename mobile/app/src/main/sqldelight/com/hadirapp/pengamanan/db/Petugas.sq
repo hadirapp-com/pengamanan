@@ -1,0 +1,26 @@
+CREATE TABLE Petugas (
+    id TEXT PRIMARY KEY,
+    nama TEXT NOT NULL,
+    nik TEXT NOT NULL,
+    noHp TEXT NOT NULL,
+    isActive INTEGER NOT NULL,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+);
+
+selectAllPetugas:
+SELECT * FROM Petugas
+ORDER BY nama;
+
+selectPetugasById:
+SELECT * FROM Petugas WHERE id = ?;
+
+insertPetugas:
+INSERT OR REPLACE INTO Petugas (id, nama, nik, noHp, isActive, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+deletePetugas:
+DELETE FROM Petugas WHERE id = ?;
+
+deleteAllPetugas:
+DELETE FROM Petugas;
