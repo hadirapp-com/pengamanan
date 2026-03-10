@@ -26,6 +26,9 @@ const createUserSchema = z.object({
   role: z.enum(["admin", "superadmin"], {
     errorMap: () => ({ message: "Role must be either admin or superadmin" }),
   }),
+  fullName: z.string().max(255, "Full name must not exceed 255 characters").optional(),
+  address: z.string().optional(),
+  phone: z.string().max(20, "Phone must not exceed 20 characters").optional(),
 });
 
 const updateUserSchema = z.object({
@@ -37,6 +40,9 @@ const updateUserSchema = z.object({
   role: z
     .enum(["admin", "superadmin"])
     .optional(),
+  fullName: z.string().max(255, "Full name must not exceed 255 characters").optional(),
+  address: z.string().optional(),
+  phone: z.string().max(20, "Phone must not exceed 20 characters").optional(),
 });
 
 const listUsersSchema = z.object({
@@ -110,6 +116,9 @@ usersRoutes.get("/", superadminOnly, async (c) => {
         id: users.id,
         username: users.username,
         role: users.role,
+        fullName: users.fullName,
+        address: users.address,
+        phone: users.phone,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
@@ -157,6 +166,9 @@ usersRoutes.get("/:id", superadminOnly, async (c) => {
         id: users.id,
         username: users.username,
         role: users.role,
+        fullName: users.fullName,
+        address: users.address,
+        phone: users.phone,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
         deletedAt: users.deletedAt,
@@ -214,7 +226,7 @@ usersRoutes.post("/", superadminOnly, async (c) => {
       );
     }
 
-    const { username, password, role } = validationResult.data;
+    const { username, password, role, fullName, address, phone } = validationResult.data;
 
     // Check if username already exists
     const existingUser = await db
@@ -244,6 +256,9 @@ usersRoutes.post("/", superadminOnly, async (c) => {
         username,
         passwordHash,
         role,
+        fullName,
+        address,
+        phone,
         createdBy: currentUser.userId,
         updatedBy: currentUser.userId,
       })
@@ -251,6 +266,9 @@ usersRoutes.post("/", superadminOnly, async (c) => {
         id: users.id,
         username: users.username,
         role: users.role,
+        fullName: users.fullName,
+        address: users.address,
+        phone: users.phone,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       });
@@ -363,6 +381,9 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
         id: users.id,
         username: users.username,
         role: users.role,
+        fullName: users.fullName,
+        address: users.address,
+        phone: users.phone,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       });

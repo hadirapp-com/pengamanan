@@ -2,7 +2,7 @@
 # PENGAMANAN API - HTTP Request Collection
 # =============================================================================
 # API Base URL
-@api_url=http://localhost:5000
+@api_url=http://localhost:3000
 @whatsapp_service=http://192.168.1.6:3000
 
 @token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJjNmI2YjU5OC01NmRjLTRjMTQtODVmYi1lNGFlN2ZhMTZhYTMiLCJ1c2VybmFtZSI6InN1cGVyYWRtaW4iLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc3MzEwNTc1NywiZXhwIjoxNzczMTkyMTU3fQ.d_sE3AKTtlgU-RkwU7GiEd3J3_alHbUcRUlysZCAt50

@@ -48,6 +48,9 @@ export const users = pengamananSchema.table(
     role: varchar("role", { length: 20 })
       .$type<"superadmin" | "admin">()
       .notNull(),
+    fullName: varchar("full_name", { length: 255 }),
+    address: text("address"),
+    phone: varchar("phone", { length: 20 }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
     deletedAt: timestamp("deleted_at"),
