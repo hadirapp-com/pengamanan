@@ -1072,6 +1072,173 @@ Membangun aplikasi Android untuk petugas keamanan melakukan scan QR.
 
 ---
 
+## Backlog Items
+
+### Post-MVP / Enhancement Stories
+
+These items need to be implemented after the main sprint completion:
+
+#### Story B.1: Mobile PIN Authentication
+**Points**: 3
+**Priority**: High
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Create POST `/api/mobile/auth/pin` endpoint
+- [ ] Validate PIN from mobile request
+- [ ] Generate JWT token with 3-month expiry
+- [ ] Store PIN in database (need to add pin field to petugas_jaga or create separate table)
+- [ ] Return token response with expiresIn
+- [ ] Document PIN authentication flow
+- [ ] Add PIN validation schema with Zod
+
+**Definition of Done**:
+- PIN endpoint accepts valid PIN and returns JWT
+- Invalid PIN returns proper error
+- JWT token valid for 3 months
+- Mobile can use token for Authorization header
+
+---
+
+#### Story B.2: Mobile Auth Middleware
+**Points**: 2
+**Priority**: High
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Create mobile-specific auth middleware
+- [ ] Apply JWT validation to mobile sync endpoints:
+  - [ ] GET `/api/mobile/sync`
+  - [ ] POST `/api/mobile/sync-logs`
+  - [ ] POST `/api/mobile/read-announce`
+  - [ ] GET `/api/mobile/pengumuman`
+- [ ] Handle token expiry gracefully
+- [ ] Return appropriate error codes
+- [ ] Update API documentation
+
+**Definition of Done**:
+- All mobile endpoints require valid JWT
+- Token expiry returns 401 with clear message
+- API documentation updated
+
+---
+
+#### Story B.3: Hadirapp Signature on Web Admin
+**Points**: 1
+**Priority**: Medium
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Add footer component to web admin layout
+- [ ] Display "Supported by hadirapp.com"
+- [ ] Add link to http://www.hadirapp.com
+- [ ] Style signature to match app theme
+- [ ] Ensure footer appears on all pages
+
+**Definition of Done**:
+- Signature visible on all web admin pages
+- Link opens in new tab
+- Styling matches app theme
+
+---
+
+#### Story B.4: Hadirapp Signature on Mobile
+**Points**: 1
+**Priority**: Medium
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Add footer/signature component to mobile screens
+- [ ] Display "Supported by hadirapp.com"
+- [ ] Add link to http://www.haddirapp.com
+- [ ] Ensure signature appears on bottom of all screens
+- [ ] Handle link opening in browser
+
+**Definition of Done**:
+- Signature visible on all mobile screens
+- Link opens in external browser
+- Signature doesn't interfere with UI
+
+---
+
+#### Story B.5: Mobile First Launch Popup
+**Points**: 2
+**Priority**: Medium
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Add popup.webp to mobile resources
+- [ ] Create first launch detection logic
+- [ ] Create popup dialog/screen component
+- [ ] Display popup.webp image
+- [ ] Add acknowledgment button
+- [ ] Store first launch flag locally
+- [ ] Only show popup on first app open
+
+**Definition of Done**:
+- Popup shows on first app launch
+- Popup doesn't show on subsequent launches
+- User must acknowledge to continue
+- Image displays correctly
+
+---
+
+#### Story B.6: API Code Cleanup
+**Points**: 2
+**Priority**: Low
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Review all API schemas for unused tables/fields
+- [ ] Remove unused schema definitions
+- [ ] Review all API routes
+- [ ] Remove unused endpoints
+- [ ] Remove unused middleware
+- [ ] Update API documentation
+- [ ] Test API after cleanup
+
+**Definition of Done**:
+- No unused code in API
+- API tests still pass
+- Documentation updated
+
+---
+
+#### Story B.7: Web Admin Code Cleanup
+**Points**: 1
+**Priority**: Low
+**Status**: ⬜ Backlog
+
+**Tasks**:
+- [ ] Review all web pages
+- [ ] Remove unused/placeholder pages
+- [ ] Remove unused components
+- [ ] Remove unused routes
+- [ ] Clean up imports
+- [ ] Test web app after cleanup
+
+**Definition of Done**:
+- No unused pages or components
+- Web app works correctly
+- Navigation only shows valid pages
+
+---
+
+### Backlog Summary
+
+| Story | Points | Priority | Status |
+|-------|--------|----------|--------|
+| B.1 Mobile PIN Auth | 3 | High | ⬜ Backlog |
+| B.2 Mobile Auth Middleware | 2 | High | ⬜ Backlog |
+| B.3 Web Signature | 1 | Medium | ⬜ Backlog |
+| B.4 Mobile Signature | 1 | Medium | ⬜ Backlog |
+| B.5 First Launch Popup | 2 | Medium | ⬜ Backlog |
+| B.6 API Cleanup | 2 | Low | ⬜ Backlog |
+| B.7 Web Cleanup | 1 | Low | ⬜ Backlog |
+| **Total** | **12** | | |
+
+---
+
 ## Notes
 
 ### Definition of Done (General)

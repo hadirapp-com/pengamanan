@@ -49,6 +49,7 @@ export const petugasJaga = pengamananSchema.table(
     nama: varchar("nama", { length: 255 }).notNull(),
     nik: varchar("nik", { length: 20 }),
     noHp: varchar("no_hp", { length: 20 }),
+    pin: varchar("pin", { length: 6 }), // 6-digit PIN for mobile authentication
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

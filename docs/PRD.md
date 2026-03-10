@@ -45,7 +45,7 @@ Sistem terintegrasi dengan fitur utama:
 |------|-----------|--------|
 | **Superadmin** | Administrator utama | Web Admin - Full Access |
 | **Admin** | Operator sistem | Web Admin - Limited Access |
-| **Keamanan** | Petugas jaga gerbang | Mobile App - No Login Required |
+| **Keamanan** | Petugas jaga gerbang | Mobile App - PIN Authentication |
 
 ---
 
@@ -139,6 +139,11 @@ Sistem terintegrasi dengan fitur utama:
 - **FR-MOB-003**: Queue scan results ketika offline
 - **FR-MOB-004**: Sync queued data ke server saat online
 - **FR-MOB-005**: Delete synced data dari local untuk hemat memori
+- **FR-MOB-006**: PIN-based authentication untuk mobile app
+  - First time: Enter PIN, send to server for validation
+  - Server validates PIN and returns JWT token (valid for 3 months)
+  - JWT token used for Authorization header on all mobile endpoints
+  - Token stored locally for subsequent requests
 
 #### 4.3.2 Configuration
 - **FR-MOB-006**: Set petugas jaga aktif
@@ -185,6 +190,12 @@ Sistem terintegrasi dengan fitur utama:
 - **FR-MOB-022**: Display last sync timestamp
 - **FR-MOB-023**: Display pending sync count
 - **FR-MOB-024**: Manual sync button
+
+#### 4.3.7 First Launch Popup
+- **FR-MOB-025**: Show popup image on first app launch
+  - Display image from `resources/popup.webp`
+  - Show "Supported by hadirapp.com" signature with link to http://www.haddirapp.com
+  - User must acknowledge to continue
 
 ---
 
@@ -400,11 +411,24 @@ POST   /api/mobile/read-announce - Mark pengumuman as read
 GET    /api/mobile/pengumuman   - Get 10 latest pengumuman
 ```
 
-### 7.8 Logs & Reporting
+### 7.8 Mobile Authentication (PIN-based)
+```
+POST   /api/mobile/auth/pin       - Validate PIN and return JWT token
+  - Request: { pin: string }
+  - Response: { token: string, expiresIn: "3 months" }
+  - JWT valid for 3 months from issuance
+```
+
+### 7.9 Logs & Reporting
 ```
 GET    /api/logs                - List scan logs dengan filter
 GET    /api/logs/stats          - Get statistics for dashboard
 GET    /api/logs/export         - Export to Excel
+```
+
+### 7.10 Supporting Features
+```
+GET    /api/health              - Health check endpoint
 ```
 
 ---
@@ -613,7 +637,22 @@ Warning     : #F59E0B (Yellow)
 
 ---
 
-## 12. Future Enhancements (Phase 2)
+## 13. Backlog & Future Enhancements
+
+### 13.1 Immediate Backlog
+**Priority**: High - Must be implemented before or during Sprint 3
+
+- [ ] **PIN Auth API**: Create POST /api/mobile/auth/pin endpoint for PIN validation
+- [ ] **JWT Token Management**: Generate 3-month JWT tokens for mobile auth
+- [ ] **Mobile Auth Middleware**: Apply JWT requirement to mobile sync endpoints
+- [ ] **First Launch Popup**: Implement popup.webp display on mobile first launch
+- [ ] **Signature Footer**: Add "Supported by hadirapp.com" with link to http://www.haddirapp.com on:
+  - [ ] Mobile app (all screens)
+  - [ ] Web admin (footer/sidebar)
+- [ ] **API Cleanup**: Remove unused schemas, endpoints, and routes from API
+- [ ] **Web Cleanup**: Remove unused pages from web admin
+
+### 13.2 Future Enhancements (Phase 2)
 
 - [ ] Real-time notifications ke admin untuk activity mencurigakan
 - [ ] Face recognition sebagai alternative QR
@@ -651,3 +690,4 @@ Warning     : #F59E0B (Yellow)
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | 10/03/2026 | Claude | Initial PRD |
+| 1.1 | 10/03/2026 | Claude | Add PIN auth, hadirapp signature, first launch popup |

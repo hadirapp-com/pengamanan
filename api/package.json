@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
+    "dev:pengamanan": "bun run --hot src/index-pengamanan.ts",
     "build": "bun build src/index.ts --outdir dist --target node",
+    "build:pengamanan": "bun build src/index-pengamanan.ts --outdir dist --target node",
     "start": "bun run src/index.ts",
+    "start:pengamanan": "bun run src/index-pengamanan.ts",
     "health-check": "curl -f http://localhost:3000/ || exit 1",
     "deploy": "wrangler deploy",
     "deploy:staging": "wrangler deploy --env staging",

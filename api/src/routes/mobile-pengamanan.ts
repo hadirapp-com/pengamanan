@@ -3,12 +3,26 @@ import { z } from "zod";
 import { dbPengamanan } from "../lib/db-pengamanan";
 import { petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema-pengamanan";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
+import { verifyPin, generateMobileToken } from "../lib/auth-pengamanan";
+import { mobileAuthMiddleware } from "../middleware/auth-pengamanan";
 
 const mobileRoutes = new Hono();
 
 // ============================================================================
+// ROUTES REQUIRING AUTHENTICATION
+// ============================================================================
+
+// Protected routes (require mobile JWT)
+const protectedMobileRoutes = new Hono();
+protectedMobileRoutes.use("/*", mobileAuthMiddleware);
+
+// ============================================================================
 // VALIDATION SCHEMAS
 // ============================================================================
+
+const pinAuthSchema = z.object({
+  pin: z.string().regex(/^\d{6}$/, "PIN must be 6 digits"),
+});
 
 const syncLogsSchema = z.object({
   logs: z.array(z.object({
@@ -30,10 +44,93 @@ const markReadSchema = z.object({
 // ============================================================================
 
 /**
- * GET /mobile/sync
- * Get all master data for mobile sync (public endpoint, no auth)
+ * POST /mobile/auth/pin
+ * Authenticate with PIN and return JWT token (valid for 3 months)
+ * This is a public endpoint for mobile app authentication
  */
-mobileRoutes.get("/sync", async (c) => {
+mobileRoutes.post("/auth/pin", async (c) => {
+  try {
+    const body = await c.req.json();
+    const validationResult = pinAuthSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
+        400
+      );
+    }
+
+    const { pin } = validationResult.data;
+
+    // Find petugas with matching PIN hash
+    const petugasList = await dbPengamanan
+      .select({
+        id: petugasJaga.id,
+        nama: petugasJaga.nama,
+        pin: petugasJaga.pin,
+        isActive: petugasJaga.isActive,
+      })
+      .from(petugasJaga)
+      .where(eq(petugasJaga.isActive, true));
+
+    // Check each active petugas for matching PIN
+    let authenticatedPetugas: typeof petugasList | null = null;
+    for (const petugas of petugasList) {
+      if (petugas.pin && await verifyPin(pin, petugas.pin)) {
+        authenticatedPetugas = [petugas];
+        break;
+      }
+    }
+
+    if (!authenticatedPetugas || authenticatedPetugas.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Authentication Failed",
+          message: "Invalid PIN",
+        },
+        401
+      );
+    }
+
+    const petugas = authenticatedPetugas[0];
+
+    // Generate JWT token valid for 3 months
+    const token = await generateMobileToken(petugas);
+
+    return c.json({
+      success: true,
+      data: {
+        token,
+        expiresIn: "3 months",
+        petugas: {
+          id: petugas.id,
+          nama: petugas.nama,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("PIN auth error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred during authentication",
+      },
+      500
+    );
+  }
+});
+
+/**
+ * GET /mobile/sync
+ * Get all master data for mobile sync (requires JWT auth)
+ */
+protectedMobileRoutes.get("/sync", async (c) => {
   try {
     // Get all active petugas jaga
     const petugasList = await dbPengamanan
@@ -131,9 +228,9 @@ mobileRoutes.get("/sync", async (c) => {
 
 /**
  * POST /mobile/sync-logs
- * Receive scan logs from mobile (public endpoint, no auth)
+ * Receive scan logs from mobile (requires JWT auth)
  */
-mobileRoutes.post("/sync-logs", async (c) => {
+protectedMobileRoutes.post("/sync-logs", async (c) => {
   try {
     const body = await c.req.json();
     const validationResult = syncLogsSchema.safeParse(body);
@@ -263,9 +360,9 @@ mobileRoutes.post("/sync-logs", async (c) => {
 
 /**
  * POST /mobile/read-announce
- * Mark pengumuman as read (public endpoint, no auth)
+ * Mark pengumuman as read (requires JWT auth)
  */
-mobileRoutes.post("/read-announce", async (c) => {
+protectedMobileRoutes.post("/read-announce", async (c) => {
   try {
     const body = await c.req.json();
     const validationResult = markReadSchema.safeParse(body);
@@ -315,9 +412,9 @@ mobileRoutes.post("/read-announce", async (c) => {
 
 /**
  * GET /mobile/pengumuman
- * Get 10 latest active pengumuman (public endpoint, no auth)
+ * Get 10 latest active pengumuman (requires JWT auth)
  */
-mobileRoutes.get("/pengumuman", async (c) => {
+protectedMobileRoutes.get("/pengumuman", async (c) => {
   try {
     const pengumumanList = await dbPengamanan
       .select({
@@ -349,5 +446,8 @@ mobileRoutes.get("/pengumuman", async (c) => {
     );
   }
 });
+
+// Mount protected routes
+mobileRoutes.route("/", protectedMobileRoutes);
 
 export default mobileRoutes;

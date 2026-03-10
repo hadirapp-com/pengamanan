@@ -55,11 +55,11 @@ async function seed() {
     console.log("\n📝 Seeding petugas jaga...");
 
     const petugasToSeed = [
-      { nama: "Bpk. Joko", nik: "1234567890123456", noHp: "081234567890" },
-      { nama: "Bpk. Ahmad", nik: "1234567890123457", noHp: "081234567891" },
-      { nama: "Bpk. Budi", nik: "1234567890123458", noHp: "081234567892" },
-      { nama: "Ibu Siti", nik: "1234567890123459", noHp: "081234567893" },
-      { nama: "Bpk. Agus", nik: "1234567890123460", noHp: "081234567894" },
+      { nama: "Bpk. Joko", nik: "1234567890123456", noHp: "081234567890", pin: "123456" },
+      { nama: "Bpk. Ahmad", nik: "1234567890123457", noHp: "081234567891", pin: "123456" },
+      { nama: "Bpk. Budi", nik: "1234567890123458", noHp: "081234567892", pin: "123456" },
+      { nama: "Ibu Siti", nik: "1234567890123459", noHp: "081234567893", pin: "123456" },
+      { nama: "Bpk. Agus", nik: "1234567890123460", noHp: "081234567894", pin: "123456" },
     ];
 
     const petugasIds: string[] = [];
@@ -72,16 +72,20 @@ async function seed() {
 
       let petugasId: string;
       if (existingPetugas.length === 0) {
+        const pinHash = await Bun.password.hash(petugas.pin);
         const newPetugas = await dbPengamanan
           .insert(petugasJaga)
           .values({
-            ...petugas,
+            nama: petugas.nama,
+            nik: petugas.nik,
+            noHp: petugas.noHp,
+            pin: pinHash,
             createdBy: superadminUserId,
             updatedBy: superadminUserId,
           })
           .returning();
         petugasId = newPetugas[0].id;
-        console.log(`  ✓ Petugas created: ${petugas.nama}`);
+        console.log(`  ✓ Petugas created: ${petugas.nama} (PIN: ${petugas.pin})`);
       } else {
         petugasId = existingPetugas[0].id;
         console.log(`  − Petugas already exists: ${petugas.nama}`);
@@ -239,15 +243,15 @@ async function seed() {
     console.log("└──────────────┴──────────────┴─────────────┘\n");
 
     console.log("👥 Petugas Jaga:");
-    console.log("┌──────────────────┬───────────────────┬────────────────┐");
-    console.log("│ Nama             │ NIK               │ No HP          │");
-    console.log("├──────────────────┼───────────────────┼────────────────┤");
-    console.log("│ Bpk. Joko        │ 1234567890123456  │ 081234567890   │");
-    console.log("│ Bpk. Ahmad       │ 1234567890123457  │ 081234567891   │");
-    console.log("│ Bpk. Budi        │ 1234567890123458  │ 081234567892   │");
-    console.log("│ Ibu Siti         │ 1234567890123459  │ 081234567893   │");
-    console.log("│ Bpk. Agus        │ 1234567890123460  │ 081234567894   │");
-    console.log("└──────────────────┴───────────────────┴────────────────┘\n");
+    console.log("┌──────────────────┬───────────────────┬────────────────┬────────────┐");
+    console.log("│ Nama             │ NIK               │ No HP          │ PIN        │");
+    console.log("├──────────────────┼───────────────────┼────────────────┼────────────┤");
+    console.log("│ Bpk. Joko        │ 1234567890123456  │ 081234567890   │ 123456     │");
+    console.log("│ Bpk. Ahmad       │ 1234567890123457  │ 081234567891   │ 123456     │");
+    console.log("│ Bpk. Budi        │ 1234567890123458  │ 081234567892   │ 123456     │");
+    console.log("│ Ibu Siti         │ 1234567890123459  │ 081234567893   │ 123456     │");
+    console.log("│ Bpk. Agus        │ 1234567890123460  │ 081234567894   │ 123456     │");
+    console.log("└──────────────────┴───────────────────┴────────────────┴────────────┘\n");
 
     console.log("📍 Pos Jaga:");
     console.log("┌──────────────────┬───────────────────┐");

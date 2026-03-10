@@ -88,7 +88,7 @@ app.onError((err, c) => {
   return c.json({ error: "Something went wrong" }, 500);
 });
 
-const port = parseInt(process.env.PORT || "3000");
+const port = parseInt(process.env.PORT || "5000");
 
 // Graceful shutdown handler
 const shutdown = async (signal: string) => {

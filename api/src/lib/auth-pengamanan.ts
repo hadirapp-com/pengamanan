@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import type { User } from "./schema-pengamanan";
+import type { User, PetugasJaga } from "./schema-pengamanan";
 
 // JWT Configuration
 const JWT_SECRET = new TextEncoder().encode(
@@ -7,13 +7,24 @@ const JWT_SECRET = new TextEncoder().encode(
 );
 const JWT_ALGORITHM = "HS256";
 
-// Token expiration (24 hours)
+// Token expiration (24 hours for web admin)
 const TOKEN_EXPIRY = "24h";
+
+// Mobile token expiration (3 months)
+const MOBILE_TOKEN_EXPIRY = "90d";
 
 export interface JWTPayload {
   userId: string;
   username: string;
   role: "superadmin" | "admin";
+  iat?: number;
+  exp?: number;
+}
+
+export interface MobileJWTPayload {
+  petugasId: string;
+  nama: string;
+  type: "mobile";
   iat?: number;
   exp?: number;
 }
@@ -89,4 +100,62 @@ export function isSuperadmin(role: string): boolean {
  */
 export function isAdmin(role: string): boolean {
   return role === "admin" || role === "superadmin";
+}
+
+// ============================================================================
+// MOBILE AUTHENTICATION (PIN-based)
+// ============================================================================
+
+/**
+ * Generate JWT token for mobile app (3 months expiry)
+ */
+export async function generateMobileToken(petugas: PetugasJaga): Promise<string> {
+  const payload: MobileJWTPayload = {
+    petugasId: petugas.id,
+    nama: petugas.nama,
+    type: "mobile",
+  };
+
+  const token = await new SignJWT(payload)
+    .setProtectedHeader({ alg: JWT_ALGORITHM })
+    .setIssuedAt()
+    .setExpirationTime(MOBILE_TOKEN_EXPIRY)
+    .sign(JWT_SECRET);
+
+  return token;
+}
+
+/**
+ * Verify and decode mobile JWT token
+ */
+export async function verifyMobileToken(token: string): Promise<MobileJWTPayload> {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+
+    // Verify this is a mobile token
+    if ((payload.type as string) !== "mobile") {
+      throw new Error("Invalid token type");
+    }
+
+    return payload as MobileJWTPayload;
+  } catch (error) {
+    throw new Error("Invalid or expired token");
+  }
+}
+
+/**
+ * Verify PIN against hash using Bun's password hashing
+ */
+export async function verifyPin(pin: string, hash: string | null): Promise<boolean> {
+  if (!hash) {
+    return false;
+  }
+  return await Bun.password.verify(pin, hash);
+}
+
+/**
+ * Hash PIN for storage
+ */
+export async function hashPin(pin: string): Promise<string> {
+  return await Bun.password.hash(pin);
 }
