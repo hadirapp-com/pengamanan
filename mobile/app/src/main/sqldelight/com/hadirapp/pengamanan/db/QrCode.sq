@@ -1,0 +1,31 @@
+CREATE TABLE QrCode (
+    id TEXT PRIMARY KEY,
+    qrCode TEXT NOT NULL,
+    nama TEXT NOT NULL,
+    penanggungJawab TEXT NOT NULL,
+    validFrom TEXT NOT NULL,
+    validUntil TEXT NOT NULL,
+    isActive INTEGER NOT NULL,
+    createdAt TEXT NOT NULL,
+    updatedAt TEXT NOT NULL
+);
+
+selectAllQrCodes:
+SELECT * FROM QrCode
+ORDER BY nama;
+
+selectQrCodeById:
+SELECT * FROM QrCode WHERE id = ?;
+
+selectQrCodeByCode:
+SELECT * FROM QrCode WHERE qrCode = ?;
+
+insertQrCode:
+INSERT OR REPLACE INTO QrCode (id, qrCode, nama, penanggungJawab, validFrom, validUntil, isActive, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteQrCode:
+DELETE FROM QrCode WHERE id = ?;
+
+deleteAllQrCodes:
+DELETE FROM QrCode;

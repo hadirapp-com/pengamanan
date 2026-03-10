@@ -20,7 +20,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     onNavigateToQRScanner: () -> Unit,
     onNavigateToLogs: () -> Unit,
-    onNavigateToPengumuman: () -> Unit
+    onNavigateToPengumuman: () -> Unit,
+    onNavigateToSettings: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -28,9 +29,25 @@ fun HomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Pengamanan Lebaran 2026") },
+                actions = {
+                    IconButton(onClick = { viewModel.syncData() }, enabled = !uiState.isSyncing) {
+                        if (uiState.isSyncing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                        } else {
+                            Icon(Icons.Default.Refresh, contentDescription = "Sync")
+                        }
+                    }
+                    IconButton(onClick = onNavigateToSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -42,13 +59,51 @@ fun HomeScreen(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Welcome Section
+            // Current Selection Card
             item {
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     )
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Petugas & Pos Jaga",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Divider()
+                        SelectionRow(
+                            icon = Icons.Default.Person,
+                            label = "Petugas",
+                            value = uiState.selectedPetugasNama ?: "Belum dipilih"
+                        )
+                        SelectionRow(
+                            icon = Icons.Default.LocationOn,
+                            label = "Pos",
+                            value = uiState.selectedPosNama ?: "Belum dipilih"
+                        )
+                        if (!uiState.hasPetugasAndPos) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Button(
+                                onClick = onNavigateToSettings,
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Pilih Petugas & Pos")
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Welcome Section
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp)
@@ -62,7 +117,7 @@ fun HomeScreen(
                         Text(
                             text = "Sistem Pengamanan Lebaran 2026",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -88,6 +143,7 @@ fun HomeScreen(
                         icon = Icons.Default.QrCodeScanner,
                         label = "Scan QR",
                         color = MaterialTheme.colorScheme.primary,
+                        enabled = uiState.hasPetugasAndPos,
                         onClick = onNavigateToQRScanner
                     )
 
@@ -103,55 +159,82 @@ fun HomeScreen(
             }
 
             // Pengumuman Section
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Pengumuman Terbaru",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                    TextButton(onClick = onNavigateToPengumuman) {
-                        Text("Lihat Semua")
-                    }
-                }
-            }
-
-            if (uiState.pengumuman.isEmpty()) {
+            if (uiState.pengumuman.isNotEmpty()) {
                 item {
-                    Card(
-                        modifier = Modifier.fillMaxWidth()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(32.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Announcement,
-                                contentDescription = null,
-                                modifier = Modifier.size(48.dp),
-                                tint = MaterialTheme.colorScheme.outline
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Belum ada pengumuman",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.outline
-                            )
+                        Text(
+                            text = "Pengumuman",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
+                        )
+                        TextButton(onClick = onNavigateToPengumuman) {
+                            Text("Lihat Semua")
                         }
                     }
                 }
-            } else {
+
                 items(uiState.pengumuman.take(3)) { pengumuman ->
                     PengumumanCard(pengumuman = pengumuman)
                 }
             }
+
+            // Settings Button
+            item {
+                OutlinedButton(
+                    onClick = onNavigateToSettings,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Pengaturan")
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun SelectionRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                modifier = Modifier.size(20.dp),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        Text(
+            text = value,
+            style = MaterialTheme.typography.bodyMedium,
+            fontWeight = FontWeight.Bold,
+            color = if (value == "Belum dipilih") {
+                MaterialTheme.colorScheme.error
+            } else {
+                MaterialTheme.colorScheme.primary
+            }
+        )
     }
 }
 
@@ -161,29 +244,32 @@ private fun QuickActionButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     color: androidx.compose.ui.graphics.Color,
+    enabled: Boolean = true,
     onClick: () -> Unit
 ) {
     Card(
         modifier = modifier,
-        onClick = onClick
+        onClick = if (enabled) onClick else null,
+        enabled = enabled,
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) color else MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(32.dp),
-                tint = color
+                tint = if (enabled) color else MaterialTheme.colorScheme.onSurfaceVariant
             )
-            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = label,
-                style = MaterialTheme.typography.labelLarge,
-                color = color
+                style = MaterialTheme.typography.labelMedium,
+                color = if (enabled) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

@@ -5,6 +5,7 @@ import com.hadirapp.pengamanan.data.remote.api.ConfigApi
 import com.hadirapp.pengamanan.data.remote.api.LogApi
 import com.hadirapp.pengamanan.data.remote.api.MobileAuthApi
 import com.hadirapp.pengamanan.data.remote.api.PengumumanApi
+import com.hadirapp.pengamanan.data.remote.api.SyncApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
 import dagger.Provides
@@ -93,4 +94,9 @@ object NetworkModule {
     @Singleton
     fun provideConfigApi(retrofit: Retrofit): ConfigApi =
         retrofit.create(ConfigApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideSyncApi(retrofit: Retrofit): SyncApi =
+        retrofit.create(SyncApi::class.java)
 }

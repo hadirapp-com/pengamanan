@@ -10,12 +10,14 @@ import com.hadirapp.pengamanan.presentation.pengumuman.PengumumanScreen
 import com.hadirapp.pengamanan.presentation.pin.PinScreen
 import com.hadirapp.pengamanan.presentation.qrscanner.QRScannerScreen
 import com.hadirapp.pengamanan.presentation.scanresult.ScanResultScreen
+import com.hadirapp.pengamanan.presentation.settings.SettingsScreen
 import com.hadirapp.pengamanan.presentation.welcome.WelcomePopupScreen
 
 sealed class Screen(val route: String) {
     object Pin : Screen("pin")
     object Welcome : Screen("welcome")
     object Home : Screen("home")
+    object Settings : Screen("settings")
     object QRScanner : Screen("qr_scanner")
     object ScanResult : Screen("scan_result/{qrCode}") {
         fun createRoute(qrCode: String) = "scan_result/$qrCode"
@@ -64,6 +66,17 @@ fun PengamananNavHost(
                 },
                 onNavigateToPengumuman = {
                     navController.navigate(Screen.Pengumuman.route)
+                },
+                onNavigateToSettings = {
+                    navController.navigate(Screen.Settings.route)
+                }
+            )
+        }
+
+        composable(Screen.Settings.route) {
+            SettingsScreen(
+                onNavigateBack = {
+                    navController.popBackStack()
                 }
             )
         }

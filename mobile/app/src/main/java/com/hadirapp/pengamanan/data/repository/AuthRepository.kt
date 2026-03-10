@@ -121,6 +121,32 @@ class AuthRepository @Inject constructor(
         return database.userPrefsQueries.getPref("petugas_nama").executeAsOneOrNull()
     }
 
+    fun saveSelectedPetugas(id: String, nama: String) {
+        database.userPrefsQueries.setPref("selected_petugas_id", id)
+        database.userPrefsQueries.setPref("selected_petugas_nama", nama)
+    }
+
+    fun getSelectedPetugasId(): String? {
+        return database.userPrefsQueries.getPref("selected_petugas_id").executeAsOneOrNull()
+    }
+
+    fun getSelectedPetugasNama(): String? {
+        return database.userPrefsQueries.getPref("selected_petugas_nama").executeAsOneOrNull()
+    }
+
+    fun saveSelectedPos(id: String, nama: String) {
+        database.userPrefsQueries.setPref("selected_pos_id", id)
+        database.userPrefsQueries.setPref("selected_pos_nama", nama)
+    }
+
+    fun getSelectedPosId(): String? {
+        return database.userPrefsQueries.getPref("selected_pos_id").executeAsOneOrNull()
+    }
+
+    fun getSelectedPosNama(): String? {
+        return database.userPrefsQueries.getPref("selected_pos_nama").executeAsOneOrNull()
+    }
+
     private fun saveTokenExpiryTime(timestamp: Long) {
         database.userPrefsQueries.setPref("token_expiry_time", timestamp.toString())
     }
