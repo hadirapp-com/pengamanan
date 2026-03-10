@@ -3,6 +3,7 @@ import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import authRoutes from "./routes/auth";
 import usersRoutes from "./routes/users";
+import configsRoutes from "./routes/configs";
 import petugasRoutes from "./routes/petugas";
 import posRoutes from "./routes/pos";
 import qrRoutes from "./routes/qr";
@@ -58,6 +59,9 @@ app.route("/api/auth", authRoutes);
 
 // User management routes
 app.route("/api/users", usersRoutes);
+
+// Config management routes
+app.route("/api/configs", configsRoutes);
 
 // Petugas Jaga routes
 app.route("/api/petugas", petugasRoutes);

@@ -72,7 +72,7 @@ export async function verifyToken(token: string): Promise<JWTPayload> {
  * Extract token from Authorization header
  * Format: "Bearer <token>"
  */
-export function extractTokenFromHeader(authHeader: string | null): string | null {
+export function extractTokenFromHeader(authHeader: string | null | undefined): string | null {
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return null;
   }

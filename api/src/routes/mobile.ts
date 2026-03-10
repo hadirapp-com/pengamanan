@@ -133,11 +133,14 @@ mobileRoutes.post("/auth/pin", async (c) => {
     // Generate JWT token valid for 3 months
     const token = await generateMobileToken(petugas);
 
+    // Calculate token expiry in milliseconds (3 months from now)
+    const threeMonthsInMillis = 3 * 30 * 24 * 60 * 60 * 1000; // ~7,776,000,000 ms
+
     return c.json({
       success: true,
       data: {
         token,
-        expiresIn: "3 months",
+        expiresIn: threeMonthsInMillis,
         petugas: {
           id: petugas.id,
           nama: petugas.nama,
@@ -151,6 +154,53 @@ mobileRoutes.post("/auth/pin", async (c) => {
         success: false,
         error: "Internal Server Error",
         message: "An error occurred during authentication",
+      },
+      500
+    );
+  }
+});
+
+/**
+ * GET /mobile/config/:key
+ * Get public config by key (no authentication required)
+ * Used for fetching configs like HOME_SCREEN_BANNER
+ */
+mobileRoutes.get("/config/:key", async (c) => {
+  try {
+    const configKey = c.req.param("key");
+
+    const configResult = await db
+      .select({
+        key: configs.key,
+        value: configs.value,
+        description: configs.description,
+      })
+      .from(configs)
+      .where(and(eq(configs.key, configKey), eq(configs.isActive, true)))
+      .limit(1);
+
+    if (configResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Not Found",
+          message: "Config not found or inactive",
+        },
+        404
+      );
+    }
+
+    return c.json({
+      success: true,
+      data: configResult[0],
+    });
+  } catch (error) {
+    console.error("Get config error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while fetching config",
       },
       500
     );

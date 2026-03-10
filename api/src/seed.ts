@@ -90,6 +90,29 @@ async function seed() {
       console.log(`  − Config already exists: mobile_pin`);
     }
 
+    // Home screen banner config
+    const bannerUrl = "https://hadirapp-com.github.io/public-static/images/blokf-2026.webp";
+
+    const existingBannerConfig = await db
+      .select()
+      .from(configs)
+      .where(eq(configs.key, "HOME_SCREEN_BANNER"))
+      .limit(1);
+
+    if (existingBannerConfig.length === 0) {
+      await db.insert(configs).values({
+        key: "HOME_SCREEN_BANNER",
+        value: bannerUrl,
+        description: "URL gambar banner untuk popup home screen mobile app",
+        isActive: true,
+        createdBy: superadminUserId,
+        updatedBy: superadminUserId,
+      });
+      console.log(`  ✓ Config created: HOME_SCREEN_BANNER (${bannerUrl})`);
+    } else {
+      console.log(`  − Config already exists: HOME_SCREEN_BANNER`);
+    }
+
     // ============================================================================
     // SEED PETUGAS JAGA
     // ============================================================================
