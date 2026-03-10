@@ -17,13 +17,13 @@ petugasRoutes.use("/*", authMiddleware);
 const createPetugasSchema = z.object({
   nama: z.string().min(1, "Nama is required").max(255, "Nama must not exceed 255 characters"),
   nik: z.string().length(16, "NIK must be exactly 16 digits").optional(),
-  noHp: z.string().regex(/^62\d{8,12}$/, "No HP must start with 62 and have 9-13 digits").optional(),
+  noHp: z.string().regex(/^(0|62)\d{8,12}$/, "No HP must start with 0 or 62 and have 9-13 digits").optional(),
 });
 
 const updatePetugasSchema = z.object({
   nama: z.string().min(1).max(255).optional(),
   nik: z.string().length(16).optional(),
-  noHp: z.string().regex(/^62\d{8,12}$/).optional(),
+  noHp: z.string().regex(/^(0|62)\d{8,12}$/).optional(),
   isActive: z.boolean().optional(),
 });
 
