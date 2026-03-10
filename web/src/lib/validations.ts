@@ -113,6 +113,21 @@ export const pengumumanSchema = z.object({
 export type PengumumanFormValues = z.infer<typeof pengumumanSchema>;
 
 // ============================================================================
+// CONFIG SCHEMAS
+// ============================================================================
+
+export const configFormSchema = z.object({
+  key: z.string().min(1, "Key harus diisi")
+    .max(100, "Key maksimal 100 karakter")
+    .regex(/^[a-zA-Z0-9_]+$/, "Key hanya boleh mengandung huruf, angka, dan underscore"),
+  value: z.string().min(1, "Value harus diisi"),
+  description: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type ConfigFormValues = z.infer<typeof configFormSchema>;
+
+// ============================================================================
 // LOGS FILTER SCHEMAS
 // ============================================================================
 
