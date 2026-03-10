@@ -1,8 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { UserIcon, Calendar } from "lucide-react";
+import { UserIcon, Calendar, Menu } from "lucide-react";
 import { useAuthStore } from "@/store/auth";
+import { useSidebarStore } from "@/store/sidebar";
 import { useState } from "react";
 import {
   Popover,
@@ -20,6 +21,7 @@ export function Header({ title }: HeaderProps) {
   const authStore = useAuthStore();
   const user = authStore.getProfile();
   const [isOpen, setIsOpen] = useState(false);
+  const { setIsMobileOpen } = useSidebarStore();
 
   const currentDate = new Date();
   const formattedDate = format(currentDate, "MMM dd, yyyy");
@@ -38,10 +40,18 @@ export function Header({ title }: HeaderProps) {
   };
 
   return (
-    <header className="flex h-16 items-center border-b bg-card px-6 w-full relative">
-      {/* Mobile: Centered logo */}
-      <div className="flex-1 flex justify-center lg:justify-start">
-        <img src="/logo.png" className="h-4 text-center" />
+    <header className="flex h-16 items-center border-b bg-card px-4 sm:px-6 w-full relative">
+      {/* Mobile: Menu button + Logo */}
+      <div className="flex items-center gap-2 flex-1 lg:flex-none">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="lg:hidden"
+          onClick={() => setIsMobileOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+        <img src="/logo.png" className="h-8 sm:h-10" alt="Logo" />
       </div>
 
       {/* Desktop: Title next to logo */}
@@ -49,13 +59,13 @@ export function Header({ title }: HeaderProps) {
         <h1 className="text-xl font-semibold ml-4 hidden lg:block">{title}</h1>
       )}
 
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-2 sm:space-x-4 ml-auto">
         {/* User Profile */}
         <Popover open={isOpen} onOpenChange={setIsOpen}>
           <PopoverTrigger asChild>
             <Button
               variant="ghost"
-              className="flex items-center space-x-2 px-3 py-2 hover:bg-accent"
+              className="flex items-center space-x-2 px-2 sm:px-3 py-2 hover:bg-accent"
             >
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
@@ -130,8 +140,8 @@ export function Header({ title }: HeaderProps) {
 
               {/* Actions */}
               <div className="pt-3 border-t">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50"
                   onClick={() => {
                     authStore.logout();

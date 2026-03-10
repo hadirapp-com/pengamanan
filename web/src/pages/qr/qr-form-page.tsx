@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ArrowLeft, Upload } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +41,7 @@ export default function QrFormPage() {
   const isEdit = !!id && !isBulk;
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<QrFormValues>({
-    resolver: zodResolver(qrFormSchema),
+    resolver: zodResolver(qrFormSchema) as any,
     defaultValues: { nama: "", penanggungJawab: "", validityStart: "", validityEnd: "", isActive: true },
   });
 
@@ -52,14 +53,17 @@ export default function QrFormPage() {
       return response.data;
     },
     enabled: isEdit,
-    onSuccess: (data) => {
-      setValue("nama", data.nama);
-      setValue("penanggungJawab", data.penanggungJawab);
-      setValue("validityStart", data.validityStart?.split("T")[0]);
-      setValue("validityEnd", data.validityEnd?.split("T")[0]);
-      setValue("isActive", data.isActive);
-    },
   });
+
+  useEffect(() => {
+    if (qrData) {
+      setValue("nama", qrData.nama);
+      setValue("penanggungJawab", qrData.penanggungJawab);
+      setValue("validityStart", qrData.validityStart?.split("T")[0]);
+      setValue("validityEnd", qrData.validityEnd?.split("T")[0]);
+      setValue("isActive", qrData.isActive);
+    }
+  }, [qrData, setValue]);
 
   const createMutation = useMutation({
     mutationFn: async (data: QrFormValues) => axiosInstance.post("/api/qr", data),

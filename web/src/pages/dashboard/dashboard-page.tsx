@@ -21,7 +21,7 @@ import { Loader } from "@/components/ui/loader";
 import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
 import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT } from "@/config/constants";
-import { SCAN_TYPE_LABELS, SCAN_TYPE_COLORS } from "@/config/constants";
+import { SCAN_TYPE_LABELS } from "@/config/constants";
 import { logsEndpoint } from "@/config/endpoints";
 
 interface DashboardStats {
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                       <div className="flex items-center gap-3">
                         <Badge
                           variant={
-                            scan.tipeScan === "masuk" ? "success" : "error"
+                            scan.tipeScan === "masuk" ? "default" : "destructive"
                           }
                         >
                           {SCAN_TYPE_LABELS[scan.tipeScan]}

@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,7 +31,7 @@ export default function PengumumanFormPage() {
   const isEdit = !!id;
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<PengumumanFormValues>({
-    resolver: zodResolver(pengumumanSchema),
+    resolver: zodResolver(pengumumanSchema) as any,
     defaultValues: { judul: "", isi: "", priority: "normal", isActive: true },
   });
 
@@ -38,8 +39,16 @@ export default function PengumumanFormPage() {
     queryKey: ["pengumuman", id],
     queryFn: async () => { if (!id) throw new Error(); return (await axiosInstance.get(`/api/pengumuman/${id}`)).data; },
     enabled: isEdit,
-    onSuccess: (d) => { setValue("judul", d.judul); setValue("isi", d.isi); setValue("priority", d.priority); setValue("isActive", d.isActive); },
   });
+
+  useEffect(() => {
+    if (pengumumanData) {
+      setValue("judul", pengumumanData.judul);
+      setValue("isi", pengumumanData.isi);
+      setValue("priority", pengumumanData.priority);
+      setValue("isActive", pengumumanData.isActive);
+    }
+  }, [pengumumanData, setValue]);
 
   const createMutation = useMutation({ mutationFn: (d: PengumumanFormValues) => axiosInstance.post("/api/pengumuman", d), onSuccess: () => { toast.success(GENERAL_SUCCESS_TEXT, { description: "Pengumuman dibuat" }); navigate(appRoutes.pengumuman); }, onError: (e: unknown) => { const err = e as { response?: { data?: { message?: string } } }; toast.error(GENERAL_ERROR_TEXT, { description: err.response?.data?.message || "Gagal" }); } });
   const updateMutation = useMutation({ mutationFn: (d: PengumumanFormValues) => { if (!id) throw new Error(); return axiosInstance.put(`/api/pengumuman/${id}`, d); }, onSuccess: () => { toast.success(GENERAL_SUCCESS_TEXT, { description: "Pengumuman diperbarui" }); navigate(appRoutes.pengumuman); }, onError: (e: unknown) => { const err = e as { response?: { data?: { message?: string } } }; toast.error(GENERAL_ERROR_TEXT, { description: err.response?.data?.message || "Gagal" }); } });
