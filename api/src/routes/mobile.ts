@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
-import { verifyPin, generateMobileToken } from "../lib/auth-pengamanan";
-import { mobileAuthMiddleware } from "../middleware/auth-pengamanan";
+import { verifyPin, generateMobileToken } from "../lib/auth";
+import { mobileAuthMiddleware } from "../middleware/auth";
 
 const mobileRoutes = new Hono();
 
@@ -67,7 +67,7 @@ mobileRoutes.post("/auth/pin", async (c) => {
     const { pin } = validationResult.data;
 
     // Find petugas with matching PIN hash
-    const petugasList = await dbPengamanan
+    const petugasList = await db
       .select({
         id: petugasJaga.id,
         nama: petugasJaga.nama,
@@ -133,7 +133,7 @@ mobileRoutes.post("/auth/pin", async (c) => {
 protectedMobileRoutes.get("/sync", async (c) => {
   try {
     // Get all active petugas jaga
-    const petugasList = await dbPengamanan
+    const petugasList = await db
       .select({
         id: petugasJaga.id,
         nama: petugasJaga.nama,
@@ -148,7 +148,7 @@ protectedMobileRoutes.get("/sync", async (c) => {
       .orderBy(petugasJaga.nama);
 
     // Get all active pos jaga
-    const posList = await dbPengamanan
+    const posList = await db
       .select({
         id: posJaga.id,
         nama: posJaga.nama,
@@ -165,7 +165,7 @@ protectedMobileRoutes.get("/sync", async (c) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    const qrList = await dbPengamanan
+    const qrList = await db
       .select({
         id: qrCodes.id,
         qrCode: qrCodes.qrCode,
@@ -188,7 +188,7 @@ protectedMobileRoutes.get("/sync", async (c) => {
       .orderBy(qrCodes.nama);
 
     // Get 10 latest active pengumuman
-    const pengumumanList = await dbPengamanan
+    const pengumumanList = await db
       .select({
         id: pengumuman.id,
         title: pengumuman.title,
@@ -258,7 +258,7 @@ protectedMobileRoutes.post("/sync-logs", async (c) => {
 
       try {
         // Validate QR code exists and is active
-        const qrResult = await dbPengamanan
+        const qrResult = await db
           .select({ id: qrCodes.id })
           .from(qrCodes)
           .where(
@@ -281,7 +281,7 @@ protectedMobileRoutes.post("/sync-logs", async (c) => {
         const qrId = qrResult[0].id;
 
         // Validate petugas exists
-        const petugasResult = await dbPengamanan
+        const petugasResult = await db
           .select({ id: petugasJaga.id })
           .from(petugasJaga)
           .where(eq(petugasJaga.id, log.petugasId))
@@ -297,7 +297,7 @@ protectedMobileRoutes.post("/sync-logs", async (c) => {
         }
 
         // Validate pos exists
-        const posResult = await dbPengamanan
+        const posResult = await db
           .select({ id: posJaga.id })
           .from(posJaga)
           .where(eq(posJaga.id, log.posId))
@@ -314,7 +314,7 @@ protectedMobileRoutes.post("/sync-logs", async (c) => {
 
         // Insert scan log
         const scannedAt = new Date(log.scannedAt);
-        const newLogResult = await dbPengamanan
+        const newLogResult = await db
           .insert(scanLogs)
           .values({
             qrId,
@@ -380,7 +380,7 @@ protectedMobileRoutes.post("/read-announce", async (c) => {
 
     const { pengumumanIds, deviceId } = validationResult.data;
 
-    const markedCount = await dbPengamanan
+    const markedCount = await db
       .insert(pengumumanReads)
       .values(
         pengumumanIds.map((pengumumanId) => ({
@@ -416,7 +416,7 @@ protectedMobileRoutes.post("/read-announce", async (c) => {
  */
 protectedMobileRoutes.get("/pengumuman", async (c) => {
   try {
-    const pengumumanList = await dbPengamanan
+    const pengumumanList = await db
       .select({
         id: pengumuman.id,
         title: pengumuman.title,

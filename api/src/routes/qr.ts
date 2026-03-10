@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { qrCodes } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { qrCodes } from "../lib/schema";
 import { eq, and, desc, sql, or } from "drizzle-orm";
-import { authMiddleware } from "../middleware/auth-pengamanan";
+import { authMiddleware } from "../middleware/auth";
 import QRCode from "qrcode";
 import { jsPDF } from "jspdf";
 
@@ -109,7 +109,7 @@ qrRoutes.get("/", async (c) => {
       conditions.length > 1 ? and(...conditions) : conditions[0];
 
     // Get total count
-    const totalCountResult = await dbPengamanan
+    const totalCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(qrCodes)
       .where(whereClause);
@@ -118,7 +118,7 @@ qrRoutes.get("/", async (c) => {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Get QR codes
-    const qrList = await dbPengamanan
+    const qrList = await db
       .select({
         id: qrCodes.id,
         qrCode: qrCodes.qrCode,
@@ -169,7 +169,7 @@ qrRoutes.get("/:id", async (c) => {
   try {
     const qrId = c.req.param("id");
 
-    const qrResult = await dbPengamanan
+    const qrResult = await db
       .select()
       .from(qrCodes)
       .where(eq(qrCodes.id, qrId))
@@ -244,7 +244,7 @@ qrRoutes.post("/", async (c) => {
     const qrCodeId = crypto.randomUUID();
 
     // Create QR code
-    const newQrResult = await dbPengamanan
+    const newQrResult = await db
       .insert(qrCodes)
       .values({
         qrCode: qrCodeId,
@@ -303,7 +303,7 @@ qrRoutes.put("/:id", async (c) => {
     const updateData = validationResult.data;
 
     // Check if QR code exists
-    const existingQr = await dbPengamanan
+    const existingQr = await db
       .select()
       .from(qrCodes)
       .where(eq(qrCodes.id, qrId))
@@ -337,7 +337,7 @@ qrRoutes.put("/:id", async (c) => {
     }
 
     // Update QR code
-    const updatedQrResult = await dbPengamanan
+    const updatedQrResult = await db
       .update(qrCodes)
       .set({
         ...updateData,
@@ -377,7 +377,7 @@ qrRoutes.delete("/:id", async (c) => {
     const qrId = c.req.param("id");
 
     // Check if QR code exists
-    const existingQr = await dbPengamanan
+    const existingQr = await db
       .select()
       .from(qrCodes)
       .where(eq(qrCodes.id, qrId))
@@ -395,7 +395,7 @@ qrRoutes.delete("/:id", async (c) => {
     }
 
     // Soft delete QR code
-    await dbPengamanan
+    await db
       .update(qrCodes)
       .set({
         deletedAt: new Date(),
@@ -475,7 +475,7 @@ qrRoutes.get("/:id/image", async (c) => {
     const qrId = c.req.param("id");
 
     // Get QR code from database
-    const qrResult = await dbPengamanan
+    const qrResult = await db
       .select({ qrCode: qrCodes.qrCode, nama: qrCodes.nama })
       .from(qrCodes)
       .where(eq(qrCodes.id, qrId))
@@ -546,7 +546,7 @@ qrRoutes.post("/pdf", async (c) => {
     const { ids } = validationResult.data;
 
     // Get QR codes from database
-    const qrCodesList = await dbPengamanan
+    const qrCodesList = await db
       .select({
         qrCode: qrCodes.qrCode,
         nama: qrCodes.nama,

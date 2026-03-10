@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import * as schema from './schema-pengamanan';
+import * as schema from './schema';
 
 // Create the connection
 const connectionString = process.env.DATABASE_URL!;
@@ -11,7 +11,7 @@ const client = postgres(connectionString, {
 });
 
 // Create the database instance for pengamanan schema
-export const dbPengamanan = drizzle(client, { schema, logger: process.env.DATABASE_LOGGER !== 'false' });
+export const db = drizzle(client, { schema, logger: process.env.DATABASE_LOGGER !== 'false' });
 
 // Export the client for manual disconnection if needed
 export { client };

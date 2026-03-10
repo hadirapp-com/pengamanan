@@ -4,8 +4,8 @@ import {
   extractTokenFromHeader,
   isSuperadmin,
   verifyMobileToken,
-} from "../lib/auth-pengamanan";
-import type { JWTPayload, MobileJWTPayload } from "../lib/auth-pengamanan";
+} from "../lib/auth";
+import type { JWTPayload, MobileJWTPayload } from "../lib/auth";
 
 /**
  * Extend Hono context with user payload

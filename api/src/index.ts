@@ -40,9 +40,9 @@ app.get("/", (c) => {
 // Health check endpoint
 app.get("/health", async (c) => {
   try {
-    const { dbPengamanan } = await import("./lib/db-pengamanan");
+    const { db } = await import("./lib/db");
     // Check database connectivity
-    await dbPengamanan.execute({ sql: "SELECT 1" });
+    await db.execute({ sql: "SELECT 1" });
     return c.json({ status: "ok", database: "connected" }, 200);
   } catch (error) {
     return c.json({ status: "error", database: "disconnected" }, 503);
@@ -103,9 +103,9 @@ const shutdown = async (signal: string) => {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
 
   try {
-    const { dbPengamanan } = await import("./lib/db-pengamanan");
+    const { db } = await import("./lib/db");
     // Close database connection
-    await dbPengamanan.disconnect();
+    await db.disconnect();
     console.log("Database connection closed.");
   } catch (error) {
     console.error("Error closing database connection:", error);

@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { pengumuman } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { pengumuman } from "../lib/schema";
 import { eq, and, desc, sql } from "drizzle-orm";
-import { authMiddleware } from "../middleware/auth-pengamanan";
+import { authMiddleware } from "../middleware/auth";
 
 const pengumumanRoutes = new Hono();
 
@@ -92,7 +92,7 @@ pengumumanRoutes.get("/", async (c) => {
       conditions.length > 1 ? and(...conditions) : conditions[0];
 
     // Get total count
-    const totalCountResult = await dbPengamanan
+    const totalCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(pengumuman)
       .where(whereClause);
@@ -101,7 +101,7 @@ pengumumanRoutes.get("/", async (c) => {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Get pengumuman
-    const pengumumanList = await dbPengamanan
+    const pengumumanList = await db
       .select({
         id: pengumuman.id,
         title: pengumuman.title,
@@ -150,7 +150,7 @@ pengumumanRoutes.get("/:id", async (c) => {
   try {
     const pengumumanId = c.req.param("id");
 
-    const pengumumanResult = await dbPengamanan
+    const pengumumanResult = await db
       .select()
       .from(pengumuman)
       .where(eq(pengumuman.id, pengumumanId))
@@ -208,7 +208,7 @@ pengumumanRoutes.post("/", async (c) => {
     const { title, content, priority } = validationResult.data;
 
     // Create pengumuman
-    const newPengumumanResult = await dbPengamanan
+    const newPengumumanResult = await db
       .insert(pengumuman)
       .values({
         title,
@@ -273,7 +273,7 @@ pengumumanRoutes.put("/:id", async (c) => {
     const updateData = validationResult.data;
 
     // Check if pengumuman exists
-    const existingPengumuman = await dbPengamanan
+    const existingPengumuman = await db
       .select()
       .from(pengumuman)
       .where(eq(pengumuman.id, pengumumanId))
@@ -291,7 +291,7 @@ pengumumanRoutes.put("/:id", async (c) => {
     }
 
     // Update pengumuman
-    const updatedPengumumanResult = await dbPengamanan
+    const updatedPengumumanResult = await db
       .update(pengumuman)
       .set({
         ...updateData,
@@ -337,7 +337,7 @@ pengumumanRoutes.delete("/:id", async (c) => {
     const pengumumanId = c.req.param("id");
 
     // Check if pengumuman exists
-    const existingPengumuman = await dbPengamanan
+    const existingPengumuman = await db
       .select()
       .from(pengumuman)
       .where(eq(pengumuman.id, pengumumanId))
@@ -355,7 +355,7 @@ pengumumanRoutes.delete("/:id", async (c) => {
     }
 
     // Soft delete pengumuman
-    await dbPengamanan
+    await db
       .update(pengumuman)
       .set({
         deletedAt: new Date(),

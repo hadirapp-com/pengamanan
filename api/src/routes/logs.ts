@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { scanLogs, qrCodes, petugasJaga, posJaga } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { scanLogs, qrCodes, petugasJaga, posJaga } from "../lib/schema";
 import { eq, and, desc, sql, gte, lte, or } from "drizzle-orm";
-import { authMiddleware } from "../middleware/auth-pengamanan";
+import { authMiddleware } from "../middleware/auth";
 import ExcelJS from "exceljs";
 
 const logsRoutes = new Hono();
@@ -87,7 +87,7 @@ logsRoutes.get("/", async (c) => {
       conditions.length > 0 ? and(...conditions) : undefined;
 
     // Get total count
-    const totalCountResult = await dbPengamanan
+    const totalCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(scanLogs)
       .where(whereClause);
@@ -96,7 +96,7 @@ logsRoutes.get("/", async (c) => {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Get scan logs with related data
-    const logsList = await dbPengamanan
+    const logsList = await db
       .select({
         id: scanLogs.id,
         qrId: scanLogs.qrId,
@@ -159,7 +159,7 @@ logsRoutes.get("/stats", async (c) => {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     // Get today's counts
-    const todayStatsResult = await dbPengamanan
+    const todayStatsResult = await db
       .select({
         tipeScan: scanLogs.tipeScan,
         count: sql<number>`count(*)`,
@@ -185,7 +185,7 @@ logsRoutes.get("/stats", async (c) => {
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const last7DaysResult = await dbPengamanan
+    const last7DaysResult = await db
       .select({
         date: sql<string>`date(${scanLogs.scannedAt})`,
         tipeScan: scanLogs.tipeScan,
@@ -220,7 +220,7 @@ logsRoutes.get("/stats", async (c) => {
     }
 
     // Get last 10 scans
-    const recentScans = await dbPengamanan
+    const recentScans = await db
       .select({
         id: scanLogs.id,
         qrNama: qrCodes.nama,
@@ -307,7 +307,7 @@ logsRoutes.get("/export", async (c) => {
       conditions.length > 0 ? and(...conditions) : undefined;
 
     // Get all matching logs (no pagination for export)
-    const logsList = await dbPengamanan
+    const logsList = await db
       .select({
         qrNama: qrCodes.nama,
         qrPenanggungJawab: qrCodes.penanggungJawab,

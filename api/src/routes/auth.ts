@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { users } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { users } from "../lib/schema";
 import { eq } from "drizzle-orm";
 import {
   generateToken,
   verifyPassword,
   hashPassword,
-} from "../lib/auth-pengamanan";
-import { authMiddleware } from "../middleware/auth-pengamanan";
+} from "../lib/auth";
+import { authMiddleware } from "../middleware/auth";
 
 const authRoutes = new Hono();
 
@@ -53,7 +53,7 @@ authRoutes.post("/login", async (c) => {
     const { username, password } = validationResult.data;
 
     // Find user by username
-    const userResult = await dbPengamanan
+    const userResult = await db
       .select({
         id: users.id,
         username: users.username,
@@ -140,7 +140,7 @@ authRoutes.get("/me", authMiddleware, async (c) => {
   const user = c.get("user");
 
   // Fetch full user info from database
-  const userResult = await dbPengamanan
+  const userResult = await db
     .select({
       id: users.id,
       username: users.username,
@@ -210,7 +210,7 @@ authRoutes.post("/change-password", authMiddleware, async (c) => {
     const { oldPassword, newPassword } = validationResult.data;
 
     // Get current user with password hash
-    const userResult = await dbPengamanan
+    const userResult = await db
       .select({
         id: users.id,
         passwordHash: users.passwordHash,
@@ -252,7 +252,7 @@ authRoutes.post("/change-password", authMiddleware, async (c) => {
     const newPasswordHash = await hashPassword(newPassword);
 
     // Update password
-    await dbPengamanan
+    await db
       .update(users)
       .set({
         passwordHash: newPasswordHash,

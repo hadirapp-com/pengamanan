@@ -1,63 +1,39 @@
 import { db } from "./lib/db";
-import { users, customers, configs } from "./lib/schema";
+import {
+  users,
+  petugasJaga,
+  posJaga,
+  qrCodes,
+  pengumuman,
+} from "./lib/schema";
 import { eq } from "drizzle-orm";
 
 async function seed() {
   try {
-    // Define users to seed
+    console.log("🌱 Seeding pengamanan database...\n");
+
+    // ============================================================================
+    // SEED USERS
+    // ============================================================================
+    console.log("📝 Seeding users...");
+
+    const superadminUserId = crypto.randomUUID();
+
     const usersToSeed = [
       {
+        id: superadminUserId,
+        username: "superadmin",
+        passwordHash: await Bun.password.hash("admin123"),
+        role: "superadmin" as const,
+      },
+      {
+        id: crypto.randomUUID(),
         username: "admin",
-        password: "admin",
-        fullName: "Administrator",
-        nik: "",
-        role: "admin",
-      },
-      {
-        username: "supervisor",
-        password: "password123",
-        fullName: "User supervisor",
-        nik: "5678",
-        role: "supervisor",
-      },
-      {
-        username: "sales",
-        password: "password123",
-        fullName: "User Sales",
-        nik: "3456",
-        role: "sales",
-      },
-      {
-        username: "delivery",
-        password: "password123",
-        fullName: "User Delivery",
-        nik: "2345",
-        role: "delivery",
-      },
-      {
-        username: "preparation",
-        password: "password123",
-        fullName: "User preparation",
-        nik: "1234",
-        role: "preparation",
-      },
-      {
-        username: "supervisor1",
-        password: "password123",
-        fullName: "Supervisor 1",
-        nik: "3214567",
-        role: "supervisor",
-      },
-      {
-        username: "user1",
-        password: "password123",
-        fullName: "User 1",
-        nik: "12345",
-        role: "user",
+        passwordHash: await Bun.password.hash("admin123"),
+        role: "admin" as const,
       },
     ];
 
-    // Insert users if they don't exist
     for (const user of usersToSeed) {
       const existingUser = await db
         .select()
@@ -66,155 +42,241 @@ async function seed() {
         .limit(1);
 
       if (existingUser.length === 0) {
-        const hashedPassword = await Bun.password.hash(user.password);
-        await db.insert(users).values({
-          username: user.username,
-          password: hashedPassword,
-          fullName: user.fullName,
-          nik: user.nik,
-          role: user.role,
-        });
-        console.log(`✓ User created: ${user.username} (${user.role})`);
+        await db.insert(users).values(user);
+        console.log(`  ✓ User created: ${user.username} (${user.role})`);
       } else {
-        console.log(`− User already exists: ${user.username}`);
+        console.log(`  − User already exists: ${user.username}`);
       }
     }
 
-    // Define customers to seed
-    const customersToSeed = [
-      {
-        id: "bbb0eaf7-c695-42ae-81ce-a4ee993d68e1",
-        name: "PT Honda Prospect Motor",
-        address: "Jl. Industri No. 123, Jakarta",
-        alias: "HPM",
-      },
-      {
-        id: "34b2b6f3-4bec-4cdd-9d93-dc81f5acb81b",
-        name: "PT Mitsubishi Motors Krama Yudha Indonesia",
-        address: "Jl. Industri No. 234, Jakarta",
-        alias: "MMKI",
-      },
+    // ============================================================================
+    // SEED PETUGAS JAGA
+    // ============================================================================
+    console.log("\n📝 Seeding petugas jaga...");
+
+    const petugasToSeed = [
+      { nama: "Bpk. Joko", nik: "1234567890123456", noHp: "081234567890", pin: "123456" },
+      { nama: "Bpk. Ahmad", nik: "1234567890123457", noHp: "081234567891", pin: "123456" },
+      { nama: "Bpk. Budi", nik: "1234567890123458", noHp: "081234567892", pin: "123456" },
+      { nama: "Ibu Siti", nik: "1234567890123459", noHp: "081234567893", pin: "123456" },
+      { nama: "Bpk. Agus", nik: "1234567890123460", noHp: "081234567894", pin: "123456" },
     ];
 
-    // Insert customers if they don't exist
-    for (const customer of customersToSeed) {
-      const existingCustomer = await db
+    const petugasIds: string[] = [];
+    for (const petugas of petugasToSeed) {
+      const existingPetugas = await db
         .select()
-        .from(customers)
-        .where(eq(customers.id, customer.id))
+        .from(petugasJaga)
+        .where(eq(petugasJaga.nama, petugas.nama))
         .limit(1);
 
-      if (existingCustomer.length === 0) {
-        await db.insert(customers).values(customer);
-        console.log(
-          `✓ Customer created: ${customer.alias} - ${customer.name}`,
-        );
+      let petugasId: string;
+      if (existingPetugas.length === 0) {
+        const pinHash = await Bun.password.hash(petugas.pin);
+        const newPetugas = await db
+          .insert(petugasJaga)
+          .values({
+            nama: petugas.nama,
+            nik: petugas.nik,
+            noHp: petugas.noHp,
+            pin: pinHash,
+            createdBy: superadminUserId,
+            updatedBy: superadminUserId,
+          })
+          .returning();
+        petugasId = newPetugas[0].id;
+        console.log(`  ✓ Petugas created: ${petugas.nama} (PIN: ${petugas.pin})`);
       } else {
-        console.log(`- Customer already exists: ${customer.alias}`);
+        petugasId = existingPetugas[0].id;
+        console.log(`  − Petugas already exists: ${petugas.nama}`);
       }
+      petugasIds.push(petugasId);
     }
 
-    // Define configs to seed
-    const configsToSeed = [
-      {
-        id: "ca68ffa7-5772-496f-8d38-d1995d86ed1d",
-        key: "REVISION_EMAIL_NOTIF",
-        value: ["abdul@hadirapp.com"],
-        description: "Email revision notification",
-      },
-      {
-        id: "ea954c90-fd9a-4398-9512-6df4752bf8c7",
-        key: "SENTRY_DSN",
-        value: "https://bf5cbfc98bf34f712c798c11b072b7b2@o4510961584439296.ingest.us.sentry.io/4510961586995200",
-        description: "Sentry DSN untuk error tracking mobile apps",
-      },
-      {
-        id: "16f66a39-a69f-426c-8464-9be7bbb899c5",
-        key: "USER_GUIDE",
-        value: '[{"link": "http://localhost:5173/test-file.mov", "title": "Print Label", "fileType": "video"}, {"link": "https://ontheline.trincoll.edu/images/bookdown/sample-local-pdf.pdf", "title": "Example pdf", "fileType": "pdf"}]',
-        description: "User Guide"
-      }
+    // ============================================================================
+    // SEED POS JAGA
+    // ============================================================================
+    console.log("\n📝 Seeding pos jaga...");
+
+    const posToSeed = [
+      { nama: "Pos 1 Utama", lokasi: "Gerbang Utama" },
+      { nama: "Pos 2 Belakang", lokasi: "Gerbang Belakang" },
+      { nama: "Pos 3 Darurat", lokasi: "Pintu Darurat" },
     ];
 
-    // Insert configs if they don't exist
-    for (const config of configsToSeed) {
-      const existingConfig = await db
+    const posIds: string[] = [];
+    for (const pos of posToSeed) {
+      const existingPos = await db
         .select()
-        .from(configs)
-        .where(eq(configs.key, config.key))
+        .from(posJaga)
+        .where(eq(posJaga.nama, pos.nama))
         .limit(1);
 
-      if (existingConfig.length === 0) {
-        await db.insert(configs).values(config);
-        console.log(
-          `✓ Config created: ${config.key} - ${config.description}`,
-        );
+      let posId: string;
+      if (existingPos.length === 0) {
+        const newPos = await db
+          .insert(posJaga)
+          .values({
+            ...pos,
+            createdBy: superadminUserId,
+            updatedBy: superadminUserId,
+          })
+          .returning();
+        posId = newPos[0].id;
+        console.log(`  ✓ Pos created: ${pos.nama}`);
       } else {
-        console.log(`- Config already exists: ${config.key}`);
+        posId = existingPos[0].id;
+        console.log(`  − Pos already exists: ${pos.nama}`);
+      }
+      posIds.push(posId);
+    }
+
+    // ============================================================================
+    // SEED QR CODES
+    // ============================================================================
+    console.log("\n📝 Seeding QR codes...");
+
+    const qrToSeed = [
+      { nama: "Block A-101", penanggungJawab: "Bpk. Ahmad" },
+      { nama: "Block A-102", penanggungJawab: "Ibu Sari" },
+      { nama: "Block A-103", penanggungJawab: "Bpk. Budi" },
+      { nama: "Block B-201", penanggungJawab: "Ibu Dewi" },
+      { nama: "Block B-202", penanggungJawab: "Bpk. Joko" },
+      { nama: "Block B-203", penanggungJawab: "Ibu Rina" },
+      { nama: "Block C-301", penanggungJawab: "Bpk. Agus" },
+      { nama: "Block C-302", penanggungJawab: "Ibu Maya" },
+      { nama: "Block C-303", penanggungJawab: "Bpk. Dedi" },
+      { nama: "Block D-401", penanggungJawab: "Ibu Lestari" },
+      { nama: "Block D-402", penanggungJawab: "Bpk. Rudi" },
+      { nama: "Block D-403", penanggungJawab: "Ibu Wati" },
+      { nama: "Block E-501", penanggungJawab: "Bpk. Hendra" },
+      { nama: "Block E-502", penanggungJawab: "Ibu Ani" },
+      { nama: "Block E-503", penanggungJawab: "Bpk. Yanto" },
+    ];
+
+    // Lebaran 2026 dates (assuming around March 2026)
+    const validFrom = new Date("2026-03-10");
+    const validUntil = new Date("2026-04-10");
+
+    for (const qr of qrToSeed) {
+      const existingQr = await db
+        .select()
+        .from(qrCodes)
+        .where(eq(qrCodes.nama, qr.nama))
+        .limit(1);
+
+      if (existingQr.length === 0) {
+        const qrCode = crypto.randomUUID();
         await db
-          .update(configs)
-          .set({ value: config.value, description: config.description })
-          .where(eq(configs.key, config.key));
-        console.log(
-          `✓ Config updated: ${config.key} - ${config.description}`,
-        );
+          .insert(qrCodes)
+          .values({
+            qrCode,
+            nama: qr.nama,
+            penanggungJawab: qr.penanggungJawab,
+            validFrom,
+            validUntil,
+            createdBy: superadminUserId,
+            updatedBy: superadminUserId,
+          });
+        console.log(`  ✓ QR created: ${qr.nama} (QR: ${qrCode.slice(0, 8)}...)`);
+      } else {
+        console.log(`  − QR already exists: ${qr.nama}`);
       }
     }
 
-    console.log("\n✓ Seed data created successfully!");
-    console.log("\n📋 Customers:");
-    console.log("┌───────────────────────────────────────┬──────────────┬──────────────┐");
-    console.log("│ Name                                  │ Alias        │ ID           │");
-    console.log("├───────────────────────────────────────┼──────────────┼──────────────┤");
-    console.log("│ PT Honda Prospect Motor               │ HPM          │ ...68e1      │");
-    console.log("│ PT Mitsubishi Motors Krama Yudha      │ MMKI         │ ...b81b      │");
-    console.log("└───────────────────────────────────────┴──────────────┴──────────────┘");
-    console.log("\n⚙️  Configs:");
-    console.log("┌───────────────────────────────────────┬──────────────────────────┐");
-    console.log("│ Key                                 │ Value                    │");
-    console.log("├───────────────────────────────────────┼──────────────────────────┤");
-    console.log("│ REVISION_EMAIL_NOTIF                  │ [\"abdul@hadirapp.com\"]  │");
-    console.log("│ SENTRY_DSN                           │ https://default-dsn@...  │");
-    console.log("└───────────────────────────────────────┴──────────────────────────┘");
-    console.log("\n🔐 Login credentials:");
-    console.log(
-      "┌──────────────┬─────────────────┬───────────────┬──────────────┐",
-    );
-    console.log(
-      "│ Username     │ Full Name       │ NIK          │ Role         │",
-    );
-    console.log(
-      "├──────────────┼─────────────────┼───────────────┼──────────────┤",
-    );
-    console.log(
-      "│ admin        │ Administrator   │ -            │ admin        │",
-    );
-    console.log(
-      "│ supervisor   │ User supervisor │ 5678         │ supervisor   │",
-    );
-    console.log(
-      "│ sales        │ User Sales      │ 3456         │ sales        │",
-    );
-    console.log(
-      "│ delivery     │ User Delivery   │ 2345         │ delivery     │",
-    );
-    console.log(
-      "│ preparation  │ User preparation│ 1234         │ preparation  │",
-    );
-    console.log(
-      "│ supervisor1  │ Supervisor 1    │ 3214567      │ supervisor   │",
-    );
-    console.log(
-      "│ user1        │ User 1          │ 12345        │ user         │",
-    );
-    console.log(
-      "└──────────────┴─────────────────┴───────────────┴──────────────┘",
-    );
-    console.log("\nAll passwords: password123 (except admin: admin)");
+    // ============================================================================
+    // SEED PENGUMUMAN
+    // ============================================================================
+    console.log("\n📝 Seeding pengumuman...");
+
+    const pengumumanToSeed = [
+      {
+        title: "Selamat Menjalankan Ibadah Puasa",
+        content:
+          "Selamat menjalankan ibadah puasa Ramadhan 1447 H. Mohon tetap menjaga kondisi fisik dan kesehatan saat bertugas.",
+        priority: "normal" as const,
+      },
+      {
+        title: "Jam Malam Dimulai Pukul 22:00",
+        content:
+          "Diberitahukan bahwa jam malam akan dimulai pukul 22:00. Petugas diharapkan lebih waspada terhadap aktivitas yang mencurigakan.",
+        priority: "important" as const,
+      },
+      {
+        title: "Ganti Jaga Petugas",
+        content:
+          "Ganti jaga petugas akan dilakukan setiap 6 jam. Pastikan serah terima jaga dilakukan dengan tertib.",
+        priority: "normal" as const,
+      },
+    ];
+
+    for (const pengumuman of pengumumanToSeed) {
+      const existingPengumuman = await db
+        .select()
+        .from(pengumuman)
+        .where(eq(pengumuman.title, pengumuman.title))
+        .limit(1);
+
+      if (existingPengumuman.length === 0) {
+        await db.insert(pengumuman).values({
+          ...pengumuman,
+          createdBy: superadminUserId,
+          updatedBy: superadminUserId,
+        });
+        console.log(`  ✓ Pengumuman created: ${pengumuman.title}`);
+      } else {
+        console.log(`  − Pengumuman already exists: ${pengumuman.title}`);
+      }
+    }
+
+    // ============================================================================
+    // DONE
+    // ============================================================================
+    console.log("\n✅ Seed data created successfully!\n");
+
+    console.log("🔐 Login credentials:");
+    console.log("┌──────────────┬──────────────┬─────────────┐");
+    console.log("│ Username     │ Password     │ Role        │");
+    console.log("├──────────────┼──────────────┼─────────────┤");
+    console.log("│ superadmin   │ admin123     │ superadmin  │");
+    console.log("│ admin        │ admin123     │ admin       │");
+    console.log("└──────────────┴──────────────┴─────────────┘\n");
+
+    console.log("👥 Petugas Jaga:");
+    console.log("┌──────────────────┬───────────────────┬────────────────┬────────────┐");
+    console.log("│ Nama             │ NIK               │ No HP          │ PIN        │");
+    console.log("├──────────────────┼───────────────────┼────────────────┼────────────┤");
+    console.log("│ Bpk. Joko        │ 1234567890123456  │ 081234567890   │ 123456     │");
+    console.log("│ Bpk. Ahmad       │ 1234567890123457  │ 081234567891   │ 123456     │");
+    console.log("│ Bpk. Budi        │ 1234567890123458  │ 081234567892   │ 123456     │");
+    console.log("│ Ibu Siti         │ 1234567890123459  │ 081234567893   │ 123456     │");
+    console.log("│ Bpk. Agus        │ 1234567890123460  │ 081234567894   │ 123456     │");
+    console.log("└──────────────────┴───────────────────┴────────────────┴────────────┘\n");
+
+    console.log("📍 Pos Jaga:");
+    console.log("┌──────────────────┬───────────────────┐");
+    console.log("│ Nama             │ Lokasi            │");
+    console.log("├──────────────────┼───────────────────┤");
+    console.log("│ Pos 1 Utama      │ Gerbang Utama     │");
+    console.log("│ Pos 2 Belakang   │ Gerbang Belakang  │");
+    console.log("│ Pos 3 Darurat    │ Pintu Darurat     │");
+    console.log("└──────────────────┴───────────────────┘\n");
+
+    console.log(`📱 QR Codes: ${qrToSeed.length} blocks`);
+    console.log("  Validity: 10 Maret 2026 - 10 April 2026\n");
+
+    console.log("📢 Pengumuman:");
+    console.log("┌─────────────────────────────────────┬─────────────┐");
+    console.log("│ Title                                │ Priority    │");
+    console.log("├─────────────────────────────────────┼─────────────┤");
+    console.log("│ Selamat Menjalankan Ibadah Puasa    │ Normal      │");
+    console.log("│ Jam Malam Dimulai Pukul 22:00       │ Important   │");
+    console.log("│ Ganti Jaga Petugas                  │ Normal      │");
+    console.log("└─────────────────────────────────────┴─────────────┘\n");
   } catch (error) {
-    console.error("Error seeding data:", error);
+    console.error("❌ Error seeding data:", error);
+    process.exit(1);
   } finally {
-    // Close the database connection
     process.exit(0);
   }
 }

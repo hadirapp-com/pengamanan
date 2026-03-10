@@ -1,10 +1,10 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { users } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { users } from "../lib/schema";
 import { eq, and, desc, or, sql } from "drizzle-orm";
-import { hashPassword } from "../lib/auth-pengamanan";
-import { authMiddleware, superadminOnly } from "../middleware/auth-pengamanan";
+import { hashPassword } from "../lib/auth";
+import { authMiddleware, superadminOnly } from "../middleware/auth";
 
 const usersRoutes = new Hono();
 
@@ -96,7 +96,7 @@ usersRoutes.get("/", superadminOnly, async (c) => {
       conditions.length > 1 ? and(...conditions) : conditions[0];
 
     // Get total count
-    const totalCountResult = await dbPengamanan
+    const totalCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(users)
       .where(whereClause);
@@ -105,7 +105,7 @@ usersRoutes.get("/", superadminOnly, async (c) => {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Get users
-    const usersList = await dbPengamanan
+    const usersList = await db
       .select({
         id: users.id,
         username: users.username,
@@ -152,7 +152,7 @@ usersRoutes.get("/:id", superadminOnly, async (c) => {
   try {
     const userId = c.req.param("id");
 
-    const userResult = await dbPengamanan
+    const userResult = await db
       .select({
         id: users.id,
         username: users.username,
@@ -217,7 +217,7 @@ usersRoutes.post("/", superadminOnly, async (c) => {
     const { username, password, role } = validationResult.data;
 
     // Check if username already exists
-    const existingUser = await dbPengamanan
+    const existingUser = await db
       .select()
       .from(users)
       .where(eq(users.username, username))
@@ -238,7 +238,7 @@ usersRoutes.post("/", superadminOnly, async (c) => {
     const passwordHash = await hashPassword(password);
 
     // Create user
-    const newUserResult = await dbPengamanan
+    const newUserResult = await db
       .insert(users)
       .values({
         username,
@@ -301,7 +301,7 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
     const updateData = validationResult.data;
 
     // Check if user exists
-    const existingUser = await dbPengamanan
+    const existingUser = await db
       .select()
       .from(users)
       .where(eq(users.id, userId))
@@ -332,7 +332,7 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
 
     // If updating username, check for duplicates
     if (updateData.username) {
-      const duplicateUser = await dbPengamanan
+      const duplicateUser = await db
         .select()
         .from(users)
         .where(and(eq(users.username, updateData.username), sql`${users.id} != ${userId}`))
@@ -351,7 +351,7 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
     }
 
     // Update user
-    const updatedUserResult = await dbPengamanan
+    const updatedUserResult = await db
       .update(users)
       .set({
         ...updateData,
@@ -407,7 +407,7 @@ usersRoutes.delete("/:id", superadminOnly, async (c) => {
     }
 
     // Check if user exists
-    const existingUser = await dbPengamanan
+    const existingUser = await db
       .select()
       .from(users)
       .where(eq(users.id, userId))
@@ -425,7 +425,7 @@ usersRoutes.delete("/:id", superadminOnly, async (c) => {
     }
 
     // Soft delete user
-    await dbPengamanan
+    await db
       .update(users)
       .set({
         deletedAt: new Date(),
@@ -461,7 +461,7 @@ usersRoutes.post("/:id/reset-password", superadminOnly, async (c) => {
     const userId = c.req.param("id");
 
     // Generate default password (username + "123")
-    const userResult = await dbPengamanan
+    const userResult = await db
       .select({ username: users.username })
       .from(users)
       .where(eq(users.id, userId))
@@ -482,7 +482,7 @@ usersRoutes.post("/:id/reset-password", superadminOnly, async (c) => {
     const passwordHash = await hashPassword(defaultPassword);
 
     // Update password
-    await dbPengamanan
+    await db
       .update(users)
       .set({
         passwordHash,

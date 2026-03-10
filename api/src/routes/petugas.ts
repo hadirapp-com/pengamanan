@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { dbPengamanan } from "../lib/db-pengamanan";
-import { petugasJaga } from "../lib/schema-pengamanan";
+import { db } from "../lib/db";
+import { petugasJaga } from "../lib/schema";
 import { eq, and, desc, sql, or } from "drizzle-orm";
-import { authMiddleware } from "../middleware/auth-pengamanan";
+import { authMiddleware } from "../middleware/auth";
 
 const petugasRoutes = new Hono();
 
@@ -84,7 +84,7 @@ petugasRoutes.get("/", async (c) => {
       conditions.length > 1 ? and(...conditions) : conditions[0];
 
     // Get total count
-    const totalCountResult = await dbPengamanan
+    const totalCountResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(petugasJaga)
       .where(whereClause);
@@ -93,7 +93,7 @@ petugasRoutes.get("/", async (c) => {
     const totalPages = Math.ceil(totalCount / limit);
 
     // Get petugas jaga
-    const petugasList = await dbPengamanan
+    const petugasList = await db
       .select({
         id: petugasJaga.id,
         nama: petugasJaga.nama,
@@ -142,7 +142,7 @@ petugasRoutes.get("/:id", async (c) => {
   try {
     const petugasId = c.req.param("id");
 
-    const petugasResult = await dbPengamanan
+    const petugasResult = await db
       .select({
         id: petugasJaga.id,
         nama: petugasJaga.nama,
@@ -209,7 +209,7 @@ petugasRoutes.post("/", async (c) => {
     const data = validationResult.data;
 
     // Create petugas jaga
-    const newPetugasResult = await dbPengamanan
+    const newPetugasResult = await db
       .insert(petugasJaga)
       .values({
         ...data,
@@ -272,7 +272,7 @@ petugasRoutes.put("/:id", async (c) => {
     const updateData = validationResult.data;
 
     // Check if petugas jaga exists
-    const existingPetugas = await dbPengamanan
+    const existingPetugas = await db
       .select()
       .from(petugasJaga)
       .where(eq(petugasJaga.id, petugasId))
@@ -290,7 +290,7 @@ petugasRoutes.put("/:id", async (c) => {
     }
 
     // Update petugas jaga
-    const updatedPetugasResult = await dbPengamanan
+    const updatedPetugasResult = await db
       .update(petugasJaga)
       .set({
         ...updateData,
@@ -336,7 +336,7 @@ petugasRoutes.delete("/:id", async (c) => {
     const petugasId = c.req.param("id");
 
     // Check if petugas jaga exists
-    const existingPetugas = await dbPengamanan
+    const existingPetugas = await db
       .select()
       .from(petugasJaga)
       .where(eq(petugasJaga.id, petugasId))
@@ -354,7 +354,7 @@ petugasRoutes.delete("/:id", async (c) => {
     }
 
     // Soft delete petugas jaga
-    await dbPengamanan
+    await db
       .update(petugasJaga)
       .set({
         deletedAt: new Date(),

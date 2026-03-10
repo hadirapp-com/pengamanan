@@ -1,5 +1,5 @@
 import { SignJWT, jwtVerify } from "jose";
-import type { User, PetugasJaga } from "./schema-pengamanan";
+import type { User, PetugasJaga } from "./schema";
 
 // JWT Configuration
 const JWT_SECRET = new TextEncoder().encode(
