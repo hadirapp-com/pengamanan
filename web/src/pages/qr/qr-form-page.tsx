@@ -23,14 +23,17 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 interface QrCode {
   id: string;
-  uuid: string;
+  qrCode: string;
   nama: string;
   penanggungJawab: string;
-  validityStart: string;
-  validityEnd: string;
+  validFrom: string;
+  validUntil: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export default function QrFormPage() {
@@ -40,9 +43,9 @@ export default function QrFormPage() {
   const isBulk = searchParams.get("bulk") === "true";
   const isEdit = !!id && !isBulk;
 
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<QrFormValues>({
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<QrFormValues>({
     resolver: zodResolver(qrFormSchema) as any,
-    defaultValues: { nama: "", penanggungJawab: "", validityStart: "", validityEnd: "", isActive: true },
+    defaultValues: { nama: "", penanggungJawab: "", validFrom: "", validUntil: "", isActive: true },
   });
 
   const { data: qrData, isLoading: isLoadingQr } = useQuery<QrCode>({
@@ -50,7 +53,7 @@ export default function QrFormPage() {
     queryFn: async () => {
       if (!id) throw new Error("QR ID is required");
       const response = await axiosInstance.get(`/api/qr/${id}`);
-      return response.data;
+      return response.data.data;
     },
     enabled: isEdit,
   });
@@ -59,8 +62,8 @@ export default function QrFormPage() {
     if (qrData) {
       setValue("nama", qrData.nama);
       setValue("penanggungJawab", qrData.penanggungJawab);
-      setValue("validityStart", qrData.validityStart?.split("T")[0]);
-      setValue("validityEnd", qrData.validityEnd?.split("T")[0]);
+      setValue("validFrom", qrData.validFrom?.split("T")[0]);
+      setValue("validUntil", qrData.validUntil?.split("T")[0]);
       setValue("isActive", qrData.isActive);
     }
   }, [qrData, setValue]);
@@ -123,19 +126,24 @@ export default function QrFormPage() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="validityStart">Tanggal Mulai Berlaku *</Label>
-                <Input id="validityStart" type="date" disabled={isLoading} {...register("validityStart")} className={errors.validityStart ? "border-red-500" : ""} />
-                {errors.validityStart && <p className="text-sm text-red-500">{errors.validityStart.message}</p>}
+                <Label htmlFor="validFrom">Tanggal Mulai Berlaku *</Label>
+                <Input id="validFrom" type="date" disabled={isLoading} {...register("validFrom")} className={errors.validFrom ? "border-red-500" : ""} />
+                {errors.validFrom && <p className="text-sm text-red-500">{errors.validFrom.message}</p>}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="validityEnd">Tanggal Selesai Berlaku *</Label>
-                <Input id="validityEnd" type="date" disabled={isLoading} {...register("validityEnd")} className={errors.validityEnd ? "border-red-500" : ""} />
-                {errors.validityEnd && <p className="text-sm text-red-500">{errors.validityEnd.message}</p>}
+                <Label htmlFor="validUntil">Tanggal Selesai Berlaku *</Label>
+                <Input id="validUntil" type="date" disabled={isLoading} {...register("validUntil")} className={errors.validUntil ? "border-red-500" : ""} />
+                {errors.validUntil && <p className="text-sm text-red-500">{errors.validUntil.message}</p>}
               </div>
 
               <div className="flex items-center space-x-2">
-                <Switch id="isActive" {...register("isActive")} disabled={isLoading} />
+                <Switch
+                  id="isActive"
+                  checked={watch("isActive")}
+                  onCheckedChange={(checked) => setValue("isActive", checked)}
+                  disabled={isLoading}
+                />
                 <Label htmlFor="isActive">Aktif</Label>
               </div>
 

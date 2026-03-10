@@ -80,6 +80,9 @@ interface QrCode {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  deletedAt: string | null;
+  createdBy: string;
+  updatedBy: string;
 }
 
 export default function QrTablePage() {
@@ -539,53 +542,88 @@ export default function QrTablePage() {
                 </div>
               </div>
 
-              {/* Simulated A4 Page Preview */}
-              <div
-                ref={previewRef}
-                className="mx-auto bg-white border-2 border-gray-300 shadow-lg"
-                style={{
-                  width: '210mm',
-                  minHeight: '297mm',
-                  padding: '20mm',
-                  boxSizing: 'border-box',
-                  transform: 'scale(0.6)',
-                  transformOrigin: 'top center',
-                }}
-              >
-                {/* Title */}
-                <div className="text-center mb-6">
-                  <div className="text-lg font-bold">QR Codes - Pengamanan Lebaran 2026</div>
-                  <div className="text-xs">{new Date().toLocaleString("id-ID")}</div>
-                </div>
+              {/* Simulated A4 Page Previews with Page Breaks */}
+              <div className="flex flex-col items-center gap-2">
+                {(() => {
+                  const selectedQrList = qrList.filter((qr: QrCode) => selectedQrs.has(qr.id));
+                  const pageWidth = 210; // mm
+                  const pageHeight = 297; // mm
+                  const margin = 20; // mm
+                  const spacing = 15; // mm
+                  const textHeight = 20; // Space for text below QR code
+                  const titleHeight = 30; // Space for title on first page
+                  const qrCellHeight = qrSize + textHeight; // Total height per row
 
-                {/* QR Grid Preview */}
-                <div className="grid gap-3 justify-center" style={{
-                  gridTemplateColumns: `repeat(${Math.floor((210 - 40) / (qrSize + 15))}, ${qrSize}mm)`,
-                  justifyContent: 'center',
-                }}>
-                  {qrList.filter((qr: QrCode) => selectedQrs.has(qr.id)).slice(0, 12).map((qr: QrCode) => (
-                    <div key={qr.id} className="flex flex-col items-center" style={{ width: `${qrSize}mm` }}>
-                      <QRCode
-                        value={qr.qrCode}
-                        size={Math.round(qrSize * 3.78)} // Convert mm to pixels (1mm ≈ 3.78px at 96dpi)
-                        level={"H"}
-                        className="border border-gray-200"
-                      />
-                      <div className="text-[8px] text-center mt-1 font-semibold leading-tight w-full overflow-hidden text-ellipsis">
-                        {qr.nama}
+                  // Calculate grid layout
+                  const maxCols = Math.floor((pageWidth - 2 * margin) / (qrSize + spacing));
+                  const availableHeight = pageHeight - 2 * margin - titleHeight;
+                  const maxRows = Math.floor(availableHeight / qrCellHeight);
+                  const qrPerPage = maxCols * maxRows;
+
+                  // Split into pages
+                  const pages: QrCode[][] = [];
+                  for (let i = 0; i < selectedQrList.length; i += qrPerPage) {
+                    pages.push(selectedQrList.slice(i, i + qrPerPage));
+                  }
+
+                  return pages.map((pageQrs, pageIndex) => (
+                    <div
+                      key={pageIndex}
+                      className="bg-white border-2 border-gray-300 shadow-lg relative"
+                      style={{
+                        width: '210mm',
+                        height: '297mm',
+                        padding: '20mm',
+                        boxSizing: 'border-box',
+                        transform: 'scale(0.8)',
+                        transformOrigin: 'top center',
+                        pageBreakAfter: 'always',
+                        breakAfter: 'page',
+                      }}
+                    >
+                      {/* Page Number Indicator */}
+                      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500">
+                        Halaman {pageIndex + 1} dari {pages.length}
                       </div>
-                      <div className="text-[6px] text-center leading-tight w-full overflow-hidden text-ellipsis text-gray-600">
-                        {qr.penanggungJawab}
+
+                      {/* Title */}
+                      <div className="text-center mb-6">
+                        <div className="text-lg font-bold">QR Codes - Pengamanan Lebaran 2026</div>
+                        <div className="text-xs">{new Date().toLocaleString("id-ID")}</div>
                       </div>
+
+                      {/* QR Grid Preview */}
+                      <div className="grid gap-3 justify-center" style={{
+                        gridTemplateColumns: `repeat(${maxCols}, ${qrSize}mm)`,
+                        justifyContent: 'center',
+                      }}>
+                        {pageQrs.map((qr: QrCode) => (
+                          <div key={qr.id} className="flex flex-col items-center" style={{ width: `${qrSize}mm` }}>
+                            <QRCode
+                              value={qr.qrCode}
+                              size={Math.round(qrSize * 3.78)} // Convert mm to pixels (1mm ≈ 3.78px at 96dpi)
+                              level={"H"}
+                              className="border border-gray-200"
+                            />
+                            <div className="text-[8px] text-center mt-1 font-semibold leading-tight w-full overflow-hidden text-ellipsis">
+                              {qr.nama}
+                            </div>
+                            <div className="text-[6px] text-center leading-tight w-full overflow-hidden text-ellipsis text-gray-600">
+                              {qr.penanggungJawab}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Page footer */}
+                      {pageIndex < pages.length - 1 && (
+                        <div className="absolute bottom-4 left-0 right-0 text-center text-[6px] text-gray-400">
+                          Halaman {pageIndex + 1} dari {pages.length}
+                        </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-
-                {qrList.filter((qr: QrCode) => selectedQrs.has(qr.id)).length > 12 && (
-                  <div className="text-center text-xs text-gray-500 mt-4">
-                    ... dan {qrList.filter((qr: QrCode) => selectedQrs.has(qr.id)).length - 12} QR lainnya
-                  </div>
-                )}
+                  ));
+                })()}
               </div>
             </div>
           </div>

@@ -60,9 +60,15 @@ export const PENGUMUMAN_PRIORITY_LABELS = {
 } as const;
 
 export const PENGUMUMAN_PRIORITY_COLORS = {
-  normal: 'default',
-  important: 'warning',
-  urgent: 'error',
+  normal: 'secondary',
+  important: 'secondary',
+  urgent: 'secondary',
+} as const;
+
+export const PENGUMUMAN_PRIORITY_ICON_COLORS = {
+  normal: 'text-gray-600',
+  important: 'text-yellow-600',
+  urgent: 'text-red-600',
 } as const;
 
 // ============================================================================

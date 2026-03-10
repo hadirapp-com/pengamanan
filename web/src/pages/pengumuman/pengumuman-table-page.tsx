@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Plus, MoreVertical, Edit, Trash2, AlertCircle } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2, AlertCircle, AlertTriangle, Info } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,7 +21,7 @@ import { Loader } from "@/components/ui/loader";
 
 import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
-import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT, PENGUMUMAN_PRIORITY_LABELS, PENGUMUMAN_PRIORITY_COLORS } from "@/config/constants";
+import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT, PENGUMUMAN_PRIORITY_LABELS, PENGUMUMAN_PRIORITY_COLORS, PENGUMUMAN_PRIORITY_ICON_COLORS } from "@/config/constants";
 import { pengumumanEndpoint } from "@/config/endpoints";
 import { appRoutes } from "@/config/routes";
 import { useDataTableStore } from "@/store/data-table";
@@ -95,7 +95,21 @@ export default function PengumumanTablePage() {
     }
   );
 
-  let pengumumanList = Array.isArray(pengumumanData) ? pengumumanData : [];
+  const pengumumanList = Array.isArray(pengumumanData) ? pengumumanData : [];
+
+  // Helper function to get priority icon
+  const getPriorityIcon = (priority: "normal" | "important" | "urgent") => {
+    switch (priority) {
+      case "normal":
+        return <Info className="h-3 w-3 mr-1" />;
+      case "important":
+        return <AlertTriangle className="h-3 w-3 mr-1" />;
+      case "urgent":
+        return <AlertCircle className="h-3 w-3 mr-1" />;
+      default:
+        return null;
+    }
+  };
 
   // Reset filters on unmount
   useEffect(() => {
@@ -164,9 +178,16 @@ export default function PengumumanTablePage() {
           <TableBody>
             {isLoading ? <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader className="mx-auto h-6 w-6" /></TableCell></TableRow> : pengumumanList.length === 0 ? <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-500">{globalFilter ? "Tidak ada hasil" : "Belum ada pengumuman"}</TableCell></TableRow> : pengumumanList.map((p: Pengumuman) => (
               <TableRow key={p.id}>
-                <TableCell className="font-medium flex items-center gap-2">{p.priority === "urgent" && <AlertCircle className="h-4 w-4 text-red-600" />}{p.title}</TableCell>
+                <TableCell className="font-medium">{p.title}</TableCell>
                 <TableCell className="max-w-md truncate text-sm text-gray-600">{p.content}</TableCell>
-                <TableCell><Badge variant={PENGUMUMAN_PRIORITY_COLORS[p.priority] as any}>{PENGUMUMAN_PRIORITY_LABELS[p.priority]}</Badge></TableCell>
+                <TableCell>
+                  <Badge variant={PENGUMUMAN_PRIORITY_COLORS[p.priority] as any} className="gap-1">
+                    <span className={PENGUMUMAN_PRIORITY_ICON_COLORS[p.priority]}>
+                      {getPriorityIcon(p.priority)}
+                    </span>
+                    {PENGUMUMAN_PRIORITY_LABELS[p.priority]}
+                  </Badge>
+                </TableCell>
                 <TableCell><Badge variant={p.isActive ? "default" : "secondary"}>{p.isActive ? "Aktif" : "Non-Aktif"}</Badge></TableCell>
                 <TableCell>{format(new Date(p.createdAt), "dd MMM yyyy")}</TableCell>
                 <TableCell className="text-right">
