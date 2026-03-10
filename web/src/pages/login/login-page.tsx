@@ -112,7 +112,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="flex min-h-svh w-full flex-col items-center justify-center p-6 md:p-10">
       <div className="w-full max-w-sm">
         <div className={cn("flex flex-col gap-6")}>
           <Card>
@@ -177,6 +177,18 @@ export default function LoginPage() {
               </Form>
             </CardContent>
           </Card>
+          {/* Hadirapp Signature */}
+          <div className="text-center text-xs text-muted-foreground">
+            Supported by{" "}
+            <a
+              href="http://www.hadirapp.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-medium text-primary hover:underline"
+            >
+              hadirapp.com
+            </a>
+          </div>
         </div>
       </div>
     </div>
