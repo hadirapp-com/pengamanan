@@ -1,10 +1,10 @@
 CREATE TABLE Pengumuman (
     id TEXT PRIMARY KEY,
-    judul TEXT NOT NULL,
-    isi TEXT NOT NULL,
-    prioritas TEXT NOT NULL,
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    priority TEXT NOT NULL,
     createdAt TEXT NOT NULL,
-    createdBy TEXT NOT NULL
+    updatedAt TEXT NOT NULL
 );
 
 selectAllPengumuman:
@@ -15,7 +15,7 @@ selectPengumumanById:
 SELECT * FROM Pengumuman WHERE id = ?;
 
 insertPengumuman:
-INSERT OR REPLACE INTO Pengumuman (id, judul, isi, prioritas, createdAt, createdBy)
+INSERT OR REPLACE INTO Pengumuman (id, title, content, priority, createdAt, updatedAt)
 VALUES (?, ?, ?, ?, ?, ?);
 
 deletePengumuman:

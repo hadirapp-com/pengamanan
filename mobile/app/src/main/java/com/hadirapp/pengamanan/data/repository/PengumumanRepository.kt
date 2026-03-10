@@ -23,11 +23,11 @@ class PengumumanRepository @Inject constructor(
                 response.data.forEach { pengumuman ->
                     database.pengumumanQueries.insertPengumuman(
                         id = pengumuman.id,
-                        judul = pengumuman.judul,
-                        isi = pengumuman.isi,
-                        prioritas = pengumuman.prioritas.name,
+                        title = pengumuman.title,
+                        content = pengumuman.content,
+                        priority = pengumuman.priority,
                         createdAt = pengumuman.createdAt,
-                        createdBy = pengumuman.createdBy
+                        updatedAt = pengumuman.updatedAt
                     )
                 }
                 Result.success(Unit)
@@ -47,11 +47,11 @@ class PengumumanRepository @Inject constructor(
     private fun com.hadirapp.pengamanan.db.Pengumuman.toModel(): PengumumanModel {
         return PengumumanModel(
             id = id,
-            judul = judul,
-            isi = isi,
-            prioritas = com.hadirapp.pengamanan.data.model.Priority.valueOf(prioritas),
+            title = title,
+            content = content,
+            priority = priority,
             createdAt = createdAt,
-            createdBy = createdBy
+            updatedAt = updatedAt
         )
     }
 }
