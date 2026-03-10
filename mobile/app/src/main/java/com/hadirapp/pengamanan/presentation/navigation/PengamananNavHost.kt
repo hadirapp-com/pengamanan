@@ -5,12 +5,16 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.hadirapp.pengamanan.presentation.home.HomeScreen
-import com.hadirapp.pengamanan.presentation.qrscanner.QRScannerScreen
-import com.hadirapp.pengamanan.presentation.scanresult.ScanResultScreen
 import com.hadirapp.pengamanan.presentation.logs.LogsScreen
 import com.hadirapp.pengamanan.presentation.pengumuman.PengumumanScreen
+import com.hadirapp.pengamanan.presentation.pin.PinScreen
+import com.hadirapp.pengamanan.presentation.qrscanner.QRScannerScreen
+import com.hadirapp.pengamanan.presentation.scanresult.ScanResultScreen
+import com.hadirapp.pengamanan.presentation.welcome.WelcomePopupScreen
 
 sealed class Screen(val route: String) {
+    object Pin : Screen("pin")
+    object Welcome : Screen("welcome")
     object Home : Screen("home")
     object QRScanner : Screen("qr_scanner")
     object ScanResult : Screen("scan_result/{qrCode}") {
@@ -23,12 +27,33 @@ sealed class Screen(val route: String) {
 @Composable
 fun PengamananNavHost(
     navController: NavHostController = androidx.navigation.compose.rememberNavController(),
-    startDestination: String = Screen.Home.route
+    startDestination: String = Screen.Pin.route
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination
     ) {
+        composable(Screen.Pin.route) {
+            PinScreen(
+                onAuthSuccess = {
+                    // Determine next screen based on whether welcome popup was shown
+                    navController.navigate(Screen.Welcome.route) {
+                        popUpTo(Screen.Pin.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
+        composable(Screen.Welcome.route) {
+            WelcomePopupScreen(
+                onDismiss = {
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                }
+            )
+        }
+
         composable(Screen.Home.route) {
             HomeScreen(
                 onNavigateToQRScanner = {

@@ -116,6 +116,9 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
 
+    // Coil for image loading
+    implementation("io.coil-kt:coil-compose:2.7.0")
+
     // Permissions (TODO: Add back when CameraX is integrated)
     // implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 

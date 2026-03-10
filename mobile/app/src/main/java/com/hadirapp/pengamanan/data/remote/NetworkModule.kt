@@ -1,8 +1,9 @@
 package com.hadirapp.pengamanan.data.remote
 
-import com.hadirapp.pengamanan.BuildConfig
 import com.hadirapp.pengamanan.data.remote.api.AuthApi
+import com.hadirapp.pengamanan.data.remote.api.ConfigApi
 import com.hadirapp.pengamanan.data.remote.api.LogApi
+import com.hadirapp.pengamanan.data.remote.api.MobileAuthApi
 import com.hadirapp.pengamanan.data.remote.api.PengumumanApi
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.Module
@@ -27,7 +28,7 @@ object NetworkModule {
 
     @Provides
     @BaseUrl
-    fun provideBaseUrl(): String = "http://10.0.2.2:3000/api"
+    fun provideBaseUrl(): String = "https://local.hadirapp.com/api/"
 
     @Provides
     @Singleton
@@ -38,7 +39,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
+    fun provideOkHttpClient(tokenProvider: TokenProvider): OkHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(30, TimeUnit.SECONDS)
@@ -46,6 +47,12 @@ object NetworkModule {
             val originalRequest = chain.request()
             val requestBuilder = originalRequest.newBuilder()
                 .header("Content-Type", "application/json")
+
+            // Add Authorization header if token exists
+            tokenProvider.getToken()?.let { token ->
+                requestBuilder.header("Authorization", "Bearer $token")
+            }
+
             chain.proceed(requestBuilder.build())
         }
         .build()
@@ -76,4 +83,14 @@ object NetworkModule {
     @Singleton
     fun providePengumumanApi(retrofit: Retrofit): PengumumanApi =
         retrofit.create(PengumumanApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideMobileAuthApi(retrofit: Retrofit): MobileAuthApi =
+        retrofit.create(MobileAuthApi::class.java)
+
+    @Provides
+    @Singleton
+    fun provideConfigApi(retrofit: Retrofit): ConfigApi =
+        retrofit.create(ConfigApi::class.java)
 }
