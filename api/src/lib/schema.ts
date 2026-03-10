@@ -15,6 +15,28 @@ import { relations } from "drizzle-orm";
 export const pengamananSchema = pgSchema("pengamanan");
 
 // ============================================================================
+// CONFIGS TABLE
+// ============================================================================
+export const configs = pengamananSchema.table(
+  "configs",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    key: varchar("key", { length: 100 }).unique().notNull(),
+    value: text("value").notNull(),
+    description: text("description"),
+    isActive: boolean("is_active").notNull().default(true),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    createdBy: uuid("created_by").references(() => users.id),
+    updatedBy: uuid("updated_by").references(() => users.id),
+  },
+  (table) => ({
+    keyIdx: index("configs_key_idx").on(table.key),
+    isActiveIdx: index("configs_is_active_idx").on(table.isActive),
+  }),
+);
+
+// ============================================================================
 // USERS TABLE
 // ============================================================================
 export const users = pengamananSchema.table(
@@ -49,7 +71,6 @@ export const petugasJaga = pengamananSchema.table(
     nama: varchar("nama", { length: 255 }).notNull(),
     nik: varchar("nik", { length: 20 }),
     noHp: varchar("no_hp", { length: 20 }),
-    pin: varchar("pin", { length: 255 }), // Hashed PIN for mobile authentication (argon2id)
     isActive: boolean("is_active").notNull().default(true),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),

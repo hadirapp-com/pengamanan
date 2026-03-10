@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
-import { petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema";
+import { configs, petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema";
 import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { verifyPin, generateMobileToken } from "../lib/auth";
 import { mobileAuthMiddleware } from "../middleware/auth";
@@ -47,6 +47,7 @@ const markReadSchema = z.object({
  * POST /mobile/auth/pin
  * Authenticate with PIN and return JWT token (valid for 3 months)
  * This is a public endpoint for mobile app authentication
+ * PIN is global (stored in configs table), not per petugas
  */
 mobileRoutes.post("/auth/pin", async (c) => {
   try {
@@ -66,27 +67,33 @@ mobileRoutes.post("/auth/pin", async (c) => {
 
     const { pin } = validationResult.data;
 
-    // Find petugas with matching PIN hash
-    const petugasList = await db
+    // Get global PIN from configs table
+    const configResult = await db
       .select({
-        id: petugasJaga.id,
-        nama: petugasJaga.nama,
-        pin: petugasJaga.pin,
-        isActive: petugasJaga.isActive,
+        value: configs.value,
+        isActive: configs.isActive,
       })
-      .from(petugasJaga)
-      .where(eq(petugasJaga.isActive, true));
+      .from(configs)
+      .where(eq(configs.key, "mobile_pin"))
+      .limit(1);
 
-    // Check each active petugas for matching PIN
-    let authenticatedPetugas: typeof petugasList | null = null;
-    for (const petugas of petugasList) {
-      if (petugas.pin && await verifyPin(pin, petugas.pin)) {
-        authenticatedPetugas = [petugas];
-        break;
-      }
+    if (configResult.length === 0 || !configResult[0].isActive) {
+      return c.json(
+        {
+          success: false,
+          error: "Configuration Error",
+          message: "Mobile PIN not configured",
+        },
+        500
+      );
     }
 
-    if (!authenticatedPetugas || authenticatedPetugas.length === 0) {
+    const config = configResult[0];
+
+    // Verify PIN against hashed PIN from configs
+    const isValidPin = await verifyPin(pin, config.value);
+
+    if (!isValidPin) {
       return c.json(
         {
           success: false,
@@ -97,7 +104,28 @@ mobileRoutes.post("/auth/pin", async (c) => {
       );
     }
 
-    const petugas = authenticatedPetugas[0];
+    // Get first active petugas for token generation
+    const petugasResult = await db
+      .select({
+        id: petugasJaga.id,
+        nama: petugasJaga.nama,
+      })
+      .from(petugasJaga)
+      .where(eq(petugasJaga.isActive, true))
+      .limit(1);
+
+    if (petugasResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Configuration Error",
+          message: "No active petugas found",
+        },
+        500
+      );
+    }
+
+    const petugas = petugasResult[0];
 
     // Generate JWT token valid for 3 months
     const token = await generateMobileToken(petugas);
