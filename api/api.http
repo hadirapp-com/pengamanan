@@ -5,6 +5,8 @@
 @api_url=http://localhost:5000
 @whatsapp_service=http://192.168.1.6:3000
 
+@token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJjNmI2YjU5OC01NmRjLTRjMTQtODVmYi1lNGFlN2ZhMTZhYTMiLCJ1c2VybmFtZSI6InN1cGVyYWRtaW4iLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc3MzEwNTc1NywiZXhwIjoxNzczMTkyMTU3fQ.d_sE3AKTtlgU-RkwU7GiEd3J3_alHbUcRUlysZCAt50
+
 # Default credentials (after seeding)
 @superadmin_username=superadmin
 @superadmin_password=admin123
@@ -27,17 +29,17 @@ Content-Type: application/json
 ### 2. Get Current User
 # @name getCurrentUser
 GET {{api_url}}/api/auth/me HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 3. Logout
 # @name logout
 POST {{api_url}}/api/auth/logout HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 4. Change Password
 # @name changePassword
 POST {{api_url}}/api/auth/change-password HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -65,12 +67,12 @@ Content-Type: application/json
 ### 6. List Users with Pagination
 # @name listUsers
 GET {{api_url}}/api/users?page=1&limit=10 HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 7. Create User (Superadmin only)
 # @name createUser
 POST {{api_url}}/api/users HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -82,12 +84,12 @@ Content-Type: application/json
 ### 8. Get User Detail
 # @name getUserDetail
 GET {{api_url}}/api/users/{{createUser.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 9. Update User
 # @name updateUser
 PUT {{api_url}}/api/users/{{createUser.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -98,12 +100,12 @@ Content-Type: application/json
 ### 10. Delete User (Soft Delete)
 # @name deleteUser
 DELETE {{api_url}}/api/users/{{createUser.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 11. Reset User Password
 # @name resetUserPassword
 POST {{api_url}}/api/users/{{createUser.response.body.$.data.id}}/reset-password HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -117,12 +119,12 @@ Content-Type: application/json
 ### 12. List Petugas Jaga
 # @name listPetugas
 GET {{api_url}}/api/petugas?isActive=true HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 13. Create Petugas Jaga
 # @name createPetugas
 POST {{api_url}}/api/petugas HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -135,12 +137,12 @@ Content-Type: application/json
 ### 14. Get Petugas Detail
 # @name getPetugasDetail
 GET {{api_url}}/api/petugas/{{createPetugas.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 15. Update Petugas Jaga
 # @name updatePetugas
 PUT {{api_url}}/api/petugas/{{createPetugas.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -153,7 +155,7 @@ Content-Type: application/json
 ### 16. Delete Petugas Jaga (Soft Delete)
 # @name deletePetugas
 DELETE {{api_url}}/api/petugas/{{createPetugas.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 # =============================================================================
 # POS JAGA MANAGEMENT
@@ -162,12 +164,12 @@ Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
 ### 17. List Pos Jaga
 # @name listPos
 GET {{api_url}}/api/pos?isActive=true HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 18. Create Pos Jaga
 # @name createPos
 POST {{api_url}}/api/pos HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -178,12 +180,12 @@ Content-Type: application/json
 ### 19. Get Pos Detail
 # @name getPosDetail
 GET {{api_url}}/api/pos/{{createPos.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 20. Update Pos Jaga
 # @name updatePos
 PUT {{api_url}}/api/pos/{{createPos.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -195,7 +197,7 @@ Content-Type: application/json
 ### 21. Delete Pos Jaga (Soft Delete)
 # @name deletePos
 DELETE {{api_url}}/api/pos/{{createPos.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 # =============================================================================
 # QR CODE MANAGEMENT
@@ -204,12 +206,12 @@ Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
 ### 22. List QR Codes
 # @name listQR
 GET {{api_url}}/api/qr?page=1&limit=10&isActive=true HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 23. Create QR Code
 # @name createQR
 POST {{api_url}}/api/qr HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -222,12 +224,12 @@ Content-Type: application/json
 ### 24. Get QR Detail
 # @name getQRDetail
 GET {{api_url}}/api/qr/{{createQR.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 25. Update QR Code
 # @name updateQR
 PUT {{api_url}}/api/qr/{{createQR.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -241,17 +243,17 @@ Content-Type: application/json
 ### 26. Generate New QR UUID
 # @name generateQR
 POST {{api_url}}/api/qr/generate HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 27. Download QR Image (PNG)
 # @name getQRImage
 GET {{api_url}}/api/qr/{{createQR.response.body.$.data.id}}/image HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 28. Generate PDF for Multiple QR
 # @name generateQRPDF
 POST {{api_url}}/api/qr/pdf HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -261,12 +263,12 @@ Content-Type: application/json
 ### 29. Activate/Deactivate QR
 # @name toggleQR
 PATCH {{api_url}}/api/qr/{{createQR.response.body.$.data.id}}/toggle HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 30. Delete QR Code (Soft Delete)
 # @name deleteQR
 DELETE {{api_url}}/api/qr/{{createQR.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 # =============================================================================
 # PENGUMUMAN MANAGEMENT
@@ -275,12 +277,12 @@ Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
 ### 31. List Pengumuman
 # @name listPengumuman
 GET {{api_url}}/api/pengumuman?isActive=true HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 32. Create Pengumuman
 # @name createPengumuman
 POST {{api_url}}/api/pengumuman HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -292,12 +294,12 @@ Content-Type: application/json
 ### 33. Get Pengumuman Detail
 # @name getPengumumanDetail
 GET {{api_url}}/api/pengumuman/{{createPengumuman.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 34. Update Pengumuman
 # @name updatePengumuman
 PUT {{api_url}}/api/pengumuman/{{createPengumuman.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -310,7 +312,7 @@ Content-Type: application/json
 ### 35. Delete Pengumuman (Soft Delete)
 # @name deletePengumuman
 DELETE {{api_url}}/api/pengumuman/{{createPengumuman.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 # =============================================================================
 # MOBILE SYNC ENDPOINTS (Requires Mobile JWT Token)
@@ -362,32 +364,32 @@ Content-Type: application/json
 ### 40. List Scan Logs with Filters
 # @name listLogs
 GET {{api_url}}/api/logs?page=1&limit=10&dateFrom=2026-03-01&dateTo=2026-03-31 HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 41. List Scan Logs by Pos
 # @name listLogsByPos
 GET {{api_url}}/api/logs?posId={{createPos.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 42. List Scan Logs by Petugas
 # @name listLogsByPetugas
 GET {{api_url}}/api/logs?petugasId={{createPetugas.response.body.$.data.id}} HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 43. List Scan Logs by Tipe Scan
 # @name listLogsByTipe
 GET {{api_url}}/api/logs?tipeScan=masuk HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 44. Get Dashboard Statistics
 # @name getStats
 GET {{api_url}}/api/logs/stats HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 ### 45. Export Logs to Excel
 # @name exportLogs
 GET {{api_url}}/api/logs/export?dateFrom=2026-03-01&dateTo=2026-03-31 HTTP/1.1
-Authorization: Bearer {{loginSuperadmin.response.body.$.data.accessToken}}
+Authorization: Bearer {{token}}
 
 # =============================================================================
 # HEALTH CHECK

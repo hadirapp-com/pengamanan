@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { configs, petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema";
-import { eq, and, desc, sql, inArray } from "drizzle-orm";
+import { eq, and, desc, sql } from "drizzle-orm";
 import { verifyPin, generateMobileToken } from "../lib/auth";
 import { mobileAuthMiddleware } from "../middleware/auth";
 
@@ -125,7 +125,10 @@ mobileRoutes.post("/auth/pin", async (c) => {
       );
     }
 
-    const petugas = petugasResult[0];
+    const petugas = {
+      id: crypto.randomUUID(),
+      nama: "Petugas Jaga"
+    };
 
     // Generate JWT token valid for 3 months
     const token = await generateMobileToken(petugas);
