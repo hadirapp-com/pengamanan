@@ -226,10 +226,8 @@ qrRoutes.post("/", async (c) => {
 
     const { nama, penanggungJawab, validFrom, validUntil } = validationResult.data;
 
-    // Validate validity period
-    const fromDate = new Date(validFrom);
-    const untilDate = new Date(validUntil);
-    if (fromDate > untilDate) {
+    // Validate validity period - compare date strings directly since they're in YYYY-MM-DD format
+    if (validFrom > validUntil) {
       return c.json(
         {
           success: false,
@@ -243,15 +241,15 @@ qrRoutes.post("/", async (c) => {
     // Generate UUID for QR code
     const qrCodeId = crypto.randomUUID();
 
-    // Create QR code
+    // Create QR code - keep dates as strings for PostgreSQL DATE type
     const newQrResult = await db
       .insert(qrCodes)
       .values({
         qrCode: qrCodeId,
         nama,
         penanggungJawab,
-        validFrom: fromDate,
-        validUntil: untilDate,
+        validFrom, // Keep as string in YYYY-MM-DD format
+        validUntil, // Keep as string in YYYY-MM-DD format
         createdBy: currentUser.userId,
         updatedBy: currentUser.userId,
       })
@@ -322,9 +320,8 @@ qrRoutes.put("/:id", async (c) => {
 
     // Validate validity period if both dates are provided
     if (updateData.validFrom && updateData.validUntil) {
-      const fromDate = new Date(updateData.validFrom);
-      const untilDate = new Date(updateData.validUntil);
-      if (fromDate > untilDate) {
+      // Compare date strings directly since they're in YYYY-MM-DD format
+      if (updateData.validFrom > updateData.validUntil) {
         return c.json(
           {
             success: false,
@@ -336,16 +333,24 @@ qrRoutes.put("/:id", async (c) => {
       }
     }
 
+    // Prepare update data - only include fields that are provided
+    const finalUpdateData: any = {
+      updatedBy: currentUser.userId,
+      updatedAt: new Date(),
+    };
+
+    // Only include fields that are provided in the request
+    if (updateData.nama !== undefined) finalUpdateData.nama = updateData.nama;
+    if (updateData.penanggungJawab !== undefined) finalUpdateData.penanggungJawab = updateData.penanggungJawab;
+    if (updateData.isActive !== undefined) finalUpdateData.isActive = updateData.isActive;
+    // For date fields, keep them as strings in YYYY-MM-DD format for PostgreSQL DATE type
+    if (updateData.validFrom !== undefined) finalUpdateData.validFrom = updateData.validFrom;
+    if (updateData.validUntil !== undefined) finalUpdateData.validUntil = updateData.validUntil;
+
     // Update QR code
     const updatedQrResult = await db
       .update(qrCodes)
-      .set({
-        ...updateData,
-        validFrom: updateData.validFrom ? new Date(updateData.validFrom) : undefined,
-        validUntil: updateData.validUntil ? new Date(updateData.validUntil) : undefined,
-        updatedBy: currentUser.userId,
-        updatedAt: new Date(),
-      })
+      .set(finalUpdateData)
       .where(eq(qrCodes.id, qrId))
       .returning();
 

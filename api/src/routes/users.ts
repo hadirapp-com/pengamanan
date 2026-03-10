@@ -37,6 +37,10 @@ const updateUserSchema = z.object({
     .min(3, "Username must be at least 3 characters")
     .max(50, "Username must not exceed 50 characters")
     .optional(),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters")
+    .optional(),
   role: z
     .enum(["admin", "superadmin"])
     .optional(),
@@ -316,7 +320,7 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
       );
     }
 
-    const updateData = validationResult.data;
+    const { password, ...otherData } = validationResult.data;
 
     // Check if user exists
     const existingUser = await db
@@ -349,11 +353,11 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
     }
 
     // If updating username, check for duplicates
-    if (updateData.username) {
+    if (otherData.username) {
       const duplicateUser = await db
         .select()
         .from(users)
-        .where(and(eq(users.username, updateData.username), sql`${users.id} != ${userId}`))
+        .where(and(eq(users.username, otherData.username), sql`${users.id} != ${userId}`))
         .limit(1);
 
       if (duplicateUser.length > 0) {
@@ -368,11 +372,23 @@ usersRoutes.put("/:id", superadminOnly, async (c) => {
       }
     }
 
+    // Prepare update data
+    let finalUpdateData = { ...otherData };
+
+    // If password is provided, hash it and add to update data
+    if (password && password.trim() !== '') {
+      const passwordHash = await hashPassword(password);
+      finalUpdateData = {
+        ...finalUpdateData,
+        passwordHash,
+      };
+    }
+
     // Update user
     const updatedUserResult = await db
       .update(users)
       .set({
-        ...updateData,
+        ...finalUpdateData,
         updatedBy: currentUser.userId,
         updatedAt: new Date(),
       })
