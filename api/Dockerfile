@@ -25,14 +25,10 @@ EXPOSE 3000
 # Set environment variables
 ENV NODE_ENV=production
 ENV PORT=3000
-ENV API_TYPE=default
-
-# Start the application
-CMD ["sh", "-c", "if [ \"$API_TYPE\" = \"pengamanan\" ]; then bun run src/index-pengamanan.ts; else bun run src/index.ts; fi"]
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
   CMD bun run health-check || exit 1
 
 # Start the application
-CMD ["bun", "run", "src/index.ts"] 
+CMD ["bun", "run", "src/index.ts"]

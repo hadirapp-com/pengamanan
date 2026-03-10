@@ -1,471 +1,280 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { db } from "../lib/db";
-import { users } from "../lib/schema";
-import { eq, or } from "drizzle-orm";
-import { generateTokens, verifyRefreshToken, verifyAccessToken } from "../lib/jwt";
+import { dbPengamanan } from "../lib/db-pengamanan";
+import { users } from "../lib/schema-pengamanan";
+import { eq } from "drizzle-orm";
 import {
-  loginSchema,
-  registerSchema,
-  sendVerificationEmailSchema,
-  verifyEmailSchema,
-  forgotPasswordSchema,
-  resetPasswordSchema,
-  changePasswordSchema,
-} from "../schemas";
-import {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-  verifyEmailConfig,
-} from "../lib/email";
+  generateToken,
+  verifyPassword,
+  hashPassword,
+} from "../lib/auth-pengamanan";
+import { authMiddleware } from "../middleware/auth-pengamanan";
 
-const authRoute = new Hono();
+const authRoutes = new Hono();
 
-// Register user
-authRoute.post("/register", async (c) => {
+// ============================================================================
+// VALIDATION SCHEMAS
+// ============================================================================
+
+const loginSchema = z.object({
+  username: z.string().min(1, "Username is required"),
+  password: z.string().min(1, "Password is required"),
+});
+
+const changePasswordSchema = z.object({
+  oldPassword: z.string().min(1, "Old password is required"),
+  newPassword: z.string().min(6, "New password must be at least 6 characters"),
+});
+
+// ============================================================================
+// ROUTES
+// ============================================================================
+
+/**
+ * POST /auth/login
+ * Login endpoint for superadmin and admin
+ */
+authRoutes.post("/login", async (c) => {
   try {
     const body = await c.req.json();
-    const { username, password, email, fullName } = registerSchema.parse(body);
+    const validationResult = loginSchema.safeParse(body);
 
-    const existingUser = await db.select().from(users).where(eq(users.username, username)).limit(1);
-
-    if (existingUser.length > 0) {
-      return c.json({ error: "Username already exists" }, 400);
+    if (!validationResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
+        400
+      );
     }
 
-    const hashedPassword = await Bun.password.hash(password);
+    const { username, password } = validationResult.data;
 
-    const [user] = await db.insert(users).values({
-      username,
-      password: hashedPassword,
-      email,
-      fullName,
-    }).returning();
+    // Find user by username
+    const userResult = await dbPengamanan
+      .select({
+        id: users.id,
+        username: users.username,
+        passwordHash: users.passwordHash,
+        role: users.role,
+        deletedAt: users.deletedAt,
+      })
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
 
-    const { password: _, ...userWithoutPassword } = user;
+    if (userResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "Invalid username or password",
+        },
+        401
+      );
+    }
+
+    const user = userResult[0];
+
+    // Check if user is soft deleted
+    if (user.deletedAt) {
+      return c.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "User account has been deactivated",
+        },
+        401
+      );
+    }
+
+    // Verify password
+    const isPasswordValid = await verifyPassword(password, user.passwordHash);
+    if (!isPasswordValid) {
+      return c.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "Invalid username or password",
+        },
+        401
+      );
+    }
+
+    // Generate JWT token
+    const token = await generateToken(user);
+
+    // Return user info and token
+    return c.json({
+      success: true,
+      message: "Login successful",
+      data: {
+        token,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+        },
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
     return c.json(
       {
-        message: "User created successfully",
-        user: userWithoutPassword,
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred during login",
       },
-      201
+      500
     );
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Internal server error" }, 500);
   }
 });
 
-// Login
-authRoute.post("/login", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { username, password, source } = loginSchema.parse(body);
+/**
+ * GET /auth/me
+ * Get current user info (requires authentication)
+ */
+authRoutes.get("/me", authMiddleware, async (c) => {
+  const user = c.get("user");
 
-    const userResult = await db.select().from(users).where(eq(users.username, username)).limit(1);
-    const user = userResult[0];
+  // Fetch full user info from database
+  const userResult = await dbPengamanan
+    .select({
+      id: users.id,
+      username: users.username,
+      role: users.role,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .where(eq(users.id, user.userId))
+    .limit(1);
 
-    if (!user) {
-      return c.json({ error: "Username atau password salah" }, 401);
-    }
-
-    const isValidPassword = await Bun.password.verify(password, user.password);
-
-    if (!isValidPassword) {
-      return c.json({ error: "Username atau password salah" }, 401);
-    }
-
-    // Validate role + source combination
-    const allowedWebRoles = ["admin", "sales", "supervisor", "production"];
-    const allowedMobileRoles = ["preparation", "delivery"];
-
-    if (source === "web" && !allowedWebRoles.includes(user.role)) {
-      return c.json({
-        error: `Akses ditolak, user ${user.role} tidak bisa login pada web`,
-        allowedRoles: allowedWebRoles,
-        userRole: user.role,
-      }, 403);
-    }
-
-    if (source === "mobile" && !allowedMobileRoles.includes(user.role)) {
-      return c.json({
-        error: `Akses ditolak, user ${user.role} tidak bisa login pada mobile`,
-        allowedRoles: allowedMobileRoles,
-        userRole: user.role,
-      }, 403);
-    }
-
-    const { accessToken, refreshToken } = await generateTokens(user.id);
-
-    const { password: _, ...userWithoutPassword } = user;
-
-    return c.json({
-      message: "Login successful",
-      user: userWithoutPassword,
-      accessToken,
-      refreshToken,
-    });
-  } catch (error) {
-    console.error(error);
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Internal server error" }, 500);
-  }
-});
-
-// Refresh token
-authRoute.post("/refresh", async (c) => {
-  try {
-    const { refreshToken } = await c.req.json();
-
-    if (!refreshToken) {
-      return c.json({ error: "Refresh token is required" }, 400);
-    }
-
-    const payload = await verifyRefreshToken(refreshToken);
-
-    if (!payload) {
-      return c.json({ error: "Invalid refresh token" }, 401);
-    }
-
-    const userResult = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);
-    const user = userResult[0];
-
-    if (!user) {
-      return c.json({ error: "User not found" }, 404);
-    }
-
-    const { accessToken, refreshToken: newRefreshToken } = await generateTokens(
-      user.id
+  if (userResult.length === 0) {
+    return c.json(
+      {
+        success: false,
+        error: "Not Found",
+        message: "User not found",
+      },
+      404
     );
-
-    return c.json({
-      accessToken,
-      refreshToken: newRefreshToken,
-    });
-  } catch (error) {
-    return c.json({ error: "Internal server error" }, 500);
   }
+
+  return c.json({
+    success: true,
+    data: userResult[0],
+  });
 });
 
-// Get current user data
-authRoute.get("/me", async (c) => {
-  try {
-    const authHeader = c.req.header("Authorization");
-    
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return c.json({ error: "Access token is required" }, 401);
-    }
+/**
+ * POST /auth/logout
+ * Logout endpoint (client-side token removal)
+ */
+authRoutes.post("/logout", authMiddleware, async (c) => {
+  // In a JWT-based system, logout is handled client-side by removing the token
+  // If you want to implement server-side token invalidation, you would need:
+  // 1. Token blacklist/whitelist
+  // 2. Refresh token mechanism
+  // 3. Token versioning in user record
 
-    const accessToken = authHeader.substring(7); // Remove "Bearer " prefix
-    const payload = await verifyAccessToken(accessToken);
-
-    if (!payload) {
-      return c.json({ error: "Invalid access token" }, 401);
-    }
-
-    const userResult = await db.select().from(users).where(eq(users.id, payload.userId)).limit(1);
-    const user = userResult[0];
-
-    if (!user) {
-      return c.json({ error: "User not found" }, 404);
-    }
-
-    const { password: _, ...userWithoutPassword } = user;
-
-    return c.json({
-      user: userWithoutPassword,
-    });
-  } catch (error) {
-    return c.json({ error: "Kesalahan internal server" }, 500);
-  }
+  return c.json({
+    success: true,
+    message: "Logout successful",
+  });
 });
 
-// Send email verification
-authRoute.post("/send-verification-email", async (c) => {
+/**
+ * POST /auth/change-password
+ * Change password for logged in user
+ */
+authRoutes.post("/change-password", authMiddleware, async (c) => {
   try {
+    const user = c.get("user");
     const body = await c.req.json();
-    const { email } = sendVerificationEmailSchema.parse(body);
+    const validationResult = changePasswordSchema.safeParse(body);
 
-    // Check if user exists with this email
-    const userResult = await db
-      .select()
-      .from(users)
-      .where(eq(users.email, email))
-      .limit(1);
-
-    if (userResult.length === 0) {
-      return c.json({ error: "Email tidak terdaftar" }, 404);
+    if (!validationResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
+        400
+      );
     }
 
-    const user = userResult[0];
+    const { oldPassword, newPassword } = validationResult.data;
 
-    // Check if email is already verified
-    if (user.emailVerified) {
-      return c.json({ message: "Email sudah diverifikasi" }, 200);
-    }
-
-    // Verify email configuration
-    const emailConfigValid = await verifyEmailConfig();
-    if (!emailConfigValid) {
-      return c.json({
-        error: "Konfigurasi email tidak valid. Silakan hubungi administrator."
-      }, 500);
-    }
-
-    // Generate verification token
-    const verificationToken = crypto.randomUUID();
-
-    // Update user with verification token
-    await db
-      .update(users)
-      .set({
-        emailVerificationToken: verificationToken,
-        updatedAt: new Date(),
+    // Get current user with password hash
+    const userResult = await dbPengamanan
+      .select({
+        id: users.id,
+        passwordHash: users.passwordHash,
       })
-      .where(eq(users.id, user.id));
+      .from(users)
+      .where(eq(users.id, user.userId))
+      .limit(1);
 
-    // Send verification email
-    const emailSent = await sendVerificationEmail(
-      email,
-      user.username || user.fullName || "Pengguna",
-      verificationToken
+    if (userResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Not Found",
+          message: "User not found",
+        },
+        404
+      );
+    }
+
+    const currentUser = userResult[0];
+
+    // Verify old password
+    const isOldPasswordValid = await verifyPassword(
+      oldPassword,
+      currentUser.passwordHash
     );
-
-    if (!emailSent) {
-      return c.json({
-        error: "Gagal mengirim email verifikasi. Silakan coba lagi dalam beberapa saat."
-      }, 500);
-    }
-
-    return c.json({
-      message: "Email verifikasi telah dikirim. Silakan periksa inbox email Anda.",
-      email: email,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Kesalahan internal server" }, 500);
-  }
-});
-
-// Verify email
-authRoute.post("/verify-email", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { token } = verifyEmailSchema.parse(body);
-
-    // Find user with this verification token
-    const userResult = await db
-      .select()
-      .from(users)
-      .where(eq(users.emailVerificationToken, token))
-      .limit(1);
-
-    if (userResult.length === 0) {
-      return c.json({ error: "Token verifikasi tidak valid" }, 400);
-    }
-
-    const user = userResult[0];
-
-    // Check if email is already verified
-    if (user.emailVerified) {
-      return c.json({ message: "Email sudah diverifikasi" }, 200);
-    }
-
-    // Verify email
-    await db
-      .update(users)
-      .set({
-        emailVerified: true,
-        emailVerificationToken: null,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, user.id));
-
-    return c.json({
-      message: "Email berhasil diverifikasi",
-      email: user.email,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Kesalahan internal server" }, 500);
-  }
-});
-
-// Forgot password - send reset email
-authRoute.post("/forgot-password", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { email } = forgotPasswordSchema.parse(body);
-
-    // Check if user exists with this email or username
-    const userResult = await db
-      .select()
-      .from(users)
-      .where(or(eq(users.email, email), eq(users.username, email)))
-      .limit(1);
-
-    if (userResult.length === 0) {
-      // Don't reveal if email exists or not for security
-      return c.json({
-        message: "Jika email terdaftar, Anda akan menerima link reset password"
-      }, 200);
-    }
-
-    const user = userResult[0];
-
-    if (!user.email) {
-      return c.json({
-        message: "Akun Anda tidak memiliki email. Silakan hubungi administrator."
-      }, 400);
-    }
-
-    // Verify email configuration
-    const emailConfigValid = await verifyEmailConfig();
-    if (!emailConfigValid) {
-      return c.json({
-        error: "Konfigurasi email tidak valid. Silakan hubungi administrator."
-      }, 500);
-    }
-
-    // Generate reset token (expires in 1 hour)
-    const resetToken = crypto.randomUUID();
-    const resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
-
-    // Update user with reset token
-    await db
-      .update(users)
-      .set({
-        resetPasswordToken: resetToken,
-        resetPasswordExpires,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, user.id));
-
-    // Send password reset email
-    const emailSent = await sendPasswordResetEmail(
-      user.email,
-      user.username || user.fullName || "Pengguna",
-      resetToken
-    );
-
-    if (!emailSent) {
-      return c.json({
-        error: "Gagal mengirim email reset password. Silakan coba lagi dalam beberapa saat."
-      }, 500);
-    }
-
-    return c.json({
-      message: "Link reset password telah dikirim ke email Anda",
-      email: user.email,
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Kesalahan internal server" }, 500);
-  }
-});
-
-// Reset password
-authRoute.post("/reset-password", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { token, newPassword } = resetPasswordSchema.parse(body);
-
-    // Find user with this reset token
-    const userResult = await db
-      .select()
-      .from(users)
-      .where(eq(users.resetPasswordToken, token))
-      .limit(1);
-
-    if (userResult.length === 0) {
-      return c.json({ error: "Token reset tidak valid" }, 400);
-    }
-
-    const user = userResult[0];
-
-    // Check if token is expired
-    if (!user.resetPasswordExpires || new Date() > user.resetPasswordExpires) {
-      return c.json({
-        error: "Token reset telah kedaluwarsa. Silakan request reset password kembali."
-      }, 400);
+    if (!isOldPasswordValid) {
+      return c.json(
+        {
+          success: false,
+          error: "Unauthorized",
+          message: "Current password is incorrect",
+        },
+        401
+      );
     }
 
     // Hash new password
-    const hashedPassword = await Bun.password.hash(newPassword);
+    const newPasswordHash = await hashPassword(newPassword);
 
-    // Update password and clear reset token
-    await db
+    // Update password
+    await dbPengamanan
       .update(users)
       .set({
-        password: hashedPassword,
-        resetPasswordToken: null,
-        resetPasswordExpires: null,
+        passwordHash: newPasswordHash,
         updatedAt: new Date(),
       })
-      .where(eq(users.id, user.id));
+      .where(eq(users.id, currentUser.id));
 
     return c.json({
-      message: "Password berhasil direset. Silakan login dengan password baru.",
+      success: true,
+      message: "Password changed successfully",
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Kesalahan internal server" }, 500);
+    console.error("Change password error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while changing password",
+      },
+      500
+    );
   }
 });
 
-// Change password - requires authentication
-authRoute.post("/change-password", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { newPassword } = changePasswordSchema.parse(body);
-
-    // Verify authentication
-    const authHeader = c.req.header("Authorization");
-
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return c.json({ error: "Token tidak ditemukan" }, 401);
-    }
-
-    const accessToken = authHeader.substring(7); // Remove "Bearer " prefix
-    const payload = await verifyAccessToken(accessToken);
-
-    if (!payload) {
-      return c.json({ error: "Token tidak valid" }, 401);
-    }
-
-    // Hash the new password
-    const hashedPassword = await Bun.password.hash(newPassword);
-
-    // Update user's password
-    await db
-      .update(users)
-      .set({
-        password: hashedPassword,
-        updatedAt: new Date(),
-      })
-      .where(eq(users.id, payload.userId));
-
-    return c.json({
-      message: "Password berhasil diubah",
-    });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ error: error.message }, 400);
-    }
-    return c.json({ error: "Kesalahan internal server" }, 500);
-  }
-});
-
-export { authRoute as auth };
+export default authRoutes;

@@ -1,253 +1,514 @@
 import { Hono } from "hono";
 import { z } from "zod";
-import { db } from "../lib/db";
-import { users } from "../lib/schema";
-import { eq, desc, like, or, count, and, ne, isNull } from "drizzle-orm";
-import { authMiddleware, roleValidationMiddleware } from "../middleware/auth";
-import { userSchema, userUpdateSchema } from "../schemas";
+import { dbPengamanan } from "../lib/db-pengamanan";
+import { users } from "../lib/schema-pengamanan";
+import { eq, and, desc, or, sql } from "drizzle-orm";
+import { hashPassword } from "../lib/auth-pengamanan";
+import { authMiddleware, superadminOnly } from "../middleware/auth-pengamanan";
 
-const usersRoute = new Hono();
+const usersRoutes = new Hono();
 
 // Apply auth middleware to all routes
-usersRoute.use("*", authMiddleware);
+usersRoutes.use("/*", authMiddleware);
 
-// Get all users - accessible by both admin and user roles
-usersRoute.get("/", roleValidationMiddleware(["*"]), async (c) => {
+// ============================================================================
+// VALIDATION SCHEMAS
+// ============================================================================
+
+const createUserSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username must not exceed 50 characters"),
+  password: z
+    .string()
+    .min(6, "Password must be at least 6 characters"),
+  role: z.enum(["admin", "superadmin"], {
+    errorMap: () => ({ message: "Role must be either admin or superadmin" }),
+  }),
+});
+
+const updateUserSchema = z.object({
+  username: z
+    .string()
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username must not exceed 50 characters")
+    .optional(),
+  role: z
+    .enum(["admin", "superadmin"])
+    .optional(),
+});
+
+const listUsersSchema = z.object({
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(100).default(20),
+  search: z.string().optional(),
+  role: z.enum(["admin", "superadmin"]).optional(),
+});
+
+// ============================================================================
+// ROUTES
+// ============================================================================
+
+/**
+ * GET /users
+ * List users with pagination and filtering (superadmin only)
+ */
+usersRoutes.get("/", superadminOnly, async (c) => {
   try {
-    const page = parseInt(c.req.query("page") || "1");
-    const limit = parseInt(c.req.query("limit") || "10");
-    const search = c.req.query("search");
+    const queryParams = c.req.query();
+    const validationResult = listUsersSchema.safeParse(queryParams);
 
-    const skip = (page - 1) * limit;
-
-    let whereConditions = [];
-    
-    if (search) {
-      whereConditions.push(
-        or(
-          like(users.username, `%${search}%`),
-          like(users.fullName, `%${search}%`),
-          like(users.email, `%${search}%`),
-          like(users.nik, `%${search}%`)
-        )
+    if (!validationResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
+        400
       );
     }
 
-    // Add condition to exclude soft-deleted records
-    whereConditions.push(isNull(users.deletedAt));
+    const { page, limit, search, role } = validationResult.data;
+    const offset = (page - 1) * limit;
 
-    const where = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+    // Build conditions
+    const conditions = [];
 
-    const [usersData, totalResult] = await Promise.all([
-      db.select({
+    // Exclude soft-deleted users
+    conditions.push(sql`${users.deletedAt} IS NULL`);
+
+    // Filter by role
+    if (role) {
+      conditions.push(eq(users.role, role));
+    }
+
+    // Search by username
+    if (search) {
+      conditions.push(
+        sql`${users.username} ILIKE ${`%${search}%`}`
+      );
+    }
+
+    // Combine all conditions with AND
+    const whereClause =
+      conditions.length > 1 ? and(...conditions) : conditions[0];
+
+    // Get total count
+    const totalCountResult = await dbPengamanan
+      .select({ count: sql<number>`count(*)` })
+      .from(users)
+      .where(whereClause);
+
+    const totalCount = totalCountResult[0]?.count || 0;
+    const totalPages = Math.ceil(totalCount / limit);
+
+    // Get users
+    const usersList = await dbPengamanan
+      .select({
         id: users.id,
         username: users.username,
-        email: users.email,
-        fullName: users.fullName,
-        nik: users.nik,
         role: users.role,
         createdAt: users.createdAt,
         updatedAt: users.updatedAt,
       })
-        .from(users)
-        .where(where)
-        .limit(limit)
-        .offset(skip)
-        .orderBy(desc(users.createdAt)),
-      db.select({ count: count() }).from(users).where(where),
-    ]);
-
-    const total = totalResult[0]?.count || 0;
+      .from(users)
+      .where(whereClause)
+      .orderBy(desc(users.createdAt))
+      .limit(limit)
+      .offset(offset);
 
     return c.json({
-      result: usersData,
-      pagination: {
+      success: true,
+      data: usersList,
+      meta: {
         page,
         limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
     });
   } catch (error) {
-    console.error("Error fetching users:", error);
-    return c.json({ message: "Internal server error" }, 500);
+    console.error("List users error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while fetching users",
+      },
+      500
+    );
   }
 });
 
-// Get user by ID - accessible by both admin and user roles
-usersRoute.get("/:id", roleValidationMiddleware(["admin", "user"]), async (c) => {
+/**
+ * GET /users/:id
+ * Get user by ID (superadmin only)
+ */
+usersRoutes.get("/:id", superadminOnly, async (c) => {
   try {
-    const id = c.req.param("id");
+    const userId = c.req.param("id");
 
-    const userResult = await db.select({
-      id: users.id,
-      username: users.username,
-      email: users.email,
-      fullName: users.fullName,
-      nik: users.nik,
-      role: users.role,
-      createdAt: users.createdAt,
-      updatedAt: users.updatedAt,
-    })
+    const userResult = await dbPengamanan
+      .select({
+        id: users.id,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+        deletedAt: users.deletedAt,
+      })
       .from(users)
-      .where(and(eq(users.id, id), isNull(users.deletedAt)))
+      .where(eq(users.id, userId))
       .limit(1);
 
-    const user = userResult[0];
-
-    if (!user) {
-      return c.json({ error: "User not found" }, 404);
+    if (userResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Not Found",
+          message: "User not found",
+        },
+        404
+      );
     }
 
-    return c.json({ result: user });
+    return c.json({
+      success: true,
+      data: userResult[0],
+    });
   } catch (error) {
-    return c.json({ message: "Internal server error" }, 500);
+    console.error("Get user error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while fetching user",
+      },
+      500
+    );
   }
 });
 
-// Create user - only accessible by admin role
-usersRoute.post("/", roleValidationMiddleware(["admin"]), async (c) => {
+/**
+ * POST /users
+ * Create new user (superadmin only)
+ */
+usersRoutes.post("/", superadminOnly, async (c) => {
   try {
+    const currentUser = c.get("user");
     const body = await c.req.json();
-    const data = userSchema.parse(body);
+    const validationResult = createUserSchema.safeParse(body);
 
-    // Check if username already exists (excluding soft-deleted)
-    const existingUser = await db.select().from(users).where(and(eq(users.username, data.username), isNull(users.deletedAt))).limit(1);
+    if (!validationResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
+        400
+      );
+    }
+
+    const { username, password, role } = validationResult.data;
+
+    // Check if username already exists
+    const existingUser = await dbPengamanan
+      .select()
+      .from(users)
+      .where(eq(users.username, username))
+      .limit(1);
 
     if (existingUser.length > 0) {
-      return c.json({ message: "Username already exists" }, 400);
+      return c.json(
+        {
+          success: false,
+          error: "Conflict",
+          message: "Username already exists",
+        },
+        409
+      );
     }
 
-    // Check if email already exists (if provided, excluding soft-deleted)
-    if (data.email) {
-      const existingEmail = await db.select().from(users).where(and(eq(users.email, data.email), isNull(users.deletedAt))).limit(1);
+    // Hash password
+    const passwordHash = await hashPassword(password);
 
-      if (existingEmail.length > 0) {
-        return c.json({ message: "Email already exists" }, 400);
-      }
-    }
-
-    // Generate a random password for new users
-    const randomPassword = Math.random().toString(36).slice(-8);
-    const hashedPassword = await Bun.password.hash(data?.password || randomPassword);
-
-    const [user] = await db.insert(users).values({
-      ...data,
-      password: hashedPassword,
-    }).returning({
-      id: users.id,
-      username: users.username,
-      email: users.email,
-      fullName: users.fullName,
-      nik: users.nik,
-      role: users.role,
-      createdAt: users.createdAt,
-      updatedAt: users.updatedAt,
-    });
+    // Create user
+    const newUserResult = await dbPengamanan
+      .insert(users)
+      .values({
+        username,
+        passwordHash,
+        role,
+        createdBy: currentUser.userId,
+        updatedBy: currentUser.userId,
+      })
+      .returning({
+        id: users.id,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      });
 
     return c.json(
       {
+        success: true,
         message: "User created successfully",
-        user,
-        temporaryPassword: randomPassword,
+        data: newUserResult[0],
       },
       201
     );
   } catch (error) {
-    if (error instanceof z.ZodError) {
+    console.error("Create user error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while creating user",
+      },
+      500
+    );
+  }
+});
+
+/**
+ * PUT /users/:id
+ * Update user (superadmin only)
+ */
+usersRoutes.put("/:id", superadminOnly, async (c) => {
+  try {
+    const currentUser = c.get("user");
+    const userId = c.req.param("id");
+    const body = await c.req.json();
+    const validationResult = updateUserSchema.safeParse(body);
+
+    if (!validationResult.success) {
       return c.json(
-        { message: "validation_error", error: JSON.parse(error.message) },
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
         400
       );
     }
-    return c.json({ message: "Internal server error" }, 500);
-  }
-});
 
-// Update user - only accessible by admin role
-usersRoute.put("/:id", roleValidationMiddleware(["admin"]), async (c) => {
-  try {
-    const id = c.req.param("id");
-    const body = await c.req.json();
-    const data = userUpdateSchema.parse(body);
+    const updateData = validationResult.data;
 
-    // Check if email already exists (if provided, excluding soft-deleted)
-    if (data.email) {
-      const existingEmail = await db.select().from(users).where(and(eq(users.email, data.email), ne(users.id, id), isNull(users.deletedAt))).limit(1);
+    // Check if user exists
+    const existingUser = await dbPengamanan
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
 
-      if (existingEmail.length > 0) {
-        return c.json({ error: "Email already exists" }, 400);
+    if (existingUser.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Not Found",
+          message: "User not found",
+        },
+        404
+      );
+    }
+
+    // Prevent self-de modification for role changes
+    if (userId === currentUser.userId && updateData.role) {
+      return c.json(
+        {
+          success: false,
+          error: "Forbidden",
+          message: "You cannot modify your own role",
+        },
+        403
+      );
+    }
+
+    // If updating username, check for duplicates
+    if (updateData.username) {
+      const duplicateUser = await dbPengamanan
+        .select()
+        .from(users)
+        .where(and(eq(users.username, updateData.username), sql`${users.id} != ${userId}`))
+        .limit(1);
+
+      if (duplicateUser.length > 0) {
+        return c.json(
+          {
+            success: false,
+            error: "Conflict",
+            message: "Username already exists",
+          },
+          409
+        );
       }
     }
 
-    // Handle password update - only hash if password is provided and not empty
-    const updateData: any = { ...data };
-
-    // Remove password from updateData if it's empty or undefined
-    if (!updateData.password || updateData.password.trim() === "") {
-      delete updateData.password;
-    } else {
-      // Hash the password only if it's provided and not empty
-      const hashedPassword = await Bun.password.hash(updateData.password);
-      updateData.password = hashedPassword;
-    }
-
-    const [user] = await db.update(users).set(updateData).where(eq(users.id, id)).returning({
-      id: users.id,
-      username: users.username,
-      email: users.email,
-      fullName: users.fullName,
-      nik: users.nik,
-      role: users.role,
-      createdAt: users.createdAt,
-      updatedAt: users.updatedAt,
-    });
+    // Update user
+    const updatedUserResult = await dbPengamanan
+      .update(users)
+      .set({
+        ...updateData,
+        updatedBy: currentUser.userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId))
+      .returning({
+        id: users.id,
+        username: users.username,
+        role: users.role,
+        createdAt: users.createdAt,
+        updatedAt: users.updatedAt,
+      });
 
     return c.json({
+      success: true,
       message: "User updated successfully",
-      user,
+      data: updatedUserResult[0],
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return c.json({ message: error.message }, 400);
-    }
-    return c.json({ message: "Internal server error" }, 500);
+    console.error("Update user error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while updating user",
+      },
+      500
+    );
   }
 });
 
-// Delete user - only accessible by admin role (soft delete)
-usersRoute.delete("/:id", roleValidationMiddleware(["admin"]), async (c) => {
+/**
+ * DELETE /users/:id
+ * Soft delete user (superadmin only)
+ */
+usersRoutes.delete("/:id", superadminOnly, async (c) => {
   try {
-    const id = c.req.param("id");
+    const currentUser = c.get("user");
+    const userId = c.req.param("id");
 
-    // Check if user exists and get their role (excluding soft-deleted)
-    const userResult = await db.select({
-      id: users.id,
-      role: users.role,
-    })
+    // Prevent self-deletion
+    if (userId === currentUser.userId) {
+      return c.json(
+        {
+          success: false,
+          error: "Forbidden",
+          message: "You cannot delete your own account",
+        },
+        403
+      );
+    }
+
+    // Check if user exists
+    const existingUser = await dbPengamanan
+      .select()
       .from(users)
-      .where(and(eq(users.id, id), isNull(users.deletedAt)))
+      .where(eq(users.id, userId))
       .limit(1);
 
-    const user = userResult[0];
-
-    if (!user) {
-      return c.json({ error: "User not found" }, 404);
+    if (existingUser.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Not Found",
+          message: "User not found",
+        },
+        404
+      );
     }
 
-    // Prevent deletion of admin users
-    if (user.role === "admin") {
-      return c.json({ error: "Cannot delete admin users" }, 403);
-    }
+    // Soft delete user
+    await dbPengamanan
+      .update(users)
+      .set({
+        deletedAt: new Date(),
+        updatedAt: new Date(),
+        updatedBy: currentUser.userId,
+      })
+      .where(eq(users.id, userId));
 
-    await db.update(users)
-      .set({ deletedAt: new Date() })
-      .where(eq(users.id, id));
-
-    return c.json({ message: "User deleted successfully" });
+    return c.json({
+      success: true,
+      message: "User deleted successfully",
+    });
   } catch (error) {
-    return c.json({ message: "Internal server error" }, 500);
+    console.error("Delete user error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while deleting user",
+      },
+      500
+    );
   }
 });
 
-export { usersRoute as users };
+/**
+ * POST /users/:id/reset-password
+ * Reset user password (superadmin only)
+ */
+usersRoutes.post("/:id/reset-password", superadminOnly, async (c) => {
+  try {
+    const currentUser = c.get("user");
+    const userId = c.req.param("id");
+
+    // Generate default password (username + "123")
+    const userResult = await dbPengamanan
+      .select({ username: users.username })
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (userResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Not Found",
+          message: "User not found",
+        },
+        404
+      );
+    }
+
+    const defaultPassword = userResult[0].username + "123";
+    const passwordHash = await hashPassword(defaultPassword);
+
+    // Update password
+    await dbPengamanan
+      .update(users)
+      .set({
+        passwordHash,
+        updatedBy: currentUser.userId,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, userId));
+
+    return c.json({
+      success: true,
+      message: "Password reset successfully",
+      data: {
+        defaultPassword,
+      },
+    });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "An error occurred while resetting password",
+      },
+      500
+    );
+  }
+});
+
+export default usersRoutes;

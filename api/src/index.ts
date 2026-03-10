@@ -1,102 +1,111 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { auth } from "./routes/auth";
-import { customers } from "./routes/customers";
-import { deliveries } from "./routes/deliveries";
-import { users } from "./routes/users";
-import { menus } from "./routes/menus";
-import { parts } from "./routes/parts";
-import { scanLogs } from "./routes/scan-logs";
-import { configs } from "./routes/configs";
-import { profile } from "./routes/profile";
-import { whatsapp } from "./routes/whatsapp";
-import { client, db } from "./lib/db";
-import { configs as configsTable } from "./lib/schema";
-import { eq } from "drizzle-orm";
+import { authRoutes } from "./routes/auth";
+import { usersRoutes } from "./routes/users";
+import { petugasRoutes } from "./routes/petugas";
+import { posRoutes } from "./routes/pos";
+import { qrRoutes } from "./routes/qr";
+import { pengumumanRoutes } from "./routes/pengumuman";
+import { logsRoutes } from "./routes/logs";
+import mobileRoutes from "./routes/mobile";
 
 const app = new Hono();
 
 // Middlewares
-app.use("*", cors());
+app.use("*", cors({
+  origin: (origin) => {
+    // Allow requests from Cloudflare Pages and local development
+    const allowedOrigins = (
+      process.env.CORS_ORIGINS || "http://localhost:5173,https://your-app.pages.dev"
+    ).split(",");
+
+    if (!origin) return allowedOrigins[0]; // Allow for same-origin requests
+    if (allowedOrigins.includes(origin)) return origin;
+    return allowedOrigins[0];
+  },
+  credentials: true,
+}));
 app.use("*", logger());
 
 // Root endpoint
 app.get("/", (c) => {
-  return c.json({ message: "Pokayoke API is running!" });
+  return c.json({
+    message: "Pengamanan API is running!",
+    version: "1.1.0",
+    docs: "/api/docs",
+  });
 });
-
 
 // Health check endpoint
 app.get("/health", async (c) => {
   try {
-    // Optionally check database connectivity
-    await client`SELECT 1`;
+    const { dbPengamanan } = await import("./lib/db-pengamanan");
+    // Check database connectivity
+    await dbPengamanan.execute({ sql: "SELECT 1" });
     return c.json({ status: "ok", database: "connected" }, 200);
   } catch (error) {
     return c.json({ status: "error", database: "disconnected" }, 503);
   }
 });
 
-// Root endpoint
-app.get("/setup", async (c) => {
-  try {
-    // Get Sentry DSN from database configs
-    const sentryConfig = await db
-      .select()
-      .from(configsTable)
-      .where(eq(configsTable.key, "SENTRY_DSN"))
-      .limit(1);
+// ============================================================================
+// API ROUTES
+// ============================================================================
 
-    // value is JSONB type, so it can be string, object, or array
-    // For SENTRY_DSN, we store it as a string, so it comes back as a string
-    const sentryDsn =
-      (sentryConfig[0]?.value as string) ||
-      "https://bf5cbfc98bf34f712c798c11b072b7b2@o4510961584439296.ingest.us.sentry.io/4510961586995200";
+// Authentication routes
+app.route("/api/auth", authRoutes);
 
-    return c.json({ sentryDsn });
-  } catch (error) {
-    console.error("Error fetching sentry config:", error);
-    // Return default DSN on error
-    return c.json({
-      sentryDsn:
-        "https://bf5cbfc98bf34f712c798c11b072b7b2@o4510961584439296.ingest.us.sentry.io/4510961586995200",
-    });
-  }
-});
+// User management routes
+app.route("/api/users", usersRoutes);
 
-// Routes
-app.route("/auth", auth);
-app.route("/customers", customers);
-app.route("/deliveries", deliveries);
-app.route("/users", users);
-app.route("/menus", menus);
-app.route("/parts", parts);
-app.route("/scan-logs", scanLogs);
-app.route("/configs", configs);
-app.route("/profile", profile);
-app.route("/whatsapp", whatsapp);
+// Petugas Jaga routes
+app.route("/api/petugas", petugasRoutes);
+
+// Pos Jaga routes
+app.route("/api/pos", posRoutes);
+
+// QR Codes routes
+app.route("/api/qr", qrRoutes);
+
+// Pengumuman routes
+app.route("/api/pengumuman", pengumumanRoutes);
+
+// Logs & Reporting routes
+app.route("/api/logs", logsRoutes);
+
+// Mobile sync routes (with PIN authentication)
+app.route("/api/mobile", mobileRoutes);
 
 // 404 handler
 app.notFound((c) => {
-  return c.json({ error: "Route not found" }, 404);
+  return c.json({
+    success: false,
+    error: "Not Found",
+    message: "The requested endpoint does not exist",
+  }, 404);
 });
 
 // Error handler
 app.onError((err, c) => {
-  // console.error(err);
-  return c.json({ error: "Something went wrong" }, 500);
+  console.error("Error:", err);
+  return c.json({
+    success: false,
+    error: "Internal Server Error",
+    message: err.message || "Something went wrong",
+  }, 500);
 });
 
-const port = parseInt(process.env.PORT || "5000");
+const port = parseInt(process.env.PORT || "3000");
 
 // Graceful shutdown handler
 const shutdown = async (signal: string) => {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
 
   try {
+    const { dbPengamanan } = await import("./lib/db-pengamanan");
     // Close database connection
-    await client.end();
+    await dbPengamanan.disconnect();
     console.log("Database connection closed.");
   } catch (error) {
     console.error("Error closing database connection:", error);
@@ -112,7 +121,9 @@ const server = Bun.serve({
   fetch: app.fetch,
 });
 
-console.log(`Server running on http://localhost:${port}`);
+console.log(`🚀 Pengamanan API running on http://localhost:${port}`);
+console.log(`📚 API endpoints: http://localhost:${port}/api`);
+console.log(`❤️  Health check: http://localhost:${port}/health`);
 
 // Handle shutdown signals
 process.on("SIGTERM", () => shutdown("SIGTERM"));
