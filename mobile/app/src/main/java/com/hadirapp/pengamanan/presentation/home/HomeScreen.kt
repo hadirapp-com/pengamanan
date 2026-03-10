@@ -13,7 +13,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.hadirapp.pengamanan.data.model.PengumumanModel
-import com.hadirapp.pengamanan.data.model.Priority
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -195,10 +194,10 @@ private fun PengumumanCard(pengumuman: PengumumanModel) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
-            containerColor = when (pengumuman.prioritas) {
-                Priority.URGENT -> MaterialTheme.colorScheme.errorContainer
-                Priority.PENTING -> MaterialTheme.colorScheme.tertiaryContainer
-                Priority.NORMAL -> MaterialTheme.colorScheme.surface
+            containerColor = when (pengumuman.priority.lowercase()) {
+                "urgent" -> MaterialTheme.colorScheme.errorContainer
+                "important" -> MaterialTheme.colorScheme.tertiaryContainer
+                else -> MaterialTheme.colorScheme.surface
             }
         )
     ) {
@@ -211,16 +210,16 @@ private fun PengumumanCard(pengumuman: PengumumanModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = pengumuman.judul,
+                    text = pengumuman.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.weight(1f)
                 )
-                PriorityBadge(priority = pengumuman.prioritas)
+                PriorityBadge(priority = pengumuman.priority)
             }
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                text = pengumuman.isi,
+                text = pengumuman.content,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2
             )
@@ -229,17 +228,25 @@ private fun PengumumanCard(pengumuman: PengumumanModel) {
 }
 
 @Composable
-private fun PriorityBadge(priority: Priority) {
+private fun PriorityBadge(priority: String) {
+    val badgeColor = when (priority.lowercase()) {
+        "urgent" -> MaterialTheme.colorScheme.error
+        "important" -> MaterialTheme.colorScheme.tertiary
+        else -> MaterialTheme.colorScheme.secondary
+    }
+
+    val priorityLabel = when (priority.lowercase()) {
+        "urgent" -> "URGENT"
+        "important" -> "PENTING"
+        else -> "NORMAL"
+    }
+
     Surface(
-        color = when (priority) {
-            Priority.URGENT -> MaterialTheme.colorScheme.error
-            Priority.PENTING -> MaterialTheme.colorScheme.tertiary
-            Priority.NORMAL -> MaterialTheme.colorScheme.secondary
-        },
+        color = badgeColor,
         shape = MaterialTheme.shapes.small
     ) {
         Text(
-            text = priority.name,
+            text = priorityLabel,
             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSecondary
