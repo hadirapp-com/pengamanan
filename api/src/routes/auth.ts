@@ -104,14 +104,15 @@ authRoutes.post("/login", async (c) => {
     }
 
     // Generate JWT token
-    const token = await generateToken(user);
+    const {accessToken, refreshToken} = await generateToken(user);
 
     // Return user info and token
     return c.json({
       success: true,
       message: "Login successful",
       data: {
-        token,
+        accessToken, 
+        refreshToken,
         user: {
           id: user.id,
           username: user.username,

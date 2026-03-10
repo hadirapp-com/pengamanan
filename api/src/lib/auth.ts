@@ -10,6 +10,8 @@ const JWT_ALGORITHM = "HS256";
 // Token expiration (24 hours for web admin)
 const TOKEN_EXPIRY = "24h";
 
+const REFRESH_TOKEN_EXPIRY = "7d";
+
 // Mobile token expiration (3 months)
 const MOBILE_TOKEN_EXPIRY = "90d";
 
@@ -32,20 +34,26 @@ export interface MobileJWTPayload {
 /**
  * Generate JWT token for user
  */
-export async function generateToken(user: User): Promise<string> {
+export async function generateToken(user: User): Promise<{accessToken: string, refreshToken: string}> {
   const payload: JWTPayload = {
     userId: user.id,
     username: user.username,
     role: user.role,
   };
 
-  const token = await new SignJWT(payload)
+  const accessToken = await new SignJWT(payload)
     .setProtectedHeader({ alg: JWT_ALGORITHM })
     .setIssuedAt()
     .setExpirationTime(TOKEN_EXPIRY)
     .sign(JWT_SECRET);
 
-  return token;
+  const refreshToken = await new SignJWT(payload)
+    .setProtectedHeader({ alg: JWT_ALGORITHM })
+    .setIssuedAt()
+    .setExpirationTime(REFRESH_TOKEN_EXPIRY)
+    .sign(JWT_SECRET);
+
+  return { accessToken, refreshToken };
 }
 
 /**
