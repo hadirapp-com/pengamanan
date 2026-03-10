@@ -5,19 +5,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class PengumumanModel(
     val id: String,
-    val judul: String,
-    val isi: String,
-    val prioritas: Priority,
+    val title: String,
+    val content: String,
+    val priority: String,
     val createdAt: String,
-    val createdBy: String
+    val updatedAt: String
 )
-
-@Serializable
-enum class Priority {
-    NORMAL,
-    PENTING,
-    URGENT
-}
 
 @Serializable
 data class PengumumanListResponse(
