@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,7 +42,7 @@ export default function PetugasFormPage() {
     setValue,
     formState: { errors },
   } = useForm<PetugasFormValues>({
-    resolver: zodResolver(petugasFormSchema),
+    resolver: zodResolver(petugasFormSchema) as any,
     defaultValues: {
       nama: "",
       nik: "",
@@ -58,13 +59,16 @@ export default function PetugasFormPage() {
       return response.data;
     },
     enabled: isEdit,
-    onSuccess: (data) => {
-      setValue("nama", data.nama);
-      setValue("nik", data.nik);
-      setValue("noHp", data.noHp);
-      setValue("isActive", data.isActive);
-    },
   });
+
+  useEffect(() => {
+    if (petugasData) {
+      setValue("nama", petugasData.nama);
+      setValue("nik", petugasData.nik);
+      setValue("noHp", petugasData.noHp);
+      setValue("isActive", petugasData.isActive);
+    }
+  }, [petugasData, setValue]);
 
   const createMutation = useMutation({
     mutationFn: async (data: PetugasFormValues) => {
@@ -138,7 +142,7 @@ export default function PetugasFormPage() {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch id="isActive" checked={setValue} {...register("isActive")} disabled={isLoading} />
+              <Switch id="isActive" {...register("isActive")} disabled={isLoading} />
               <Label htmlFor="isActive">Aktif</Label>
             </div>
 

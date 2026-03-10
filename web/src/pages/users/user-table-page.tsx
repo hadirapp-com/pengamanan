@@ -55,9 +55,9 @@ interface User {
   id: string;
   username: string;
   role: "superadmin" | "admin";
-  email: string | null;
   fullName: string | null;
-  nik: string | null;
+  address: string | null;
+  phone: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -144,9 +144,9 @@ export default function UserTablePage() {
             <TableRow>
               <TableHead>Username</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Email</TableHead>
               <TableHead>Nama Lengkap</TableHead>
-              <TableHead>NIK</TableHead>
+              <TableHead>Alamat</TableHead>
+              <TableHead>Telepon</TableHead>
               <TableHead>Dibuat</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
             </TableRow>
@@ -173,9 +173,9 @@ export default function UserTablePage() {
                       {USER_ROLE_LABELS[user.role]}
                     </Badge>
                   </TableCell>
-                  <TableCell>{user.email || "-"}</TableCell>
                   <TableCell>{user.fullName || "-"}</TableCell>
-                  <TableCell>{user.nik || "-"}</TableCell>
+                  <TableCell className="max-w-xs truncate">{user.address || "-"}</TableCell>
+                  <TableCell>{user.phone || "-"}</TableCell>
                   <TableCell>
                     {format(new Date(user.createdAt), "dd MMM yyyy")}
                   </TableCell>

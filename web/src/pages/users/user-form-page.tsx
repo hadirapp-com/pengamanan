@@ -31,9 +31,9 @@ interface User {
   id: string;
   username: string;
   role: "superadmin" | "admin";
-  email: string | null;
   fullName: string | null;
-  nik: string | null;
+  address: string | null;
+  phone: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -54,9 +54,9 @@ export default function UserFormPage() {
       username: "",
       password: "",
       role: "admin",
-      email: "",
       fullName: "",
-      nik: "",
+      address: "",
+      phone: "",
     },
   });
 
@@ -76,9 +76,9 @@ export default function UserFormPage() {
     if (userData) {
       setValue("username", userData.username);
       setValue("role", userData.role);
-      setValue("email", userData.email || "");
       setValue("fullName", userData.fullName || "");
-      setValue("nik", userData.nik || "");
+      setValue("address", userData.address || "");
+      setValue("phone", userData.phone || "");
     }
   }, [userData, setValue]);
 
@@ -220,22 +220,6 @@ export default function UserFormPage() {
               )}
             </div>
 
-            {/* Email */}
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Masukkan email (opsional)"
-                disabled={isLoading}
-                {...register("email")}
-                className={errors.email ? "border-red-500" : ""}
-              />
-              {errors.email && (
-                <p className="text-sm text-red-500">{errors.email.message}</p>
-              )}
-            </div>
-
             {/* Full Name */}
             <div className="space-y-2">
               <Label htmlFor="fullName">Nama Lengkap</Label>
@@ -252,19 +236,35 @@ export default function UserFormPage() {
               )}
             </div>
 
-            {/* NIK */}
+            {/* Address */}
             <div className="space-y-2">
-              <Label htmlFor="nik">NIK</Label>
+              <Label htmlFor="address">Alamat</Label>
               <Input
-                id="nik"
+                id="address"
                 type="text"
-                placeholder="Masukkan NIK (opsional)"
+                placeholder="Masukkan alamat (opsional)"
                 disabled={isLoading}
-                {...register("nik")}
-                className={errors.nik ? "border-red-500" : ""}
+                {...register("address")}
+                className={errors.address ? "border-red-500" : ""}
               />
-              {errors.nik && (
-                <p className="text-sm text-red-500">{errors.nik.message}</p>
+              {errors.address && (
+                <p className="text-sm text-red-500">{errors.address.message}</p>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div className="space-y-2">
+              <Label htmlFor="phone">Telepon</Label>
+              <Input
+                id="phone"
+                type="text"
+                placeholder="Masukkan nomor telepon (opsional)"
+                disabled={isLoading}
+                {...register("phone")}
+                className={errors.phone ? "border-red-500" : ""}
+              />
+              {errors.phone && (
+                <p className="text-sm text-red-500">{errors.phone.message}</p>
               )}
             </div>
 

@@ -14,7 +14,7 @@ import { Loader } from "@/components/ui/loader";
 
 import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/lib/api";
-import { loginSchema, type LoginFormValues } from "@/lib/validations";
+import type { LoginFormValues } from "@/lib/validations";
 import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT } from "@/config/constants";
 import { authRoutes } from "@/config/routes";
 

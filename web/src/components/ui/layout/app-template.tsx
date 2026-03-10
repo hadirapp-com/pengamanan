@@ -43,7 +43,7 @@ export function AppTemplate() {
       <Header />
       <div className="flex w-full flex-1 h-[calc(100vh-6rem)]">
         <Sidebar />
-        <main className="flex-1 w-full overflow-auto md:p-6 lg:p-8 lg:px-8 xl:px-12 2xl:px-16">
+        <main className="flex-1 w-full overflow-auto p-4 sm:p-6 md:p-6 lg:p-8 lg:px-8 xl:px-12 2xl:px-16">
           <Suspense fallback={<TableSkeleton />} key={location.key}>
             <Outlet />
           </Suspense>

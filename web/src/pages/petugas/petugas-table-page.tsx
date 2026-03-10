@@ -2,17 +2,18 @@
 // PENGAMANAN LEBARAN 2026 - PETUGAS JAGA TABLE PAGE
 // ============================================================================
 
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Plus, Search, MoreVertical, Edit, Trash2 } from "lucide-react";
+import { Plus, MoreVertical, Edit, Trash2 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -23,6 +24,7 @@ import { axiosInstance } from "@/lib/api";
 import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT } from "@/config/constants";
 import { petugasEndpoint } from "@/config/endpoints";
 import { appRoutes } from "@/config/routes";
+import { useDataTableStore } from "@/store/data-table";
 
 interface Petugas {
   id: string;
@@ -36,26 +38,71 @@ interface Petugas {
 
 export default function PetugasTablePage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedPetugas, setSelectedPetugas] = useState<Petugas | null>(null);
-  const [activeFilter, setActiveFilter] = useState<boolean | "all">("all");
+
+  // Use data table store for state management
+  const {
+    globalFilter,
+    page,
+    perPage,
+    sortCol,
+    sortDir,
+    setGlobalFilter,
+    setPage,
+    setPerPage,
+    resetDataTable,
+  } = useDataTableStore();
+
+  // Debounce search input (500ms delay)
+  const [debouncedGlobalFilter] = useDebounce(globalFilter, 500);
+
+  // Local active filter (specific to petugas page)
+  const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
+
+  // Create stable reference for filters debouncing
+  const activeFilterString = useMemo(() => JSON.stringify({ activeFilter }), [activeFilter]);
+  const [debouncedActiveFilterString] = useDebounce(activeFilterString, 500);
+  const debouncedActiveFilter = useMemo(() => JSON.parse(debouncedActiveFilterString || '{}'), [debouncedActiveFilterString]);
+
+  // Build query with all filters (conditional)
+  const query = {
+    search: debouncedGlobalFilter || undefined,
+    page,
+    perPage,
+    sortCol,
+    sortDir,
+    // Add active filter if not "all"
+    ...(debouncedActiveFilter.activeFilter && debouncedActiveFilter.activeFilter !== "all" && {
+      isActive: debouncedActiveFilter.activeFilter === "active"
+    }),
+  };
+
+  // Create serializable query key for React Query caching
+  const queryKey = [
+    "petugas",
+    debouncedGlobalFilter,
+    page,
+    perPage,
+    sortCol,
+    sortDir,
+    debouncedActiveFilterString,
+  ];
 
   const { data: petugasData, isLoading, refetch } = useQueryService(
     petugasEndpoint.root,
-    { page, limit, search: search || undefined },
-    { enabled: true }
+    query,
+    {
+      queryKey,
+    }
   );
-  console.log({petugasData})
 
   let petugasList = Array.isArray(petugasData) ? petugasData : [];
 
-  // Filter by active status
-  if (activeFilter !== "all") {
-    petugasList = petugasList.filter((p: Petugas) => p.isActive === activeFilter);
-  }
+  // Reset filters on unmount
+  useEffect(() => {
+    return () => {
+      resetDataTable();
+    };
+  }, [resetDataTable]);
 
   // Toggle active status mutation
   const toggleActiveMutation = useMutation({
@@ -93,6 +140,9 @@ export default function PetugasTablePage() {
     },
   });
 
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedPetugas, setSelectedPetugas] = useState<Petugas | null>(null);
+
   const handleDelete = () => {
     if (selectedPetugas) deleteMutation.mutate(selectedPetugas.id);
   };
@@ -115,33 +165,26 @@ export default function PetugasTablePage() {
       </div>
 
       <div className="flex items-center gap-4">
+        {/* Global search with debouncing */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input placeholder="Cari petugas..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <Input
+            placeholder="Cari petugas..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant={activeFilter === "all" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter("all")}
-          >
-            Semua
-          </Button>
-          <Button
-            variant={activeFilter === true ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter(true)}
-          >
-            Aktif
-          </Button>
-          <Button
-            variant={activeFilter === false ? "default" : "outline"}
-            size="sm"
-            onClick={() => setActiveFilter(false)}
-          >
-            Non-Aktif
-          </Button>
-        </div>
+
+        {/* Active status filter with debouncing */}
+        <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as "all" | "active" | "inactive")}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Status</SelectItem>
+            <SelectItem value="active">Aktif</SelectItem>
+            <SelectItem value="inactive">Non-Aktif</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-lg border bg-white shadow">
@@ -166,7 +209,7 @@ export default function PetugasTablePage() {
             ) : petugasList.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center text-gray-500">
-                  {search ? "Tidak ada petugas yang cocok dengan pencarian" : "Belum ada petugas"}
+                  {globalFilter ? "Tidak ada petugas yang cocok dengan pencarian" : "Belum ada petugas"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -210,12 +253,43 @@ export default function PetugasTablePage() {
         </Table>
       </div>
 
+      {/* Pagination controls using store */}
       {petugasList.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((petugasData?.total || 0) / limit)}</div>
+          <div className="text-sm text-gray-600">
+            Halaman {page} dari {Math.ceil((petugasData?.total || 0) / perPage)}
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={petugasList.length < limit}>Next</Button>
+            <Select
+              value={String(perPage)}
+              onValueChange={(v) => setPerPage(Number(v))}
+            >
+              <SelectTrigger className="w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(Math.max(1, page - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setPage(page + 1)}
+              disabled={petugasList.length < perPage}
+            >
+              Next
+            </Button>
           </div>
         </div>
       )}
@@ -224,7 +298,9 @@ export default function PetugasTablePage() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Hapus Petugas?</AlertDialogTitle>
-            <AlertDialogDescription>Apakah Anda yakin ingin menghapus petugas <strong>{selectedPetugas?.nama}</strong>?</AlertDialogDescription>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus petugas <strong>{selectedPetugas?.nama}</strong>?
+            </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>

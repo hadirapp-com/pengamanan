@@ -7,6 +7,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,7 +36,7 @@ export default function PosFormPage() {
   const isEdit = !!id;
 
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<PosFormValues>({
-    resolver: zodResolver(posFormSchema),
+    resolver: zodResolver(posFormSchema) as any,
     defaultValues: { nama: "", lokasi: "", isActive: true },
   });
 
@@ -47,12 +48,15 @@ export default function PosFormPage() {
       return response.data;
     },
     enabled: isEdit,
-    onSuccess: (data) => {
-      setValue("nama", data.nama);
-      setValue("lokasi", data.lokasi);
-      setValue("isActive", data.isActive);
-    },
   });
+
+  useEffect(() => {
+    if (posData) {
+      setValue("nama", posData.nama);
+      setValue("lokasi", posData.lokasi);
+      setValue("isActive", posData.isActive);
+    }
+  }, [posData, setValue]);
 
   const createMutation = useMutation({
     mutationFn: async (data: PosFormValues) => axiosInstance.post("/api/pos", data),

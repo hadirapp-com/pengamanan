@@ -2,28 +2,34 @@
 // PENGAMANAN LEBARAN 2026 - QR CODES TABLE PAGE
 // ============================================================================
 
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
+import { useDebounce } from "use-debounce";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import QRCode from "react-qr-code";
+import { toDataURL } from "qrcode";
+import jsPDF from "jspdf";
 import {
   Plus,
-  Search,
   MoreVertical,
   Edit,
   Trash2,
   Download,
   FileDown,
   Upload,
-  QrCode,
   Eye,
+  Printer,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -52,7 +58,6 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -63,14 +68,15 @@ import { axiosInstance } from "@/lib/api";
 import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT } from "@/config/constants";
 import { qrEndpoint } from "@/config/endpoints";
 import { appRoutes } from "@/config/routes";
+import { useDataTableStore } from "@/store/data-table";
 
 interface QrCode {
   id: string;
-  uuid: string;
+  qrCode: string;
   nama: string;
   penanggungJawab: string;
-  validityStart: string;
-  validityEnd: string;
+  validFrom: string;
+  validUntil: string;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -78,26 +84,80 @@ interface QrCode {
 
 export default function QrTablePage() {
   const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
-  const [selectedQr, setSelectedQr] = useState<QrCode | null>(null);
-  const [selectedQrs, setSelectedQrs] = useState<Set<string>>(new Set());
-  const [activeFilter, setActiveFilter] = useState<boolean | "all">("all");
+
+  // Use data table store for state management
+  const {
+    globalFilter,
+    page,
+    perPage,
+    sortCol,
+    sortDir,
+    setGlobalFilter,
+    setPage,
+    setPerPage,
+    resetDataTable,
+  } = useDataTableStore();
+
+  // Debounce search input (500ms delay)
+  const [debouncedGlobalFilter] = useDebounce(globalFilter, 500);
+
+  // Local active filter (specific to QR page)
+  const [activeFilter, setActiveFilter] = useState<"all" | "active" | "inactive">("all");
+
+  // Create stable reference for filters debouncing
+  const activeFilterString = useMemo(() => JSON.stringify({ activeFilter }), [activeFilter]);
+  const [debouncedActiveFilterString] = useDebounce(activeFilterString, 500);
+  const debouncedActiveFilter = useMemo(() => JSON.parse(debouncedActiveFilterString || '{}'), [debouncedActiveFilterString]);
+
+  // Build query with all filters (conditional)
+  const query = {
+    search: debouncedGlobalFilter || undefined,
+    page,
+    perPage,
+    sortCol,
+    sortDir,
+    // Add active filter if not "all"
+    ...(debouncedActiveFilter.activeFilter && debouncedActiveFilter.activeFilter !== "all" && {
+      isActive: debouncedActiveFilter.activeFilter === "active"
+    }),
+  };
+
+  // Create serializable query key for React Query caching
+  const queryKey = [
+    "qr",
+    debouncedGlobalFilter,
+    page,
+    perPage,
+    sortCol,
+    sortDir,
+    debouncedActiveFilterString,
+  ];
 
   const { data: qrData, isLoading, refetch } = useQueryService(
     qrEndpoint.root,
-    { page, limit, search: search }
+    query,
+    {
+      queryKey,
+    }
   );
 
   let qrList = Array.isArray(qrData) ? qrData : [];
 
-  // Filter by active status
-  if (activeFilter !== "all") {
-    qrList = qrList.filter((q: QrCode) => q.isActive === activeFilter);
-  }
+  // Local state for dialogs and selection
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [printPreviewOpen, setPrintPreviewOpen] = useState(false);
+  const [qrSize, setQrSize] = useState(50); // QR size in mm (default 50mm)
+  const [selectedQr, setSelectedQr] = useState<QrCode | null>(null);
+  const [selectedQrs, setSelectedQrs] = useState<Set<string>>(new Set());
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // Reset filters on unmount
+  useEffect(() => {
+    return () => {
+      resetDataTable();
+    };
+  }, [resetDataTable]);
 
   // Toggle active status
   const toggleActiveMutation = useMutation({
@@ -129,14 +189,17 @@ export default function QrTablePage() {
     },
   });
 
-  // Download single QR image
+  // Download single QR image (client-side generation)
   const downloadQrImage = async (qr: QrCode) => {
     try {
-      const response = await axiosInstance.get(`/api/qr/${qr.id}/image`, { responseType: "blob" });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const pngDataUrl = await toDataURL(qr.qrCode, {
+        width: 300,
+        margin: 2,
+        errorCorrectionLevel: "M",
+      });
       const link = document.createElement("a");
-      link.href = url;
-      link.download = `qr-${qr.nama}-${qr.uuid}.png`;
+      link.href = pngDataUrl;
+      link.download = `qr-${qr.nama}-${qr.qrCode}.png`;
       document.body.appendChild(link);
       link.click();
       link.remove();
@@ -146,22 +209,85 @@ export default function QrTablePage() {
     }
   };
 
-  // Download PDF for selected QRs
-  const downloadPdf = async () => {
+  // Download PDF for selected QRs (client-side generation)
+  const downloadPdf = async (customQrSize?: number) => {
+    const actualQrSize = customQrSize || qrSize;
+
     if (selectedQrs.size === 0) {
       toast.error("Pilih QR terlebih dahulu");
       return;
     }
     try {
-      const response = await axiosInstance.post(`/api/qr/pdf`, { ids: Array.from(selectedQrs) }, { responseType: "blob" });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `qr-codes-${format(new Date(), "yyyy-MM-dd")}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const spacing = 15;
+      const textHeight = 20; // Space for text below QR code
+      const titleHeight = 30; // Space for title on first page
+      const qrCellHeight = actualQrSize + textHeight; // Total height per row
+
+      // Calculate grid layout
+      const maxCols = Math.floor((pageWidth - 2 * margin) / (actualQrSize + spacing));
+      // Calculate total grid width to center it
+      const totalGridWidth = maxCols * actualQrSize + (maxCols - 1) * spacing;
+      // Calculate starting X position to center the grid
+      const startX = (pageWidth - totalGridWidth) / 2;
+
+      let x = startX;
+      let y = margin + titleHeight;
+      let col = 0;
+
+      // Title
+      pdf.setFontSize(16);
+      pdf.text("QR Codes - Pengamanan Lebaran 2026", pageWidth / 2, 15, { align: "center" });
+      pdf.setFontSize(10);
+      pdf.text(`Generated: ${new Date().toLocaleString("id-ID")}`, pageWidth / 2, 22, { align: "center" });
+
+      // Get selected QR codes
+      const selectedQrList = qrList.filter((qr: QrCode) => selectedQrs.has(qr.id));
+
+      for (const qr of selectedQrList) {
+        // Check if we need a new page
+        if (y + qrCellHeight > pageHeight - margin) {
+          pdf.addPage();
+          y = margin;
+          col = 0;
+        }
+
+        // Generate QR code as data URL with higher resolution for crisp rendering
+        const qrDataUrl = await toDataURL(qr.qrCode, {
+          width: actualQrSize * 8, // 8x resolution for crisp QR codes
+          margin: 1,
+          errorCorrectionLevel: "H", // High error correction for better scanning
+        });
+
+        // Add QR image
+        pdf.addImage(qrDataUrl, "PNG", x, y, actualQrSize, actualQrSize);
+
+        // Add nama and penanggung jawab below QR
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(qr.nama, x + actualQrSize / 2, y + actualQrSize + 7, { align: "center", maxWidth: actualQrSize });
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.text(qr.penanggungJawab, x + actualQrSize / 2, y + actualQrSize + 14, { align: "center", maxWidth: actualQrSize });
+
+        // Move to next position
+        col++;
+        if (col >= maxCols) {
+          col = 0;
+          x = startX; // Reset to centered starting position
+          y += qrCellHeight;
+        } else {
+          x += actualQrSize + spacing;
+        }
+      }
+
+      // Save PDF
+      pdf.save(`qr-codes-${format(new Date(), "yyyy-MM-dd")}.pdf`);
       toast.success(GENERAL_SUCCESS_TEXT, { description: "PDF berhasil didownload" });
+      setPrintPreviewOpen(false); // Close preview after download
     } catch {
       toast.error(GENERAL_ERROR_TEXT, { description: "Gagal mendownload PDF" });
     }
@@ -205,8 +331,8 @@ export default function QrTablePage() {
         </div>
         <div className="flex items-center gap-2">
           {selectedQrs.size > 0 && (
-            <Button onClick={downloadPdf} variant="outline" className="gap-2">
-              <FileDown className="h-4 w-4" /> Download PDF ({selectedQrs.size})
+            <Button onClick={() => setPrintPreviewOpen(true)} variant="outline" className="gap-2">
+              <Printer className="h-4 w-4" /> Print Preview ({selectedQrs.size})
             </Button>
           )}
           <Button onClick={() => navigate(appRoutes.qrCreate)} className="gap-2">
@@ -217,15 +343,27 @@ export default function QrTablePage() {
 
       {/* Filters */}
       <div className="flex items-center gap-4">
+        {/* Global search with debouncing */}
         <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input placeholder="Cari QR..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+          <Input
+            placeholder="Cari QR..."
+            value={globalFilter}
+            onChange={(e) => setGlobalFilter(e.target.value)}
+          />
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant={activeFilter === "all" ? "default" : "outline"} size="sm" onClick={() => setActiveFilter("all")}>Semua</Button>
-          <Button variant={activeFilter === true ? "default" : "outline"} size="sm" onClick={() => setActiveFilter(true)}>Aktif</Button>
-          <Button variant={activeFilter === false ? "default" : "outline"} size="sm" onClick={() => setActiveFilter(false)}>Non-Aktif</Button>
-        </div>
+
+        {/* Active status filter with debouncing */}
+        <Select value={activeFilter} onValueChange={(v) => setActiveFilter(v as "all" | "active" | "inactive")}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Filter Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Semua Status</SelectItem>
+            <SelectItem value="active">Aktif</SelectItem>
+            <SelectItem value="inactive">Non-Aktif</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Button onClick={() => navigate(appRoutes.qrCreate + "?bulk=true")} variant="outline" className="gap-2">
           <Upload className="h-4 w-4" /> Bulk Upload
         </Button>
@@ -240,7 +378,6 @@ export default function QrTablePage() {
                 <Checkbox checked={selectedQrs.size === qrList.length && qrList.length > 0} onCheckedChange={toggleSelectAll} />
               </TableHead>
               <TableHead>Nama</TableHead>
-              <TableHead>UUID</TableHead>
               <TableHead>Penanggung Jawab</TableHead>
               <TableHead>Validity Period</TableHead>
               <TableHead>Status</TableHead>
@@ -251,7 +388,7 @@ export default function QrTablePage() {
             {isLoading ? (
               <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader className="mx-auto h-6 w-6" /></TableCell></TableRow>
             ) : qrList.length === 0 ? (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-500">{search ? "Tidak ada QR yang cocok dengan pencarian" : "Belum ada QR"}</TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-500">{globalFilter ? "Tidak ada QR yang cocok dengan pencarian" : "Belum ada QR"}</TableCell></TableRow>
             ) : (
               qrList.map((qr: QrCode) => (
                 <TableRow key={qr.id}>
@@ -259,12 +396,11 @@ export default function QrTablePage() {
                     <Checkbox checked={selectedQrs.has(qr.id)} onCheckedChange={() => toggleSelect(qr.id)} />
                   </TableCell>
                   <TableCell className="font-medium">{qr.nama}</TableCell>
-                  <TableCell className="font-mono text-xs">{qr.uuid}</TableCell>
                   <TableCell>{qr.penanggungJawab}</TableCell>
                   <TableCell>
                     <div className="text-xs">
-                      <div>{format(new Date(qr.validityStart), "dd MMM yyyy")}</div>
-                      <div className="text-gray-500">s/d {format(new Date(qr.validityEnd), "dd MMM yyyy")}</div>
+                      <div>{format(new Date(qr.validFrom), "dd MMM yyyy")}</div>
+                      <div className="text-gray-500">s/d {format(new Date(qr.validUntil), "dd MMM yyyy")}</div>
                     </div>
                   </TableCell>
                   <TableCell>
@@ -292,21 +428,37 @@ export default function QrTablePage() {
         </Table>
       </div>
 
-      {/* Pagination */}
+      {/* Pagination controls using store */}
       {qrList.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((qrData?.total || 0) / limit)}</div>
+          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((qrData?.total || 0) / perPage)}</div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage((p) => p + 1)} disabled={qrList.length < limit}>Next</Button>
+            <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
+              <SelectTrigger className="w-[70px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="10">10</SelectItem>
+                <SelectItem value="25">25</SelectItem>
+                <SelectItem value="50">50</SelectItem>
+                <SelectItem value="100">100</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={qrList.length < perPage}>Next</Button>
           </div>
         </div>
       )}
 
-      {/* Delete Dialog */}
+      {/* Delete confirmation dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Hapus QR?</AlertDialogTitle><AlertDialogDescription>Apakah Anda yakin ingin menghapus QR <strong>{selectedQr?.nama}</strong>?</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Hapus QR Code?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Apakah Anda yakin ingin menghapus QR code <strong>{selectedQr?.nama}</strong>?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700" disabled={deleteMutation.isPending}>
@@ -316,32 +468,137 @@ export default function QrTablePage() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Preview Dialog */}
+      {/* Preview dialog */}
       <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Preview QR Code</DialogTitle>
-            <DialogDescription>QR Code untuk {selectedQr?.nama}</DialogDescription>
           </DialogHeader>
           {selectedQr && (
             <div className="space-y-4">
-              <div className="flex justify-center p-4 border rounded-lg bg-white">
-                {/* QR Code would be rendered here - using placeholder for now */}
-                <div className="w-48 h-48 flex items-center justify-center bg-gray-100 rounded">
-                  <QrCode className="h-24 w-24 text-gray-400" />
-                  <p className="text-xs text-center text-gray-500 mt-2">{selectedQr.uuid}</p>
-                </div>
+              <div className="flex items-center justify-center bg-white p-4 rounded-lg border">
+                <QRCode
+                  value={selectedQr.qrCode}
+                  size={200}
+                  level={"M"}
+                />
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between"><span className="font-medium">Nama:</span><span>{selectedQr.nama}</span></div>
+                <div className="flex justify-between"><span className="font-medium">UUID:</span><span className="font-mono text-xs">{selectedQr.qrCode}</span></div>
                 <div className="flex justify-between"><span className="font-medium">Penanggung Jawab:</span><span>{selectedQr.penanggungJawab}</span></div>
-                <div className="flex justify-between"><span className="font-medium">Validity:</span><span>{format(new Date(selectedQr.validityStart), "dd MMM yyyy")} - {format(new Date(selectedQr.validityEnd), "dd MMM yyyy")}</span></div>
+                <div className="flex justify-between"><span className="font-medium">Validity:</span><span>{format(new Date(selectedQr.validFrom), "dd MMM yyyy")} - {format(new Date(selectedQr.validUntil), "dd MMM yyyy")}</span></div>
               </div>
               <Button onClick={() => downloadQrImage(selectedQr)} className="w-full gap-2">
                 <Download className="h-4 w-4" /> Download PNG
               </Button>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Print Preview Dialog */}
+      <Dialog open={printPreviewOpen} onOpenChange={setPrintPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] p-0 sm:max-w-[80vw] flex flex-col">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b">
+            <DialogTitle>Print Preview - QR Codes</DialogTitle>
+          </DialogHeader>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-6 py-4 space-y-6">
+            {/* Size Controls */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="qrSize">Ukuran QR Code: {qrSize}mm</Label>
+                <span className="text-sm text-muted-foreground">
+                  {selectedQrs.size} QR terpilih
+                </span>
+              </div>
+              <Slider
+                id="qrSize"
+                min={20}
+                max={100}
+                step={5}
+                value={[qrSize]}
+                onValueChange={(value) => setQrSize(value[0])}
+                className="w-full"
+              />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>20mm (Kecil)</span>
+                <span>50mm (Standar)</span>
+                <span>100mm (Besar)</span>
+              </div>
+            </div>
+
+            {/* Preview Area */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium">Preview Layout</h3>
+                <div className="text-xs text-muted-foreground">
+                  A4 Page: 210mm x 297mm
+                </div>
+              </div>
+
+              {/* Simulated A4 Page Preview */}
+              <div
+                ref={previewRef}
+                className="mx-auto bg-white border-2 border-gray-300 shadow-lg"
+                style={{
+                  width: '210mm',
+                  minHeight: '297mm',
+                  padding: '20mm',
+                  boxSizing: 'border-box',
+                  transform: 'scale(0.6)',
+                  transformOrigin: 'top center',
+                }}
+              >
+                {/* Title */}
+                <div className="text-center mb-6">
+                  <div className="text-lg font-bold">QR Codes - Pengamanan Lebaran 2026</div>
+                  <div className="text-xs">{new Date().toLocaleString("id-ID")}</div>
+                </div>
+
+                {/* QR Grid Preview */}
+                <div className="grid gap-3 justify-center" style={{
+                  gridTemplateColumns: `repeat(${Math.floor((210 - 40) / (qrSize + 15))}, ${qrSize}mm)`,
+                  justifyContent: 'center',
+                }}>
+                  {qrList.filter((qr: QrCode) => selectedQrs.has(qr.id)).slice(0, 12).map((qr: QrCode) => (
+                    <div key={qr.id} className="flex flex-col items-center" style={{ width: `${qrSize}mm` }}>
+                      <QRCode
+                        value={qr.qrCode}
+                        size={Math.round(qrSize * 3.78)} // Convert mm to pixels (1mm ≈ 3.78px at 96dpi)
+                        level={"H"}
+                        className="border border-gray-200"
+                      />
+                      <div className="text-[8px] text-center mt-1 font-semibold leading-tight w-full overflow-hidden text-ellipsis">
+                        {qr.nama}
+                      </div>
+                      <div className="text-[6px] text-center leading-tight w-full overflow-hidden text-ellipsis text-gray-600">
+                        {qr.penanggungJawab}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {qrList.filter((qr: QrCode) => selectedQrs.has(qr.id)).length > 12 && (
+                  <div className="text-center text-xs text-gray-500 mt-4">
+                    ... dan {qrList.filter((qr: QrCode) => selectedQrs.has(qr.id)).length - 12} QR lainnya
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Fixed Footer Actions */}
+          <div className="flex items-center justify-end gap-3 px-6 py-4 border-t bg-background">
+            <Button variant="outline" onClick={() => setPrintPreviewOpen(false)}>
+              Batal
+            </Button>
+            <Button onClick={() => downloadPdf()} className="gap-2">
+              <FileDown className="h-4 w-4" /> Download PDF
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
