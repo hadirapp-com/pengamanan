@@ -17,36 +17,48 @@ async function seed() {
     // ============================================================================
     console.log("📝 Seeding users...");
 
-    const superadminUserId = crypto.randomUUID();
+    let superadminUserId: string;
+    const superadminUserToSeed = {
+      username: "superadmin",
+      passwordHash: await Bun.password.hash("admin123"),
+      role: "superadmin" as const,
+    };
 
-    const usersToSeed = [
-      {
+    const existingSuperadmin = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, "superadmin"))
+      .limit(1);
+
+    if (existingSuperadmin.length === 0) {
+      superadminUserId = crypto.randomUUID();
+      await db.insert(users).values({
+        ...superadminUserToSeed,
         id: superadminUserId,
-        username: "superadmin",
-        passwordHash: await Bun.password.hash("admin123"),
-        role: "superadmin" as const,
-      },
-      {
-        id: crypto.randomUUID(),
-        username: "admin",
-        passwordHash: await Bun.password.hash("admin123"),
-        role: "admin" as const,
-      },
-    ];
+      });
+      console.log(`  ✓ User created: superadmin (superadmin)`);
+    } else {
+      superadminUserId = existingSuperadmin[0].id;
+      console.log(`  − User already exists: superadmin`);
+    }
 
-    for (const user of usersToSeed) {
-      const existingUser = await db
-        .select()
-        .from(users)
-        .where(eq(users.username, user.username))
-        .limit(1);
+    const adminUserToSeed = {
+      username: "admin",
+      passwordHash: await Bun.password.hash("admin123"),
+      role: "admin" as const,
+    };
 
-      if (existingUser.length === 0) {
-        await db.insert(users).values(user);
-        console.log(`  ✓ User created: ${user.username} (${user.role})`);
-      } else {
-        console.log(`  − User already exists: ${user.username}`);
-      }
+    const existingAdmin = await db
+      .select()
+      .from(users)
+      .where(eq(users.username, "admin"))
+      .limit(1);
+
+    if (existingAdmin.length === 0) {
+      await db.insert(users).values(adminUserToSeed);
+      console.log(`  ✓ User created: admin (admin)`);
+    } else {
+      console.log(`  − User already exists: admin`);
     }
 
     // ============================================================================
@@ -155,8 +167,8 @@ async function seed() {
     ];
 
     // Lebaran 2026 dates (assuming around March 2026)
-    const validFrom = new Date("2026-03-10");
-    const validUntil = new Date("2026-04-10");
+    const validFrom = "2026-03-10";
+    const validUntil = "2026-04-10";
 
     for (const qr of qrToSeed) {
       const existingQr = await db
@@ -210,22 +222,22 @@ async function seed() {
       },
     ];
 
-    for (const pengumuman of pengumumanToSeed) {
+    for (const pengumumanItem of pengumumanToSeed) {
       const existingPengumuman = await db
         .select()
         .from(pengumuman)
-        .where(eq(pengumuman.title, pengumuman.title))
+        .where(eq(pengumuman.title, pengumumanItem.title))
         .limit(1);
 
       if (existingPengumuman.length === 0) {
         await db.insert(pengumuman).values({
-          ...pengumuman,
+          ...pengumumanItem,
           createdBy: superadminUserId,
           updatedBy: superadminUserId,
         });
-        console.log(`  ✓ Pengumuman created: ${pengumuman.title}`);
+        console.log(`  ✓ Pengumuman created: ${pengumumanItem.title}`);
       } else {
-        console.log(`  − Pengumuman already exists: ${pengumuman.title}`);
+        console.log(`  − Pengumuman already exists: ${pengumumanItem.title}`);
       }
     }
 

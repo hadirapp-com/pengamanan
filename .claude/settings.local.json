@@ -7,7 +7,12 @@
       "Bash(git rm:*)",
       "Bash(git mv:*)",
       "Bash(ls:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(bun run:*)",
+      "Bash(psql:*)",
+      "Bash(bun -e \"\nimport { db } from ''./src/lib/db'';\nimport { sql } from ''drizzle-orm'';\n\n// Check if pengumuman table exists\nconst result = await db.execute\\(sql\\\\`\n  SELECT table_name \n  FROM information_schema.tables \n  WHERE table_schema = ''pengamanan'' \n  AND table_name = ''pengumuman''\n\\\\`\\);\nconsole.log\\(''Pengumuman table exists:'', result.rows\\);\n\")",
+      "Bash(bun:*)",
+      "Bash(git checkout:*)"
     ]
   }
 }

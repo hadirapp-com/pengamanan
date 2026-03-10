@@ -2,7 +2,7 @@
 # PENGAMANAN API - HTTP Request Collection
 # =============================================================================
 # API Base URL
-@api_url=http://localhost:3000
+@api_url=http://localhost:5000
 @whatsapp_service=http://192.168.1.6:3000
 
 # Default credentials (after seeding)

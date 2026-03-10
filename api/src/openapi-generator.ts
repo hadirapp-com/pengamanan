@@ -119,7 +119,7 @@ function buildOpenAPISpec(allRoutes: ParsedRoute[]): any {
   return {
     openapi: "3.0.0",
     info: {
-      title: "Pokayoke API",
+      title: "Pengamanan API",
       version: "1.0.0",
       description: "API for Pokayoke scanning system - Quality control for automotive parts",
       contact: {

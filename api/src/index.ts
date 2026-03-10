@@ -1,13 +1,13 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
-import { authRoutes } from "./routes/auth";
-import { usersRoutes } from "./routes/users";
-import { petugasRoutes } from "./routes/petugas";
-import { posRoutes } from "./routes/pos";
-import { qrRoutes } from "./routes/qr";
-import { pengumumanRoutes } from "./routes/pengumuman";
-import { logsRoutes } from "./routes/logs";
+import authRoutes from "./routes/auth";
+import usersRoutes from "./routes/users";
+import petugasRoutes from "./routes/petugas";
+import posRoutes from "./routes/pos";
+import qrRoutes from "./routes/qr";
+import pengumumanRoutes from "./routes/pengumuman";
+import logsRoutes from "./routes/logs";
 import mobileRoutes from "./routes/mobile";
 
 const app = new Hono();

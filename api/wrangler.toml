@@ -1,13 +1,13 @@
-name = "pokayoke-api"
+name = "pengamanan-api"
 compatibility_date = "2024-01-01"
 compatibility_flags = ["nodejs_compat"]
 main = "dist/index.js"
 
 [env.production]
-name = "pokayoke-api-prod"
+name = "pengamanan-api-prod"
 
 [env.staging]
-name = "pokayoke-api-staging"
+name = "pengamanan-api-staging"
 
 [build]
 command = "bun run build"

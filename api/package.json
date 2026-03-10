@@ -1,5 +1,5 @@
 {
-  "name": "pokayoke-api",
+  "name": "pengamanan-api",
   "version": "1.0.0",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
@@ -14,7 +14,6 @@
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "bun run src/seed.ts",
-    "db:seed:pengamanan": "bun run src/seed-pengamanan.ts",
     "openapi": "bun run src/openapi-generator.ts",
     "docker:dev": "docker-compose -f docker-compose.dev.yml up -d",
     "docker:dev:build": "docker-compose -f docker-compose.dev.yml up -d --build",
