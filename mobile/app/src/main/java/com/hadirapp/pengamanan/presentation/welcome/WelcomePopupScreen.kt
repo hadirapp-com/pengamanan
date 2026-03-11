@@ -91,7 +91,7 @@ fun WelcomePopupScreen(
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                painter = painterResource(R.mipmap.ic_launcher_foreground),
+                                painter = painterResource(R.drawable.ic_launcher_foreground),
                                 contentDescription = "App Icon",
                                 modifier = Modifier.size(120.dp),
                                 tint = MaterialTheme.colorScheme.primary

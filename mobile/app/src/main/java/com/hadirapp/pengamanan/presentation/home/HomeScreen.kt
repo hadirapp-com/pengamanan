@@ -25,6 +25,11 @@ fun HomeScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
+    // Reload data every time screen appears
+    androidx.compose.runtime.LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -150,11 +155,48 @@ fun HomeScreen(
                     // View Logs Button
                     QuickActionButton(
                         modifier = Modifier.weight(1f),
-                        icon = Icons.Default.History,
+                        icon = Icons.Default.List,
                         label = "Riwayat",
                         color = MaterialTheme.colorScheme.secondary,
                         onClick = onNavigateToLogs
                     )
+                }
+            }
+
+            // Warning Card jika petugas/pos belum dipilih
+            if (!uiState.hasPetugasAndPos) {
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.errorContainer
+                        )
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = "Petugas & Pos Jaga Belum Dipilih",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                                Text(
+                                    text = "Silakan pilih di Pengaturan sebelum melakukan scan QR",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                )
+                            }
+                        }
+                    }
                 }
             }
 
@@ -249,7 +291,7 @@ private fun QuickActionButton(
 ) {
     Card(
         modifier = modifier,
-        onClick = if (enabled) onClick else null,
+        onClick = onClick,
         enabled = enabled,
         colors = CardDefaults.cardColors(
             containerColor = if (enabled) color else MaterialTheme.colorScheme.surfaceVariant

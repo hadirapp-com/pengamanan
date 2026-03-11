@@ -2,7 +2,6 @@ CREATE TABLE Pos (
     id TEXT PRIMARY KEY,
     nama TEXT NOT NULL,
     lokasi TEXT NOT NULL,
-    isActive INTEGER NOT NULL,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
 );
@@ -15,8 +14,8 @@ selectPosById:
 SELECT * FROM Pos WHERE id = ?;
 
 insertPos:
-INSERT OR REPLACE INTO Pos (id, nama, lokasi, isActive, createdAt, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO Pos (id, nama, lokasi, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?);
 
 deletePos:
 DELETE FROM Pos WHERE id = ?;

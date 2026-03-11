@@ -16,6 +16,7 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
+import com.hadirapp.pengamanan.presentation.qrscanner.DrawCorner
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -121,7 +122,7 @@ fun QRScannerScreen(
                                             .drawCorner(
                                                 color = Color.White,
                                                 strokeWidth = strokeWidth,
-                                                corner = androidx.compose.ui.draw.DrawCorner.TopStart
+                                                corner = DrawCorner.TopStart
                                             )
                                     )
                                     // Top right corner
@@ -132,7 +133,7 @@ fun QRScannerScreen(
                                             .drawCorner(
                                                 color = Color.White,
                                                 strokeWidth = strokeWidth,
-                                                corner = androidx.compose.ui.draw.DrawCorner.TopEnd
+                                                corner = DrawCorner.TopEnd
                                             )
                                     )
                                     // Bottom left corner
@@ -143,7 +144,7 @@ fun QRScannerScreen(
                                             .drawCorner(
                                                 color = Color.White,
                                                 strokeWidth = strokeWidth,
-                                                corner = androidx.compose.ui.draw.DrawCorner.BottomStart
+                                                corner = DrawCorner.BottomStart
                                             )
                                     )
                                     // Bottom right corner
@@ -154,7 +155,7 @@ fun QRScannerScreen(
                                             .drawCorner(
                                                 color = Color.White,
                                                 strokeWidth = strokeWidth,
-                                                corner = androidx.compose.ui.draw.DrawCorner.BottomEnd
+                                                corner = DrawCorner.BottomEnd
                                             )
                                     )
                                 }

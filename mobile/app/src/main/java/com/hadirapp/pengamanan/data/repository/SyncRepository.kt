@@ -26,7 +26,6 @@ class SyncRepository @Inject constructor(
                         nama = petugas.nama,
                         nik = petugas.nik,
                         noHp = petugas.noHp,
-                        isActive = if (petugas.isActive) 1L else 0L,
                         createdAt = petugas.createdAt,
                         updatedAt = petugas.updatedAt
                     )
@@ -39,7 +38,6 @@ class SyncRepository @Inject constructor(
                         id = pos.id,
                         nama = pos.nama,
                         lokasi = pos.lokasi,
-                        isActive = if (pos.isActive) 1L else 0L,
                         createdAt = pos.createdAt,
                         updatedAt = pos.updatedAt
                     )
@@ -55,7 +53,6 @@ class SyncRepository @Inject constructor(
                         penanggungJawab = qr.penanggungJawab,
                         validFrom = qr.validFrom,
                         validUntil = qr.validUntil,
-                        isActive = if (qr.isActive) 1L else 0L,
                         createdAt = qr.createdAt,
                         updatedAt = qr.updatedAt
                     )
@@ -86,7 +83,7 @@ class SyncRepository @Inject constructor(
             nama = nama,
             nik = nik,
             noHp = noHp,
-            isActive = isActive == 1L,
+            isActive = true,  // All synced records are active
             createdAt = createdAt,
             updatedAt = updatedAt
         )
@@ -97,7 +94,7 @@ class SyncRepository @Inject constructor(
             id = id,
             nama = nama,
             lokasi = lokasi,
-            isActive = isActive == 1L,
+            isActive = true,  // All synced records are active
             createdAt = createdAt,
             updatedAt = updatedAt
         )

@@ -5,7 +5,6 @@ CREATE TABLE QrCode (
     penanggungJawab TEXT NOT NULL,
     validFrom TEXT NOT NULL,
     validUntil TEXT NOT NULL,
-    isActive INTEGER NOT NULL,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
 );
@@ -21,8 +20,8 @@ selectQrCodeByCode:
 SELECT * FROM QrCode WHERE qrCode = ?;
 
 insertQrCode:
-INSERT OR REPLACE INTO QrCode (id, qrCode, nama, penanggungJawab, validFrom, validUntil, isActive, createdAt, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO QrCode (id, qrCode, nama, penanggungJawab, validFrom, validUntil, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 
 deleteQrCode:
 DELETE FROM QrCode WHERE id = ?;

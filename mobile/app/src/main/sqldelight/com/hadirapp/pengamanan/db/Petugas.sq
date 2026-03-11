@@ -3,7 +3,6 @@ CREATE TABLE Petugas (
     nama TEXT NOT NULL,
     nik TEXT NOT NULL,
     noHp TEXT NOT NULL,
-    isActive INTEGER NOT NULL,
     createdAt TEXT NOT NULL,
     updatedAt TEXT NOT NULL
 );
@@ -16,8 +15,8 @@ selectPetugasById:
 SELECT * FROM Petugas WHERE id = ?;
 
 insertPetugas:
-INSERT OR REPLACE INTO Petugas (id, nama, nik, noHp, isActive, createdAt, updatedAt)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT OR REPLACE INTO Petugas (id, nama, nik, noHp, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?);
 
 deletePetugas:
 DELETE FROM Petugas WHERE id = ?;

@@ -31,6 +31,11 @@ class QRScannerViewModel @Inject constructor(
     var scanResult: String? = null
         private set
 
+    // Debounce handling to prevent duplicate scans
+    private var lastScannedQR: String? = null
+    private var lastScanTime = 0L
+    private val SCAN_DEBOUNCE_MS = 3000L // 3 seconds debounce
+
     init {
         checkRequiredInfo()
     }
@@ -49,6 +54,12 @@ class QRScannerViewModel @Inject constructor(
 
     fun onQRCodeDetected(qrCode: String) {
         if (_uiState.value.isProcessing) return
+
+        // Debounce: Ignore if same QR code scanned within debounce period
+        val currentTime = System.currentTimeMillis()
+        if (qrCode == lastScannedQR && currentTime - lastScanTime < SCAN_DEBOUNCE_MS) {
+            return
+        }
 
         // Check if we have required info
         val petugasId = authRepository.getSelectedPetugasId()
@@ -69,6 +80,9 @@ class QRScannerViewModel @Inject constructor(
             _uiState.value = _uiState.value.copy(isProcessing = false)
 
             if (result.isSuccess) {
+                // Update last scan info only on success
+                lastScannedQR = qrCode
+                lastScanTime = currentTime
                 scanResult = qrCode
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -84,5 +98,7 @@ class QRScannerViewModel @Inject constructor(
 
     fun resetScan() {
         scanResult = null
+        lastScannedQR = null
+        lastScanTime = 0L
     }
 }
