@@ -2,6 +2,7 @@ package com.hadirapp.pengamanan.presentation.qrscanner
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hadirapp.pengamanan.data.repository.AuthRepository
 import com.hadirapp.pengamanan.data.repository.LogRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,12 +13,16 @@ import javax.inject.Inject
 
 data class QRScannerUiState(
     val isProcessing: Boolean = false,
+    val hasRequiredInfo: Boolean = false,
+    val petugasNama: String? = null,
+    val posNama: String? = null,
     val error: String? = null
 )
 
 @HiltViewModel
 class QRScannerViewModel @Inject constructor(
-    private val logRepository: LogRepository
+    private val logRepository: LogRepository,
+    private val authRepository: AuthRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QRScannerUiState())
@@ -26,17 +31,40 @@ class QRScannerViewModel @Inject constructor(
     var scanResult: String? = null
         private set
 
+    init {
+        checkRequiredInfo()
+    }
+
+    private fun checkRequiredInfo() {
+        val petugasNama = authRepository.getSelectedPetugasNama()
+        val posNama = authRepository.getSelectedPosNama()
+        val hasRequiredInfo = petugasNama != null && posNama != null
+
+        _uiState.value = _uiState.value.copy(
+            hasRequiredInfo = hasRequiredInfo,
+            petugasNama = petugasNama,
+            posNama = posNama
+        )
+    }
+
     fun onQRCodeDetected(qrCode: String) {
         if (_uiState.value.isProcessing) return
 
+        // Check if we have required info
+        val petugasId = authRepository.getSelectedPetugasId()
+        val posId = authRepository.getSelectedPosId()
+
+        if (petugasId == null || posId == null) {
+            _uiState.value = _uiState.value.copy(
+                error = "Petugas dan Pos Jaga harus dipilih terlebih dahulu"
+            )
+            return
+        }
+
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isProcessing = true)
+            _uiState.value = _uiState.value.copy(isProcessing = true, error = null)
 
-            // TODO: Get petugasJagaId and posId from auth/preferences
-            val petugasJagaId = "petugas_1"
-            val posId = "pos_1"
-
-            val result = logRepository.scanQR(qrCode, petugasJagaId, posId)
+            val result = logRepository.scanQR(qrCode, petugasId, posId)
 
             _uiState.value = _uiState.value.copy(isProcessing = false)
 
@@ -48,6 +76,10 @@ class QRScannerViewModel @Inject constructor(
                 )
             }
         }
+    }
+
+    fun clearError() {
+        _uiState.value = _uiState.value.copy(error = null)
     }
 
     fun resetScan() {

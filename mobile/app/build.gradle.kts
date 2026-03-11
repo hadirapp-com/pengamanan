@@ -82,14 +82,17 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.5")
     implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    // CameraX for QR Scanning (TODO: Add back when ML Kit is integrated)
-    // val cameraxVersion = "1.4.1"
-    // implementation("androidx.camera:camera-camera2:$cameraxVersion")
-    // implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
-    // implementation("androidx.camera:camera-view:$cameraxVersion")
+    // Accompanist Permissions
+    implementation("com.google.accompanist:accompanist-permissions:0.36.0")
 
-    // ML Kit for QR Code Detection (TODO: Add back when properly integrated)
-    // implementation("com.google.mlkit:barcode-scanning:17.3.0")
+    // CameraX for QR Scanning
+    val cameraxVersion = "1.4.1"
+    implementation("androidx.camera:camera-camera2:$cameraxVersion")
+    implementation("androidx.camera:camera-lifecycle:$cameraxVersion")
+    implementation("androidx.camera:camera-view:$cameraxVersion")
+
+    // ML Kit for QR Code Detection
+    implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
     // Hilt for DI
     implementation("com.google.dagger:hilt-android:2.52")
