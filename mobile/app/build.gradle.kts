@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.hadirapp.pengamanan"
-        minSdk = 26
+        minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
@@ -60,6 +60,15 @@ android {
             create("PengamananDatabase") {
                 packageName.set("com.hadirapp.pengamanan.db")
             }
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file("release.keystore")
+            storePassword = "p3ngamaNan@2025_"
+            keyAlias = "pengamananreleasekey"
+            keyPassword = "p3ngamaNan@2025_"
         }
     }
 }
@@ -118,6 +127,12 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-work:1.9.0")
+
+    // WorkManager for background tasks
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     // Coil for image loading
     implementation("io.coil-kt:coil-compose:2.7.0")

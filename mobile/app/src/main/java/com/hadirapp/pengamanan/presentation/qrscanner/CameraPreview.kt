@@ -124,6 +124,7 @@ private fun startCamera(
     }
 }
 
+@Suppress("UnsafeOptInUsageError")
 private fun processImageProxy(
     imageProxy: ImageProxy,
     barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,
