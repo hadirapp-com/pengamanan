@@ -2,7 +2,10 @@ package com.hadirapp.pengamanan.data.repository
 
 import app.cash.sqldelight.db.SqlDriver
 import com.hadirapp.pengamanan.data.model.LogModel
-import com.hadirapp.pengamanan.data.remote.api.LogApi
+import com.hadirapp.pengamanan.data.model.ScanRequest
+import com.hadirapp.pengamanan.data.model.ScanResponse
+import com.hadirapp.pengamanan.data.model.ScanType
+import com.hadirapp.pengamanan.data.remote.api.ScanApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
@@ -11,20 +14,32 @@ import javax.inject.Singleton
 
 @Singleton
 class LogRepository @Inject constructor(
-    private val logApi: LogApi,
+    private val scanApi: ScanApi,
     private val driver: SqlDriver
 ) {
     suspend fun scanQR(qrCode: String, petugasJagaId: String, posId: String): Result<LogModel> {
         return try {
-            val response = logApi.scanQR(
-                com.hadirapp.pengamanan.data.remote.api.ScanRequest(qrCode, petugasJagaId, posId)
+            val response = scanApi.scanQR(
+                ScanRequest(qrCode, petugasJagaId, posId, "masuk")
             )
-            if (response.success) {
+            if (response.success && response.data != null) {
+                // Convert API response to LogModel
+                val log = LogModel(
+                    id = response.data.scan.id,
+                    qrCode = qrCode,
+                    guestName = response.data.qr.nama,
+                    guestType = "QR",
+                    scanType = if (response.data.tipeScan == "masuk") ScanType.MASUK else ScanType.KELUAR,
+                    scannedAt = response.data.scan.scannedAt,
+                    petugasJaga = com.hadirapp.pengamanan.data.model.PetugasJagaInfo(petugasJagaId, response.data.petugas),
+                    pos = com.hadirapp.pengamanan.data.model.PosInfo(posId, response.data.pos, ""),
+                    synced = true
+                )
                 // Save to local database
-                saveLogLocally(response.data.log)
-                Result.success(response.data.log)
+                saveLogLocally(log)
+                Result.success(log)
             } else {
-                Result.failure(Exception("Scan failed"))
+                Result.failure(Exception(response.error ?: response.message ?: "Scan failed"))
             }
         } catch (e: Exception) {
             // Save to local database as unsynced
@@ -33,7 +48,7 @@ class LogRepository @Inject constructor(
                 qrCode = qrCode,
                 guestName = "Unknown",
                 guestType = "GUEST",
-                scanType = com.hadirapp.pengamanan.data.model.ScanType.MASUK,
+                scanType = ScanType.MASUK,
                 scannedAt = Clock.System.now().toString(),
                 petugasJaga = com.hadirapp.pengamanan.data.model.PetugasJagaInfo(petugasJagaId, "Unknown"),
                 pos = com.hadirapp.pengamanan.data.model.PosInfo(posId, "Unknown", "Unknown"),
@@ -77,10 +92,8 @@ class LogRepository @Inject constructor(
             val unsyncedLogs = database.logsQueries.selectUnsyncedLogs().executeAsList()
             unsyncedLogs.forEach { log ->
                 try {
-                    logApi.scanQR(
-                        com.hadirapp.pengamanan.data.remote.api.ScanRequest(
-                            log.qrCode, log.petugasJagaId, log.posId
-                        )
+                    scanApi.scanQR(
+                        ScanRequest(log.qrCode, log.petugasJagaId, log.posId, "masuk")
                     )
                     com.hadirapp.pengamanan.db.PengamananDatabase(driver).logsQueries.updateLogSynced(log.id)
                 } catch (e: Exception) {

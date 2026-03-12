@@ -39,6 +39,13 @@ const markReadSchema = z.object({
   deviceId: z.string().min(1, "Device ID is required"),
 });
 
+const singleScanSchema = z.object({
+  qrCode: z.string().min(1, "QR code is required"),
+  petugasId: z.string().min(1, "Petugas ID is required"),
+  posId: z.string().min(1, "Pos ID is required"),
+  tipeScan: z.enum(["masuk", "keluar"]),
+});
+
 // ============================================================================
 // ROUTES
 // ============================================================================
@@ -433,6 +440,160 @@ protectedMobileRoutes.post("/sync-logs", async (c) => {
         success: false,
         error: "Internal Server Error",
         message: "An error occurred while syncing logs",
+      },
+      500
+    );
+  }
+});
+
+/**
+ * POST /mobile/scan
+ * Single QR scan endpoint - directly save one scan to server (requires JWT auth)
+ */
+protectedMobileRoutes.post("/scan", async (c) => {
+  try {
+    const body = await c.req.json();
+    const validationResult = singleScanSchema.safeParse(body);
+
+    if (!validationResult.success) {
+      return c.json(
+        {
+          success: false,
+          error: "Validation Error",
+          details: validationResult.error.errors,
+        },
+        400
+      );
+    }
+
+    const { qrCode, petugasId, posId, tipeScan } = validationResult.data;
+
+    // Validate QR code exists and is active
+    const qrResult = await db
+      .select({
+        id: qrCodes.id,
+        nama: qrCodes.nama,
+        penanggungJawab: qrCodes.penanggungJawab,
+      })
+      .from(qrCodes)
+      .where(
+        and(
+          eq(qrCodes.qrCode, qrCode),
+          eq(qrCodes.isActive, true)
+        )
+      )
+      .limit(1);
+
+    if (qrResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "QR Code tidak valid atau tidak aktif",
+          message: "QR code tidak ditemukan atau sudah tidak aktif",
+        },
+        404
+      );
+    }
+
+    const qrData = qrResult[0];
+
+    // Validate petugas exists
+    const petugasResult = await db
+      .select({ nama: petugasJaga.nama })
+      .from(petugasJaga)
+      .where(eq(petugasJaga.id, petugasId))
+      .limit(1);
+
+    if (petugasResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Petugas tidak ditemukan",
+          message: "Petugas dengan ID tersebut tidak ditemukan",
+        },
+        404
+      );
+    }
+
+    // Validate pos exists
+    const posResult = await db
+      .select({ nama: posJaga.nama })
+      .from(posJaga)
+      .where(eq(posJaga.id, posId))
+      .limit(1);
+
+    if (posResult.length === 0) {
+      return c.json(
+        {
+          success: false,
+          error: "Pos tidak ditemukan",
+          message: "Pos dengan ID tersebut tidak ditemukan",
+        },
+        404
+      );
+    }
+
+    // Check if this QR was scanned today by this petugas at this pos
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const existingScan = await db
+      .select({ id: scanLogs.id, tipeScan: scanLogs.tipeScan })
+      .from(scanLogs)
+      .where(
+        and(
+          eq(scanLogs.qrId, qrData.id),
+          eq(scanLogs.petugasId, petugasId),
+          eq(scanLogs.posId, posId),
+          sql`${scanLogs.scannedAt} >= ${today} AND ${scanLogs.scannedAt} < ${tomorrow}`
+        )
+      )
+      .orderBy(desc(scanLogs.scannedAt))
+      .limit(1);
+
+    // Determine scan type (masuk/keluar) based on previous scan
+    let finalTipeScan = tipeScan;
+    if (existingScan.length > 0) {
+      // If already scanned today, toggle the type
+      finalTipeScan = existingScan[0].tipeScan === "masuk" ? "keluar" : "masuk";
+    }
+
+    // Insert scan log
+    const newLogResult = await db
+      .insert(scanLogs)
+      .values({
+        qrId: qrData.id,
+        petugasId,
+        posId,
+        tipeScan: finalTipeScan,
+        scannedAt: new Date(),
+        syncedAt: new Date(),
+      })
+      .returning({ id: scanLogs.id, tipeScan: scanLogs.tipeScan, scannedAt: scanLogs.scannedAt });
+
+    return c.json({
+      success: true,
+      message: "Scan berhasil",
+      data: {
+        scan: newLogResult[0],
+        qr: {
+          nama: qrData.nama,
+          penanggungJawab: qrData.penanggungJawab,
+        },
+        petugas: petugasResult[0].nama,
+        pos: posResult[0].nama,
+        tipeScan: finalTipeScan,
+      },
+    });
+  } catch (error) {
+    console.error("Single scan error:", error);
+    return c.json(
+      {
+        success: false,
+        error: "Internal Server Error",
+        message: "Terjadi kesalahan saat memproses scan",
       },
       500
     );
