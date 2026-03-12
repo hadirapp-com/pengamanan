@@ -108,11 +108,6 @@ export default function ConfigFormPage() {
     },
   });
 
-  const onSubmit = (data: ConfigFormValues) => {
-    if (isEdit) updateMutation.mutate(data);
-    else createMutation.mutate(data);
-  };
-
   const isLoading = isLoadingConfig || createMutation.isPending || updateMutation.isPending;
 
   return (

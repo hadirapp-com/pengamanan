@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - development
+    paths:
+      - 'web'
 
 jobs:
   publish:
-    # if: github.event.pull_request.merged == true
     name: Build Project
     runs-on: ubuntu-latest
     steps:
@@ -33,6 +34,6 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 05b0906ce2488aa5647a275a274c9436
-          projectName: pokayoke
+          projectName: blokf
           directory: dist
           branch: development

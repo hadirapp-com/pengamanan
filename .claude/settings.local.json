@@ -12,7 +12,31 @@
       "Bash(psql:*)",
       "Bash(bun -e \"\nimport { db } from ''./src/lib/db'';\nimport { sql } from ''drizzle-orm'';\n\n// Check if pengumuman table exists\nconst result = await db.execute\\(sql\\\\`\n  SELECT table_name \n  FROM information_schema.tables \n  WHERE table_schema = ''pengamanan'' \n  AND table_name = ''pengumuman''\n\\\\`\\);\nconsole.log\\(''Pengumuman table exists:'', result.rows\\);\n\")",
       "Bash(bun:*)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(npm run dev)",
+      "Bash(npm run build:*)",
+      "Bash(source:*)",
+      "Bash(nvm use:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(vite build:*)",
+      "Bash(npx vite build:*)",
+      "Bash(chmod:*)",
+      "Bash(curl:*)",
+      "Bash(./gradlew tasks --version)",
+      "Bash(./gradlew:*)",
+      "Bash(npx sbt-heap-analysis@latest build:*)",
+      "Bash(nvm current:*)",
+      "Bash(npm install:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm drizzle-kit:*)",
+      "Bash(pnpm exec drizzle-kit migrate:*)",
+      "Bash(pnpm build:*)",
+      "Bash(grep:*)",
+      "Bash(git merge:*)",
+      "Bash(git branch:*)",
+      "Bash(adb:*)",
+      "Bash(git restore:*)"
     ]
   }
 }

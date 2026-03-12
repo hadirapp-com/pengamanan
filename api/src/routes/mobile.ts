@@ -259,13 +259,13 @@ protectedMobileRoutes.get("/sync", async (c) => {
         updatedAt: qrCodes.updatedAt,
       })
       .from(qrCodes)
-      .where(
-        and(
-          eq(qrCodes.isActive, true),
-          sql`${qrCodes.validFrom} <= ${today}`,
-          sql`${qrCodes.validUntil} >= ${today}`
-        )
-      )
+      // .where(
+      //   and(
+      //     eq(qrCodes.isActive, true),
+      //     sql`${qrCodes.validFrom} <= ${today}`,
+      //     sql`${qrCodes.validUntil} >= ${today}`
+      //   )
+      // )
       .orderBy(qrCodes.nama);
 
     // Get 10 latest active pengumuman

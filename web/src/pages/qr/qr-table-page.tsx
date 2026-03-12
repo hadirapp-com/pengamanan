@@ -2,7 +2,7 @@
 // PENGAMANAN LEBARAN 2026 - QR CODES TABLE PAGE
 // ============================================================================
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useMutation } from "@tanstack/react-query";
 import { useDebounce } from "use-debounce";
@@ -153,7 +153,6 @@ export default function QrTablePage() {
   const [qrSize, setQrSize] = useState(50); // QR size in mm (default 50mm)
   const [selectedQr, setSelectedQr] = useState<QrCode | null>(null);
   const [selectedQrs, setSelectedQrs] = useState<Set<string>>(new Set());
-  const previewRef = useRef<HTMLDivElement>(null);
 
   // Reset filters on unmount
   useEffect(() => {

@@ -2,11 +2,11 @@
 # PENGAMANAN API - HTTP Request Collection
 # =============================================================================
 # API Base URL
-@api_url=http://localhost:3000
+@api_url=http://localhost:5000
 @whatsapp_service=http://192.168.1.6:3000
 
-@token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJjNmI2YjU5OC01NmRjLTRjMTQtODVmYi1lNGFlN2ZhMTZhYTMiLCJ1c2VybmFtZSI6InN1cGVyYWRtaW4iLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc3MzEwNTc1NywiZXhwIjoxNzczMTkyMTU3fQ.d_sE3AKTtlgU-RkwU7GiEd3J3_alHbUcRUlysZCAt50
-
+@token=eyJhbGciOiJIUzI1NiJ9.eyJ1c2VySWQiOiJjNmI2YjU5OC01NmRjLTRjMTQtODVmYi1lNGFlN2ZhMTZhYTMiLCJ1c2VybmFtZSI6InN1cGVyYWRtaW4iLCJyb2xlIjoic3VwZXJhZG1pbiIsImlhdCI6MTc3MzEzODgwNywiZXhwIjoxNzczMjI1MjA3fQ.VwCSz0DCAMnBmFsOXdVAzbZmEIrk2f9qJCyCDVron3o
+@mobileToken=eyJhbGciOiJIUzI1NiJ9.eyJwZXR1Z2FzSWQiOiI4NWIzMzlkOC1mOTY5LTQ1NGMtOGE5MS03N2I4ODBmMWQ4MzYiLCJuYW1hIjoiUGV0dWdhcyBKYWdhIiwidHlwZSI6Im1vYmlsZSIsImlhdCI6MTc3MzE3MDYwNywiZXhwIjoxNzgwOTQ2NjA3fQ.MPmrNbXdKC0btCwUKsdVuZsUy_w1rp3zUzXHP3fL9M0
 # Default credentials (after seeding)
 @superadmin_username=superadmin
 @superadmin_password=admin123
@@ -321,17 +321,17 @@ Authorization: Bearer {{token}}
 ### 36. Mobile Sync - Get All Master Data
 # @name mobileSync
 GET {{api_url}}/api/mobile/sync HTTP/1.1
-Authorization: Bearer {{mobilePinLogin.response.body.$.data.token}}
+Authorization: Bearer {{mobileToken}}
 
 ### 37. Mobile Get Pengumuman
 # @name mobileGetPengumuman
 GET {{api_url}}/api/mobile/pengumuman HTTP/1.1
-Authorization: Bearer {{mobilePinLogin.response.body.$.data.token}}
+Authorization: Bearer {{mobileToken}}
 
 ### 38. Mobile Sync Scan Logs
 # @name mobileSyncLogs
 POST {{api_url}}/api/mobile/sync-logs HTTP/1.1
-Authorization: Bearer {{mobilePinLogin.response.body.$.data.token}}
+Authorization: Bearer {{mobileToken}}
 Content-Type: application/json
 
 {
@@ -349,7 +349,7 @@ Content-Type: application/json
 ### 39. Mobile Mark Pengumuman as Read
 # @name mobileReadAnnounce
 POST {{api_url}}/api/mobile/read-announce HTTP/1.1
-Authorization: Bearer {{mobilePinLogin.response.body.$.data.token}}
+Authorization: Bearer {{mobileToken}}
 Content-Type: application/json
 
 {
