@@ -225,29 +225,35 @@ export default function DashboardPage() {
                         <Bar
                           dataKey="masuk"
                           name="Masuk"
-                          fill={stats.last7Days.map((_, index) => [
-                            '#ef4444', // red-500
-                            '#f97316', // orange-500
-                            '#eab308', // yellow-500
-                            '#22c55e', // green-500
-                            '#06b6d4', // cyan-500
-                            '#3b82f6', // blue-500
-                            '#8b5cf6', // violet-500
-                          ][index % 7])}
+                          fill={stats.last7Days.map((_, index) => {
+                            const colors = [
+                              '#ef4444', // red-500
+                              '#f97316', // orange-500
+                              '#eab308', // yellow-500
+                              '#22c55e', // green-500
+                              '#06b6d4', // cyan-500
+                              '#3b82f6', // blue-500
+                              '#8b5cf6', // violet-500
+                            ];
+                            return colors[index % 7];
+                          }) as any}
                           radius={[4, 4, 0, 0]}
                         />
                         <Bar
                           dataKey="keluar"
                           name="Keluar"
-                          fill={stats.last7Days.map((_, index) => [
-                            '#ef4444', // red-500
-                            '#f97316', // orange-500
-                            '#eab308', // yellow-500
-                            '#22c55e', // green-500
-                            '#06b6d4', // cyan-500
-                            '#3b82f6', // blue-500
-                            '#8b5cf6', // violet-500
-                          ][index % 7])}
+                          fill={stats.last7Days.map((_, index) => {
+                            const colors = [
+                              '#ef4444', // red-500
+                              '#f97316', // orange-500
+                              '#eab308', // yellow-500
+                              '#22c55e', // green-500
+                              '#06b6d4', // cyan-500
+                              '#3b82f6', // blue-500
+                              '#8b5cf6', // violet-500
+                            ];
+                            return colors[index % 7];
+                          }) as any}
                           radius={[4, 4, 0, 0]}
                         />
                       </BarChart>
