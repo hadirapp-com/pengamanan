@@ -2,6 +2,7 @@ package com.hadirapp.pengamanan.data.repository
 
 import android.util.Log
 import app.cash.sqldelight.db.SqlDriver
+import com.hadirapp.pengamanan.data.model.ErrorResponse
 import com.hadirapp.pengamanan.data.model.LogModel
 import com.hadirapp.pengamanan.data.model.QrCodeModel
 import com.hadirapp.pengamanan.data.model.ScanRequest
@@ -11,6 +12,7 @@ import com.hadirapp.pengamanan.data.remote.api.ScanApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
+import kotlinx.serialization.json.Json
 import retrofit2.Response
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -21,6 +23,10 @@ class LogRepository @Inject constructor(
     private val driver: SqlDriver,
     private val authRepository: AuthRepository
 ) {
+    private val json = Json {
+        ignoreUnknownKeys = true
+        coerceInputValues = true
+    }
     suspend fun scanQR(
         qrCode: String,
         petugasId: String,
@@ -109,10 +115,40 @@ class LogRepository @Inject constructor(
                 val errorBody = response.errorBody()?.string()
                 if (errorBody != null) {
                     Log.e("API_CALL", "Error Body: $errorBody")
-                }
-                Log.e("API_CALL", "========================================")
 
-                Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
+                    // Parse error response
+                    val errorMessage = try {
+                        val errorResponse = json.decodeFromString<ErrorResponse>(errorBody)
+
+                        // Check if this is a Zod validation error (400 with details)
+                        if (response.code() == 400 && errorResponse.details != null) {
+                            Log.e("API_CALL", "Validation Errors: ${errorResponse.details.size}")
+
+                            // Format Zod validation errors
+                            val formattedErrors = errorResponse.details.mapNotNull { error ->
+                                val field = error.path?.firstOrNull() ?: "Field"
+                                val message = error.message ?: "Invalid value"
+                                "• $field: $message"
+                            }.joinToString("\n")
+
+                            "$formattedErrors"
+                        } else {
+                            // Use error or message from response
+                            errorResponse.error ?: errorResponse.message ?: "Unknown error"
+                        }
+                    } catch (e: Exception) {
+                        Log.e("API_CALL", "Failed to parse error response: ${e.message}")
+                        "HTTP ${response.code()}: ${response.message()}"
+                    }
+
+                    Log.e("API_CALL", "Formatted Error: $errorMessage")
+                    Log.e("API_CALL", "========================================")
+
+                    Result.failure(Exception(errorMessage))
+                } else {
+                    Log.e("API_CALL", "========================================")
+                    Result.failure(Exception("HTTP ${response.code()}: ${response.message()}"))
+                }
             }
         } catch (e: Exception) {
             Log.e("API_CALL", "❌ EXCEPTION DURING API CALL")
@@ -235,7 +271,26 @@ class LogRepository @Inject constructor(
                     } else {
                         val errorBody = response.errorBody()?.string()
                         Log.e("SYNC_LOGS", "  ❌ Sync failed: HTTP ${response.code()}")
+
                         if (errorBody != null) {
+                            // Parse and format Zod validation errors
+                            val formattedError = try {
+                                val errorResponse = json.decodeFromString<ErrorResponse>(errorBody)
+                                if (response.code() == 400 && errorResponse.details != null) {
+                                    val formattedErrors = errorResponse.details.mapNotNull { error ->
+                                        val field = error.path?.firstOrNull() ?: "Field"
+                                        val message = error.message ?: "Invalid value"
+                                        "• $field: $message"
+                                    }.joinToString(", ")
+                                    "Validation Error: $formattedErrors"
+                                } else {
+                                    errorResponse.error ?: errorResponse.message ?: "Unknown error"
+                                }
+                            } catch (e: Exception) {
+                                errorBody
+                            }
+                            Log.e("SYNC_LOGS", "  Error: $formattedError")
+                        } else {
                             Log.e("SYNC_LOGS", "  Error Body: $errorBody")
                         }
                         failureCount++

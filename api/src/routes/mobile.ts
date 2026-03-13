@@ -66,7 +66,7 @@ mobileRoutes.post("/auth/pin", async (c) => {
         {
           success: false,
           error: "Validation Error",
-          details: validationResult.error.errors,
+          details: validationResult.error.issues,
         },
         400
       );
