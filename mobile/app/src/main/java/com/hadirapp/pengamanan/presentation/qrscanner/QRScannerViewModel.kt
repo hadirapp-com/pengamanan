@@ -46,6 +46,7 @@ class QRScannerViewModel @Inject constructor(
 
     init {
         checkRequiredInfo()
+        logAllQrCodes() // Log all QR codes on init
     }
 
     private fun checkRequiredInfo() {
@@ -58,6 +59,24 @@ class QRScannerViewModel @Inject constructor(
             petugasNama = petugasNama,
             posNama = posNama
         )
+    }
+
+    private fun logAllQrCodes() {
+        val allQrCodes = syncRepository.getAllQrCodes()
+        Log.d("QRScanner", "==========================================")
+        Log.d("QRScanner", "ALL QR CODES IN LOCAL DATABASE")
+        Log.d("QRScanner", "Total: ${allQrCodes.size} QR codes")
+        Log.d("QRScanner", "==========================================")
+        allQrCodes.forEachIndexed { index, qr ->
+            Log.d("QRScanner", """
+                |QR [$index]: ${qr.qrCode}
+                |  Nama: ${qr.nama}
+                |  Penanggung Jawab: ${qr.penanggungJawab}
+                |  Valid From: ${qr.validFrom}
+                |  Valid Until: ${qr.validUntil}
+                |""".trimMargin())
+        }
+        Log.d("QRScanner", "==========================================")
     }
 
     fun onQRCodeDetected(qrCode: String) {

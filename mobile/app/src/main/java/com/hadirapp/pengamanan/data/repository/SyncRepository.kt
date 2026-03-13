@@ -7,6 +7,7 @@ import com.hadirapp.pengamanan.data.model.PosModel
 import com.hadirapp.pengamanan.data.model.QrCodeModel
 import javax.inject.Inject
 import javax.inject.Singleton
+import android.util.Log
 
 @Singleton
 class SyncRepository @Inject constructor(
@@ -85,7 +86,39 @@ class SyncRepository @Inject constructor(
 
     fun getQrCodeByCode(qrCode: String): QrCodeModel? {
         val database = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
-        return database.qrCodeQueries.selectQrCodeByCode(qrCode).executeAsOneOrNull()?.toModel()
+
+        // Log ALL QR codes for debugging
+        val allQrCodes = database.qrCodeQueries.selectAllQrCodes().executeAsList()
+        Log.d("All Data", "========== ALL QR CODES IN DATABASE ==========")
+        Log.d("All Data", "Total QR Codes: ${allQrCodes.size}")
+        allQrCodes.forEachIndexed { index, qr ->
+            Log.d("All Data", """
+                |QR [$index]:
+                |  ID: ${qr.id}
+                |  QR Code: ${qr.qrCode}
+                |  Nama: ${qr.nama}
+                |  Penanggung Jawab: ${qr.penanggungJawab}
+                |  Valid From: ${qr.validFrom}
+                |  Valid Until: ${qr.validUntil}
+                |  Created At: ${qr.createdAt}
+                |  Updated At: ${qr.updatedAt}
+                |""".trimMargin())
+        }
+        Log.d("All Data", "================================================")
+
+        // Log the QR code being searched
+        Log.d("All Data", "Searching for QR Code: $qrCode")
+
+        val result = database.qrCodeQueries.selectQrCodeByCode(qrCode).executeAsOneOrNull()
+        if (result != null) {
+            Log.d("All Data", "✅ FOUND QR Code: $qrCode")
+            Log.d("All Data", "  - Nama: ${result.nama}")
+            Log.d("All Data", "  - Penanggung Jawab: ${result.penanggungJawab}")
+        } else {
+            Log.e("All Data", "❌ QR Code NOT FOUND: $qrCode")
+        }
+
+        return result?.toModel()
     }
 
     private fun com.hadirapp.pengamanan.db.Petugas.toModel(): PetugasModel {
