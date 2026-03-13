@@ -21,9 +21,10 @@ import { useDataTableStore } from "@/store/data-table";
 
 interface Log {
   id: string;
-  qrCode: { nama: string; penanggungJawab: string };
-  petugas: { nama: string };
-  pos: { nama: string };
+  petugasNama: string;
+  qrNama: string;
+  posNama: string;
+  qrPenanggungJawab: string;
   tipeScan: "masuk" | "keluar";
   scannedAt: string;
 }
@@ -93,10 +94,11 @@ export default function LogsTablePage() {
     query,
     {
       queryKey,
+      refetchInterval: 15000
     }
   );
 
-  let logs = Array.isArray(logsData) ? logsData : [];
+  const logs = Array.isArray(logsData) ? logsData : [];
 
   // Reset filters on unmount
   useEffect(() => {
@@ -109,10 +111,10 @@ export default function LogsTablePage() {
     const headers = ["Waktu", "Nama", "Penanggung Jawab", "Petugas", "Pos", "Tipe Scan"];
     const rows = logs.map((l: Log) => [
       format(new Date(l.scannedAt), "dd-MM-yyyy HH:mm"),
-      l.qrCode.nama,
-      l.qrCode.penanggungJawab,
-      l.petugas.nama,
-      l.pos.nama,
+      l.qrNama,
+      l.qrPenanggungJawab,
+      l.petugasNama,
+      l.posNama,
       SCAN_TYPE_LABELS[l.tipeScan]
     ]);
     const csv = [headers, ...rows].map((r) => r.join(",")).join("\n");
@@ -162,20 +164,6 @@ export default function LogsTablePage() {
               value={dateRange.to ? format(new Date(dateRange.to), 'yyyy-MM-dd') : ''}
               onChange={(e) => setDateRange({ ...dateRange, to: e.target.value ? new Date(e.target.value) : undefined })}
             />
-          </div>
-
-          {/* Pos filter with debouncing */}
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">Pos Jaga</label>
-            <Select value={posFilter} onValueChange={setPosFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Semua Pos" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Semua Pos</SelectItem>
-                {/* Pos options would be fetched from API */}
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Tipe scan filter with debouncing */}
@@ -231,10 +219,10 @@ export default function LogsTablePage() {
                   <TableCell className="font-mono text-sm">
                     {format(new Date(l.scannedAt), "dd-MM-yyyy HH:mm")}
                   </TableCell>
-                  <TableCell className="font-medium">{l.qrCode.nama}</TableCell>
-                  <TableCell>{l.qrCode.penanggungJawab}</TableCell>
-                  <TableCell>{l.petugas.nama}</TableCell>
-                  <TableCell>{l.pos.nama}</TableCell>
+                  <TableCell className="font-medium">{l.qrNama}</TableCell>
+                  <TableCell>{l.qrPenanggungJawab}</TableCell>
+                  <TableCell>{l.petugasNama}</TableCell>
+                  <TableCell>{l.posNama}</TableCell>
                   <TableCell>
                     <Badge variant={SCAN_TYPE_COLORS[l.tipeScan] as any} className="gap-1">
                       {l.tipeScan === "masuk" ? <ArrowDown className="h-3 w-3" /> : <ArrowUp className="h-3 w-3" />}

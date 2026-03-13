@@ -30,7 +30,7 @@ object NetworkModule {
 
     @Provides
     @BaseUrl
-    fun provideBaseUrl(): String = "https://local.hadirapp.com/api/"
+    fun provideBaseUrl(): String = "https://blokf.hadirapp.com/api/"
 
     @Provides
     @Singleton
