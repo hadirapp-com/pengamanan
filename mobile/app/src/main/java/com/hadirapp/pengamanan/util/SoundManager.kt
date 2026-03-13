@@ -1,66 +1,39 @@
 package com.hadirapp.pengamanan.util
 
 import android.content.Context
-import android.media.AudioAttributes
-import android.media.SoundPool
+import android.media.ToneGenerator
 import android.os.VibrationEffect
 import android.os.Vibrator
 import android.os.VibratorManager
-import androidx.annotation.RawRes
 
 class SoundManager(private val context: Context) {
 
-    private val soundPool = SoundPool.Builder()
-        .setMaxStreams(1)
-        .setAudioAttributes(
-            AudioAttributes.Builder()
-                .setUsage(AudioAttributes.USAGE_NOTIFICATION)
-                .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-                .build()
-        )
-        .build()
-
-    private var successSoundId: Int = 0
-    private var errorSoundId: Int = 0
+    private var toneGenerator: ToneGenerator? = null
 
     init {
-        // Load sounds (will use default system sounds if no custom sounds provided)
-        successSoundId = 0 // Will use system default
-        errorSoundId = 0 // Will use system default
+        // Initialize ToneGenerator with max volume
+        try {
+            toneGenerator = ToneGenerator(android.media.AudioManager.STREAM_MUSIC, 100)
+        } catch (e: Exception) {
+            // ToneGenerator failed to initialize
+            android.util.Log.e("SoundManager", "Failed to initialize ToneGenerator", e)
+        }
     }
 
     fun playSuccess() {
-        // Play success beep sound
-        playSystemBeep()
-        // Short vibration for success
-        vibrate(pattern = longArrayOf(0, 100, 50, 100))
+        // Play high-pitched beep for success (no vibration)
+        toneGenerator?.startTone(ToneGenerator.TONE_PROP_BEEP, 200)
     }
 
     fun playError() {
-        // Play error sound (two short beeps)
-        playSystemBeep()
+        // Play two low-pitched beeps for error
+        toneGenerator?.startTone(ToneGenerator.TONE_PROP_NACK, 300)
         android.os.Handler(android.os.Looper.getMainLooper()).postDelayed({
-            playSystemBeep()
-        }, 150)
+            toneGenerator?.startTone(ToneGenerator.TONE_PROP_NACK, 300)
+        }, 350)
+
         // Longer vibration pattern for error
         vibrate(pattern = longArrayOf(0, 200, 100, 200, 100, 200))
-    }
-
-    private fun playSystemBeep() {
-        // Use system default notification sound
-        try {
-            val soundId = soundPool.load(context, android.media.RingtoneManager.TYPE_NOTIFICATION, 1)
-            soundPool.setOnLoadCompleteListener { _, _, _ ->
-                soundPool.play(soundId, 1.0f, 1.0f, 0, 0, 1.0f)
-            }
-        } catch (e: Exception) {
-            // Fallback: try to play a simple tone
-            try {
-                soundPool.play(0, 1.0f, 1.0f, 0, 0, 1.0f)
-            } catch (e2: Exception) {
-                // Ignore, sound failed to play
-            }
-        }
     }
 
     private fun vibrate(pattern: LongArray) {
@@ -81,6 +54,6 @@ class SoundManager(private val context: Context) {
     }
 
     fun release() {
-        soundPool.release()
+        toneGenerator?.release()
     }
 }

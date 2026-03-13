@@ -32,7 +32,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            TopAppBar(
                 title = { Text(uiState.appTitle) },
                 actions = {
                     IconButton(onClick = { viewModel.syncData() }, enabled = !uiState.isSyncing) {
@@ -49,7 +49,7 @@ fun HomeScreen(
                         Icon(Icons.Default.Settings, contentDescription = "Setting")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary

@@ -113,6 +113,35 @@ async function seed() {
       console.log(`  − Config already exists: HOME_SCREEN_BANNER`);
     }
 
+    // App title config
+    const appTitle = "Pengamanan Lebaran";
+
+    const existingAppTitleConfig = await db
+      .select()
+      .from(configs)
+      .where(eq(configs.key, "APP_TITLE"))
+      .limit(1);
+
+    if (existingAppTitleConfig.length === 0) {
+      await db.insert(configs).values({
+        key: "APP_TITLE",
+        value: appTitle,
+        description: "Judul aplikasi untuk home screen",
+        isActive: true,
+        createdBy: superadminUserId,
+        updatedBy: superadminUserId,
+      });
+      console.log(`  ✓ Config created: APP_TITLE (${appTitle})`);
+    } else {
+      await db.update(configs)
+        .set({
+          value: appTitle,
+          updatedBy: superadminUserId
+        })
+        .where(eq(configs.key, "APP_TITLE"));
+      console.log(`  ~ Config updated: APP_TITLE (${appTitle})`);
+    }
+
     // ============================================================================
     // SEED PETUGAS JAGA
     // ============================================================================
