@@ -104,8 +104,8 @@ dependencies {
     implementation("com.google.mlkit:barcode-scanning:17.3.0")
 
     // Hilt for DI
-    implementation("com.google.dagger:hilt-android:2.52")
-    ksp("com.google.dagger:hilt-compiler:2.52")
+    implementation("com.google.dagger:hilt-android:2.51.1")
+    ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     // Networking
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
@@ -127,7 +127,6 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-work:1.9.0")
 
     // WorkManager for background tasks
     implementation("androidx.work:work-runtime-ktx:2.9.1")

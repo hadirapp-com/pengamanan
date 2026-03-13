@@ -1,4 +1,4 @@
-package com.hadirapp.pengamanan.data.worker
+package com.hadirapp.pengamanan.data.work
 
 import android.content.Context
 import androidx.work.Constraints
@@ -9,6 +9,8 @@ import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 
 class SyncManager(private val context: Context) {
+
+    private val workManager = WorkManager.getInstance(context)
 
     fun schedulePeriodicSync() {
         // Create constraints: only run when connected to internet

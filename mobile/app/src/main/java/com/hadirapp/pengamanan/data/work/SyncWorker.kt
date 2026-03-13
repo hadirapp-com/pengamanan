@@ -1,4 +1,4 @@
-package com.hadirapp.pengamanan.data.worker
+package com.hadirapp.pengamanan.data.work
 
 import android.content.Context
 import androidx.hilt.work.HiltWorker

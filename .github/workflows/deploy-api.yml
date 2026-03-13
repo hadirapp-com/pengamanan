@@ -1,9 +1,9 @@
-name: CI/CD Development
+name: CI/CD API
 
 on:
   push:
     branches: 
-      - development
+      - main
     paths:
       - 'api/**'
 
@@ -57,10 +57,27 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Pull and Restart Container
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Add server to known hosts
         run: |
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-          # Assuming you have a docker-compose.yml on the local runner machine:
-          docker compose up -d --no-deps api 
-          docker image prune -f
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+      - name: Deploy to server
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
+            cd api
+            docker compose up -d --no-deps api 
+            docker image prune -f
+            docker compose up --build -d
+          EOF
+
+      # - name: Pull and Restart Container
+      #   run: |
+      #     docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+      #     # Assuming you have a docker-compose.yml on the local runner machine:
+      #     docker compose up -d --no-deps api 
+      #     docker image prune -f
+      

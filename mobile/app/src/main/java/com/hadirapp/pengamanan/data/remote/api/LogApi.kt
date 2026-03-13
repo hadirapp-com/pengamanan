@@ -2,6 +2,7 @@ package com.hadirapp.pengamanan.data.remote.api
 
 import com.hadirapp.pengamanan.data.model.LogModel
 import com.hadirapp.pengamanan.data.model.LogResponse
+import com.hadirapp.pengamanan.data.model.ScanRequest
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -20,13 +21,6 @@ interface LogApi {
         @Query("endDate") endDate: String? = null
     ): LogsResponse
 }
-
-@kotlinx.serialization.Serializable
-data class ScanRequest(
-    val qrCode: String,
-    val petugasJagaId: String,
-    val posId: String
-)
 
 @kotlinx.serialization.Serializable
 data class LogsResponse(
