@@ -16,4 +16,16 @@ export default defineConfig({
   define: {
     "import.meta.env.PACKAGE_VERSION": JSON.stringify(packageJson.version),
   },
+  server: {
+    port: 5173,
+    strictPort: false,
+    host: true,
+    watch: {
+      usePolling: false,
+    },
+    hmr: {
+      port: 5173,
+      overlay: true,
+    },
+  },
 });
