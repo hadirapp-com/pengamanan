@@ -273,10 +273,27 @@ private fun LogDetailRow(
 }
 
 private fun formatScanTime(timestamp: String): String {
+    // Nama bulan dalam bahasa Indonesia
+    val bulanIndo = mapOf(
+        1 to "Januari",
+        2 to "Februari",
+        3 to "Maret",
+        4 to "April",
+        5 to "Mei",
+        6 to "Juni",
+        7 to "Juli",
+        8 to "Agustus",
+        9 to "September",
+        10 to "Oktober",
+        11 to "November",
+        12 to "Desember"
+    )
+
     return try {
         val instant = Instant.parse(timestamp)
         val dateTime = instant.toLocalDateTime(TimeZone.currentSystemDefault())
-        "${dateTime.dayOfMonth} ${dateTime.month.name.lowercase().replaceFirstChar { it.uppercase() }} ${dateTime.year}, ${dateTime.hour}:${dateTime.minute.toString().padStart(2, '0')}"
+        val namaBulan = bulanIndo[dateTime.monthNumber] ?: dateTime.month.name
+        "${dateTime.dayOfMonth} $namaBulan ${dateTime.year}, ${String.format("%02d:%02d", dateTime.hour, dateTime.minute)}"
     } catch (e: Exception) {
         timestamp
     }

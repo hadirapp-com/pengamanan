@@ -135,24 +135,24 @@ class LogRepository @Inject constructor(
 
                                     "$formattedErrors"
                                 } else {
-                                    errorResponse.error ?: errorResponse.message ?: "Validation Error"
+                                    errorResponse.error ?: errorResponse.message ?: "Error Validasi"
                                 }
                             }
                             // 401: Unauthorized - prioritize message field
                             401 -> {
-                                errorResponse.message ?: errorResponse.error ?: "Unauthorized - Please login again"
+                                errorResponse.message ?: errorResponse.error ?: "Sesi Anda telah berakhir, silakan login kembali"
                             }
                             // 403: Forbidden - prioritize message field
                             403 -> {
-                                errorResponse.message ?: errorResponse.error ?: "Forbidden - You don't have permission"
+                                errorResponse.message ?: errorResponse.error ?: "Anda tidak memiliki izin untuk akses"
                             }
                             // 404: Not Found - prioritize message field
                             404 -> {
-                                errorResponse.message ?: errorResponse.error ?: "Resource not found"
+                                errorResponse.message ?: errorResponse.error ?: "Data tidak ditemukan"
                             }
                             // 500: Internal Server Error - prioritize message field
                             500 -> {
-                                errorResponse.message ?: errorResponse.error ?: "Internal Server Error"
+                                errorResponse.message ?: errorResponse.error ?: "Terjadi kesalahan pada server"
                             }
                             // Other errors: use error or message
                             else -> {
