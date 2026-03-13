@@ -2,7 +2,7 @@ name: CI/CD API
 
 on:
   push:
-    branches: 
+    branches:
       - main
     paths:
       - 'api/**'
