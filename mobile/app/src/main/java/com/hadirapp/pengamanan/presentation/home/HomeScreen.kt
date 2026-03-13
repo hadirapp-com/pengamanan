@@ -32,7 +32,7 @@ fun HomeScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
+            CenterAlignedTopAppBar(
                 title = { Text("Pengamanan Lebaran 2026") },
                 actions = {
                     IconButton(onClick = { viewModel.syncData() }, enabled = !uiState.isSyncing) {
@@ -46,10 +46,10 @@ fun HomeScreen(
                         }
                     }
                     IconButton(onClick = onNavigateToSettings) {
-                        Icon(Icons.Default.Settings, contentDescription = "Pengaturan")
+                        Icon(Icons.Default.Settings, contentDescription = "Setting")
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary
@@ -167,7 +167,7 @@ fun HomeScreen(
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
                                     Text(
-                                        text = "Silakan pilih di Pengaturan sebelum melakukan scan QR",
+                                        text = "Silakan pilih di Setting sebelum melakukan scan QR",
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onErrorContainer
                                     )
@@ -189,7 +189,7 @@ fun HomeScreen(
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Pengaturan")
+                        Text("Setting")
                     }
                 }
             }

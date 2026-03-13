@@ -28,7 +28,7 @@ sealed class Screen(
     object Welcome : Screen("welcome")
     object Main : Screen("main") // Container for bottom nav screens
     object Home : Screen("home", Icons.Default.Home, "Beranda")
-    object Settings : Screen("settings", Icons.Default.Settings, "Pengaturan")
+    object Settings : Screen("settings", Icons.Default.Settings, "Setting")
     object QRScanner : Screen("qr_scanner")
     object ScanResult : Screen("scan_result/{qrCode}") {
         fun createRoute(qrCode: String) = "scan_result/$qrCode"
