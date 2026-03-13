@@ -138,6 +138,18 @@ class LogRepository @Inject constructor(
                                     errorResponse.error ?: errorResponse.message ?: "Validation Error"
                                 }
                             }
+                            // 401: Unauthorized - prioritize message field
+                            401 -> {
+                                errorResponse.message ?: errorResponse.error ?: "Unauthorized - Please login again"
+                            }
+                            // 403: Forbidden - prioritize message field
+                            403 -> {
+                                errorResponse.message ?: errorResponse.error ?: "Forbidden - You don't have permission"
+                            }
+                            // 404: Not Found - prioritize message field
+                            404 -> {
+                                errorResponse.message ?: errorResponse.error ?: "Resource not found"
+                            }
                             // 500: Internal Server Error - prioritize message field
                             500 -> {
                                 errorResponse.message ?: errorResponse.error ?: "Internal Server Error"
@@ -301,6 +313,18 @@ class LogRepository @Inject constructor(
                                         } else {
                                             errorResponse.error ?: errorResponse.message ?: "Validation Error"
                                         }
+                                    }
+                                    // 401: Unauthorized - prioritize message field
+                                    401 -> {
+                                        errorResponse.message ?: errorResponse.error ?: "Unauthorized - Please login again"
+                                    }
+                                    // 403: Forbidden - prioritize message field
+                                    403 -> {
+                                        errorResponse.message ?: errorResponse.error ?: "Forbidden - You don't have permission"
+                                    }
+                                    // 404: Not Found - prioritize message field
+                                    404 -> {
+                                        errorResponse.message ?: errorResponse.error ?: "Resource not found"
                                     }
                                     // 500: Internal Server Error - prioritize message field
                                     500 -> {
