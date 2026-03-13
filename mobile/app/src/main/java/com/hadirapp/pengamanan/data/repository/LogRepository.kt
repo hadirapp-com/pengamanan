@@ -9,6 +9,8 @@ import com.hadirapp.pengamanan.data.remote.api.ScanApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.datetime.Clock
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -18,6 +20,16 @@ class LogRepository @Inject constructor(
     private val driver: SqlDriver
 ) {
     suspend fun scanQR(qrCode: String, petugasJagaId: String, posId: String): Result<LogModel> {
+        // Step 1: Check if this QR was already scanned today by this petugas at this pos
+        val existingLog = getLastScanToday(qrCode, petugasJagaId, posId)
+
+        if (existingLog != null) {
+            // QR already scanned today, return existing log immediately
+            // No need to send to API again
+            return Result.success(existingLog)
+        }
+
+        // Step 2: Not scanned today, send to API
         return try {
             val response = scanApi.scanQR(
                 ScanRequest(qrCode, petugasJagaId, posId, "masuk")
@@ -57,6 +69,18 @@ class LogRepository @Inject constructor(
             saveLogLocally(offlineLog)
             Result.success(offlineLog)
         }
+    }
+
+    private fun getLastScanToday(qrCode: String, petugasJagaId: String, posId: String): LogModel? {
+        val database = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
+
+        // Get current datetime string and extract date portion
+        val currentDateTime = Clock.System.now().toString() // e.g., "2025-01-15T10:30:00.000Z"
+        val todayDate = currentDateTime.substring(0, 10) // e.g., "2025-01-15"
+        val startOfDay = "${todayDate}T00:00:00.000Z"
+
+        return database.logsQueries.selectLastScanToday(qrCode, petugasJagaId, posId, startOfDay)
+            .executeAsOneOrNull()?.toModel()
     }
 
     private fun saveLogLocally(log: LogModel) {

@@ -31,6 +31,15 @@ selectUnsyncedLogs:
 SELECT * FROM Logs
 WHERE synced = 0;
 
+selectLastScanToday:
+SELECT * FROM Logs
+WHERE qrCode = ?
+  AND petugasJagaId = ?
+  AND posId = ?
+  AND scannedAt >= ?
+ORDER BY scannedAt DESC
+LIMIT 1;
+
 insertLog:
 INSERT INTO Logs (
     id, qrCode, guestName, guestType, scanType, scannedAt,
