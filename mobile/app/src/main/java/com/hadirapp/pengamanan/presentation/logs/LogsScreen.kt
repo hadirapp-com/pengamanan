@@ -241,9 +241,9 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
                 }
             }
 
-            // Guest Name
+            // Guest Name (from QR)
             Text(
-                text = log.guestName,
+                text = log.qrNama,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
@@ -257,11 +257,17 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
 
             Divider()
 
-            // Details
+            // QR Details
             LogDetailRow(
                 icon = Icons.Default.QrCode,
                 label = "QR Code",
                 value = log.qrCode
+            )
+
+            LogDetailRow(
+                icon = Icons.Default.Person,
+                label = "Penanggung Jawab",
+                value = log.qrPenanggungJawab
             )
 
             LogDetailRow(

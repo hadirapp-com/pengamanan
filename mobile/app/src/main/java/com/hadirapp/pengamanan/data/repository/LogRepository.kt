@@ -2,6 +2,7 @@ package com.hadirapp.pengamanan.data.repository
 
 import app.cash.sqldelight.db.SqlDriver
 import com.hadirapp.pengamanan.data.model.LogModel
+import com.hadirapp.pengamanan.data.model.QrCodeModel
 import com.hadirapp.pengamanan.data.model.ScanRequest
 import com.hadirapp.pengamanan.data.model.ScanResponse
 import com.hadirapp.pengamanan.data.model.ScanType
@@ -17,7 +18,12 @@ class LogRepository @Inject constructor(
     private val scanApi: ScanApi,
     private val driver: SqlDriver
 ) {
-    suspend fun scanQR(qrCode: String, petugasJagaId: String, posId: String): Result<LogModel> {
+    suspend fun scanQR(
+        qrCode: String,
+        petugasJagaId: String,
+        posId: String,
+        qrData: QrCodeModel? = null
+    ): Result<LogModel> {
         return try {
             // Always send scan to server (unless offline)
             val response = scanApi.scanQR(
@@ -28,6 +34,10 @@ class LogRepository @Inject constructor(
                 val log = LogModel(
                     id = response.data.scan.id,
                     qrCode = qrCode,
+                    qrNama = response.data.qr.nama,
+                    qrPenanggungJawab = response.data.qr.penanggungJawab,
+                    qrValidFrom = qrData?.validFrom ?: "",
+                    qrValidUntil = qrData?.validUntil ?: "",
                     guestName = response.data.qr.nama,
                     guestType = "QR",
                     scanType = if (response.data.tipeScan == "masuk") ScanType.MASUK else ScanType.KELUAR,
@@ -47,7 +57,11 @@ class LogRepository @Inject constructor(
             val offlineLog = LogModel(
                 id = generateOfflineId(),
                 qrCode = qrCode,
-                guestName = "Unknown",
+                qrNama = qrData?.nama ?: "Unknown",
+                qrPenanggungJawab = qrData?.penanggungJawab ?: "Unknown",
+                qrValidFrom = qrData?.validFrom ?: "",
+                qrValidUntil = qrData?.validUntil ?: "",
+                guestName = qrData?.nama ?: "Unknown",
                 guestType = "GUEST",
                 scanType = ScanType.MASUK,
                 scannedAt = Clock.System.now().toString(),
@@ -64,6 +78,10 @@ class LogRepository @Inject constructor(
         com.hadirapp.pengamanan.db.PengamananDatabase(driver).logsQueries.insertLog(
             id = log.id,
             qrCode = log.qrCode,
+            qrNama = log.qrNama,
+            qrPenanggungJawab = log.qrPenanggungJawab,
+            qrValidFrom = log.qrValidFrom,
+            qrValidUntil = log.qrValidUntil,
             guestName = log.guestName,
             guestType = log.guestType,
             scanType = log.scanType.name,
@@ -145,6 +163,10 @@ class LogRepository @Inject constructor(
         return LogModel(
             id = id,
             qrCode = qrCode,
+            qrNama = qrNama,
+            qrPenanggungJawab = qrPenanggungJawab,
+            qrValidFrom = qrValidFrom,
+            qrValidUntil = qrValidUntil,
             guestName = guestName,
             guestType = guestType,
             scanType = com.hadirapp.pengamanan.data.model.ScanType.valueOf(scanType),

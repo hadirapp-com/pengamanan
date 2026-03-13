@@ -105,7 +105,7 @@ class QRScannerViewModel @Inject constructor(
             }
 
             // Step 2: QR code found locally, now send to server
-            val result = logRepository.scanQR(qrCode, petugasId, posId)
+            val result = logRepository.scanQR(qrCode, petugasId, posId, localQrData)
 
             _uiState.value = _uiState.value.copy(isProcessing = false, cameraEnabled = false)
 

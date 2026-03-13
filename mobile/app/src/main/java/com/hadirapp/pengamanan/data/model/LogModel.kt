@@ -6,6 +6,10 @@ import kotlinx.serialization.Serializable
 data class LogModel(
     val id: String,
     val qrCode: String,
+    val qrNama: String,
+    val qrPenanggungJawab: String,
+    val qrValidFrom: String,
+    val qrValidUntil: String,
     val guestName: String,
     val guestType: String,
     val scanType: ScanType,

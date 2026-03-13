@@ -1,6 +1,10 @@
 CREATE TABLE Logs (
     id TEXT PRIMARY KEY,
     qrCode TEXT NOT NULL,
+    qrNama TEXT NOT NULL,
+    qrPenanggungJawab TEXT NOT NULL,
+    qrValidFrom TEXT NOT NULL,
+    qrValidUntil TEXT NOT NULL,
     guestName TEXT NOT NULL,
     guestType TEXT NOT NULL,
     scanType TEXT NOT NULL,
@@ -37,9 +41,10 @@ WHERE id = ?;
 
 insertLog:
 INSERT INTO Logs (
-    id, qrCode, guestName, guestType, scanType, scannedAt,
+    id, qrCode, qrNama, qrPenanggungJawab, qrValidFrom, qrValidUntil,
+    guestName, guestType, scanType, scannedAt,
     petugasJagaId, petugasJagaName, posId, posName, posLocation, synced
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updateLogSynced:
 UPDATE Logs SET synced = 1 WHERE id = ?;
