@@ -107,9 +107,9 @@ const shutdown = async (signal: string) => {
   console.log(`\nReceived ${signal}. Starting graceful shutdown...`);
 
   try {
-    const { db } = await import("./lib/db");
+    const { client } = await import("./lib/db");
     // Close database connection
-    await db.disconnect();
+    await client.end();
     console.log("Database connection closed.");
   } catch (error) {
     console.error("Error closing database connection:", error);
