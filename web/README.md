@@ -255,4 +255,5 @@ pnpm build
 
 ## 📄 License
 
-Copyright © PT Hadir Bersama Teknologi
+Copyright © PT Hadir Bersama Teknolog
+i
