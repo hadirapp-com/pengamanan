@@ -1,367 +1,258 @@
-# pokayoke-web
+# Pengamanan Web
 
-Web admin application for Pokayoke Quality Control system.
+Admin dashboard untuk sistem pengamanan Lebaran Blok F RT 024. Dibangun dengan React, TypeScript, dan TailwindCSS.
 
-## Quick Start
+## 🚀 Tech Stack
 
-```bash
-# Install dependencies
-bun install
-
-# Start development server
-bun run dev
-
-# Build for production
-bun run build
-
-# Preview production build
-bun run preview
-```
-
-## Git Hooks
-
-This project uses a pre-commit hook to ensure the build passes before committing.
-
-### Initial Setup
-
-After cloning the repository, run the setup script to install git hooks:
-
-```bash
-./scripts/setup-hooks.sh
-```
-
-### What it does
-
-- **pre-commit**: Runs `npm run build` before each commit
-  - If build fails, commit is rejected
-  - Helps catch TypeScript/build errors early
-
-### Manually reinstall hooks
-
-If you need to reinstall hooks:
-
-```bash
-./scripts/setup-hooks.sh
-```
-
-## Tech Stack
-## Tech Stack
-
-- **Framework**: React 19 with TypeScript
+- **Framework**: React 19
+- **Language**: TypeScript
 - **Build Tool**: Vite
-- **Styling**: Tailwind CSS v4
+- **Styling**: TailwindCSS
+- **UI Components**: Radix UI
+- **State Management**: Zustand
+- **Data Fetching**: TanStack Query (React Query)
 - **Routing**: React Router v7
-- **State Management**:
-  - Zustand for global state
-  - TanStack Query (React Query) for server state
-- **Form Management**: React Hook Form + Zod validation
-- **HTTP Client**: Axios
-- **UI Components**: Radix UI primitives
-- **Icons**: Lucide React
-- **Date Handling**: date-fns, dayjs
-- **Barcode/QR**: jsbarcode, qrcode, react-qr-code
+- **Form Handling**: React Hook Form + Zod
+- **Table**: TanStack Table
+- **PDF Generation**: jsPDF
+- **QR Code**: qrcode.react
 
-## Project Structure
+## 📁 Struktur Project
 
 ```
-src/
-├── assets/              # Static assets (images, fonts)
-├── components/          # Reusable UI components
-│   ├── barcode/        # Barcode-related components
-│   ├── file-upload/    # File upload components
-│   ├── print/          # Printing components
-│   └── ui/             # Base UI components (buttons, inputs, etc.)
-├── config/             # Configuration files
-│   └── api.ts          # API configuration
-├── lib/                # Utility functions
-│   ├── axios.ts        # Axios instance configuration
-│   ├── react-query.ts  # React Query setup
-│   └── utils.ts        # General utilities
-├── pages/              # Page components
-│   ├── auth/           # Authentication pages (login)
-│   ├── deliveries/     # Delivery management pages
-│   ├── parts/          # Parts management pages
-│   ├── users/          # User management pages
-│   ├── customers/      # Customer management pages
-│   ├── menus/          # Menu management pages
-│   └── scan-logs/      # Scan logs pages
-├── store/              # Zustand stores
-│   └── use-store.ts    # Global state management
-├── types/              # TypeScript type definitions
-├── App.tsx             # Root app component
-├── router.tsx          # Route definitions
-├── index.css           # Global styles
-└── main.tsx            # Application entry point
+web/
+├── src/
+│   ├── components/
+│   │   └── ui/             # Reusable UI components
+│   ├── config/
+│   │   ├── constants.ts    # App constants
+│   │   └── endpoints.ts    # API endpoints
+│   ├── lib/
+│   │   ├── react-query/    # Query client setup
+│   │   └── utils.ts        # Utility functions
+│   ├── pages/
+│   │   ├── auth/           # Login page
+│   │   ├── configs/        # Config management
+│   │   ├── dashboard/      # Dashboard
+│   │   ├── logs/           # Scan logs
+│   │   ├── pengumuman/     # Announcements
+│   │   ├── petugas/        # Security guards
+│   │   ├── pos/            # Security posts
+│   │   ├── qr/             # QR codes
+│   │   └── users/          # User management
+│   ├── store/
+│   │   └── data-table.ts   # Global table state
+│   ├── App.tsx             # Main app component
+│   ├── main.tsx            # Entry point
+│   └── index.css           # Global styles
+├── public/                 # Static assets
+├── index.html
+├── package.json
+└── vite.config.ts
 ```
 
-## Key Features
+## 🔧 Setup
 
-### Authentication
-- Login page with JWT token management
-- Role-based access control (admin, user, supervisor, sales)
-- Auto-logout on token expiration
+### 1. Install Dependencies
 
-### Deliveries Management
-- List deliveries with pagination and filtering
-- Import deliveries from CSV, TXT, or Excel files (admin, sales)
-- Update delivery information (admin, sales)
-- Scan delivery barcodes (location 1 & 2)
-- View delivery details and history
-- Export delivery data
+```bash
+pnpm install
+```
 
-### Parts Management
-- List parts with search and filtering
-- Create, edit, delete parts (admin)
-- Import parts from Excel files (admin)
-- Print labels for parts
-- View print history
+### 2. Environment Variables
 
-### Users Management (Admin)
-- Create, edit, delete users
-- Assign roles (admin, user, supervisor, sales)
-- View user list with pagination
-
-### Customers Management (Admin)
-- Create, edit, delete customers
-- Manage customer information
-- Associate parts and deliveries with customers
-
-### Scan Logs
-- View scan logs with filtering by date, customer, lot
-- Track preparation and delivery scans
-- Monitor scan status (match/mismatch)
-
-### Menu Management (Admin)
-- Configure sidebar menu structure
-- Set allowed roles per menu
-- Manage menu hierarchy
-
-## Environment Variables
-
-Create a `.env` file in the root directory:
+Create `.env` file:
 
 ```env
-VITE_API_URL=http://localhost:3000
+VITE_API_URL=http://localhost:5000/api
+VITE_APP_ENVIRONMENT=development
 ```
 
-## State Management
+### 3. Start Development Server
 
-### Zustand Store
-```typescript
-import { useStore } from './store/use-store';
-
-// Access global state
-const { user, token, setAuth } = useStore();
+```bash
+pnpm dev
 ```
 
-### React Query
-```typescript
-import { useQuery, useMutation } from '@tanstack/react-query';
+Server will run on http://localhost:5173
 
-// Fetch data
-const { data, isLoading } = useQuery({
-  queryKey: ['deliveries'],
-  queryFn: () => api.get('/deliveries'),
-});
+## 🏗️ Build for Production
 
-// Mutate data
-const mutation = useMutation({
-  mutationFn: (data) => api.post('/deliveries', data),
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['deliveries'] });
-  },
-});
+```bash
+pnpm build
 ```
 
-## API Integration
+Output will be in `dist/` directory.
 
-The application uses a configured Axios instance for API calls:
+## 📱 Features
 
-```typescript
-import api from '@/lib/axios';
+### Dashboard
+- Real-time statistics
+- Recent scan activities
+- Quick access to all features
 
-// GET request
-const response = await api.get('/deliveries');
+### User Management
+- Create, update, delete users
+- Role-based access (superadmin, admin)
+- Secure password handling
 
-// POST request
-const response = await api.post('/deliveries/import', formData);
+### Petugas Jaga (Security Guards)
+- Manage security personnel
+- Add name, NIK, phone number
 
-// PUT request
-const response = await api.put(`/deliveries/${id}`, data);
+### Pos Jaga (Security Posts)
+- Manage security posts
+- Add name and location
+
+### QR Codes
+- Generate QR codes for each house/block
+- Set validity period
+- Assign responsible person (penanggung jawab)
+- Export QR codes as image/PDF
+
+### Pengumuman (Announcements)
+- Create announcements
+- Set priority (normal, important, urgent)
+- Mark as read/unread
+
+### Logs (Scan History)
+- View all scan activities
+- Filter by date range, pos, scan type
+- Search functionality
+- Sort by any column
+- Export to CSV
+- Real-time refresh (15 seconds)
+
+### Config Management
+- APP_TITLE: App title for mobile
+- HOME_SCREEN_BANNER: Banner image URL
+- mobile_pin: Global PIN for mobile authentication
+
+## 🎨 UI Components
+
+### Shadcn/UI Style
+- Button
+- Input
+- Select
+- Table
+- Dialog
+- AlertDialog
+- Badge
+- Card
+- And more...
+
+### Custom Components
+- DataTable with pagination, sorting, filtering
+- Form layouts with validation
+- QR code generator
+- PDF export
+- Date range picker
+
+## 🔐 Authentication
+
+- JWT-based authentication
+- Protected routes
+- Auto token refresh
+- Logout functionality
+
+Default credentials:
+- Username: `superadmin` / Password: `admin123`
+- Username: `admin` / Password: `admin123`
+
+## 📊 Data Table Features
+
+- **Pagination**: 10, 25, 50, 100 items per page
+- **Sorting**: Click column header to sort
+- **Filtering**: Search and filter functionality
+- **Global State**: Shared filter state across pages
+- **Auto-refresh**: Real-time data updates
+
+## 🎯 API Integration
+
+All API calls use TanStack Query with:
+- Automatic caching
+- Background refetching
+- Optimistic updates
+- Error handling
+
+## 🌐 Deployment
+
+### Cloudflare Pages
+
+The web app is deployed on Cloudflare Pages with automatic CI/CD:
+
+```bash
+# Triggered on push to main branch
+# .github/workflows/deploy-web.yml
 ```
 
-## File Upload
+### Manual Deployment
 
-For importing files (CSV, Excel, TXT):
-
-```typescript
-const formData = new FormData();
-formData.append('file', file);
-formData.append('customerId', customerId);
-formData.append('deliveryYear', '2026');
-
-await api.post('/deliveries/import', formData, {
-  headers: { 'Content-Type': 'multipart/form-data' },
-});
+```bash
+pnpm build
+# Upload dist/ folder to your hosting
 ```
 
-## Barcode & QR Code
+## 🔧 Environment Variables
 
-### Generate Barcode
-```typescript
-import { Barcode } from '@/components/barcode';
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_API_URL` | API base URL | `http://localhost:5000/api` |
+| `VITE_APP_ENVIRONMENT` | App environment | `development` or `production` |
 
-<Barcode value="123456" format="CODE128" />
+## 🐛 Troubleshooting
+
+### Port Already in Use
+
+```bash
+lsof -ti:5173 | xargs kill -9
 ```
 
-### Generate QR Code
-```typescript
-import { QRCode } from '@/components/barcode';
+### API Connection Error
 
-<QRCode value="https://example.com" size={200} />
+Check:
+1. API server is running on port 5000
+2. VITE_API_URL is correct in `.env`
+3. CORS is configured in API
+
+### Build Error
+
+```bash
+rm -rf node_modules dist
+pnpm install
+pnpm build
 ```
 
-## Printing
+## 📝 Development Tips
 
-```typescript
-import { handlePrint } from '@/components/print';
+### Add New Page
 
-// Print component content
-<ReactToPrint
-  trigger={() => <button>Print</button>}
-  content={() => componentRef}
-/>
+1. Create page in `src/pages/`
+2. Add route in `src/App.tsx`
+3. Add navigation item if needed
+
+### Add New API Endpoint
+
+1. Add endpoint in `src/config/endpoints.ts`
+2. Create query/mutation hook in `src/lib/react-query/`
+3. Use in your component
+
+### Update UI Components
+
+All UI components are in `src/components/ui/`. Modify as needed.
+
+## 🧪 Testing
+
+Run linter:
+```bash
+pnpm lint
 ```
 
-## Styling
-
-### Using Tailwind CSS
-```jsx
-<div className="flex items-center justify-between p-4 bg-white rounded-lg shadow">
-  <h2 className="text-lg font-semibold">Title</h2>
-  <button className="px-4 py-2 bg-blue-600 text-white rounded">Action</button>
-</div>
+Build test:
+```bash
+pnpm build
 ```
 
-### Using UI Components
-```tsx
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Dialog } from '@/components/ui/dialog';
+## 📄 License
 
-<Button variant="default">Click me</Button>
-<Input placeholder="Enter text..." />
-<Dialog open={isOpen} onOpenChange={setIsOpen}>
-  {/* Dialog content */}
-</Dialog>
-```
-
-## Routing
-
-Protected routes are defined in `src/router.tsx`:
-
-```tsx
-<Route path="/" element={<ProtectedRoute />}>
-  <Route path="deliveries" element={<DeliveriesPage />} />
-  <Route path="parts" element={<PartsPage />} />
-  {/* Other routes */}
-</Route>
-```
-
-## Error Handling
-
-The app uses Sonner for toast notifications:
-
-```typescript
-import { toast } from 'sonner';
-
-// Success toast
-toast.success('Data saved successfully');
-
-// Error toast
-toast.error('Something went wrong');
-
-// Promise toast
-toast.promise(mutation.mutateAsync(data), {
-  loading: 'Saving...',
-  success: 'Saved!',
-  error: 'Failed to save',
-});
-```
-
-## Development Guidelines
-
-### Component Structure
-```tsx
-// 1. Imports
-import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-
-// 2. Types (if needed)
-interface Props {
-  id: string;
-}
-
-// 3. Component
-export function ComponentName({ id }: Props) {
-  // 4. Hooks
-  const [state, setState] = useState();
-
-  // 5. Queries/Mutations
-  const { data } = useQuery({
-    queryKey: ['key', id],
-    queryFn: () => fetchData(id),
-  });
-
-  // 6. Event handlers
-  const handleClick = () => {
-    // handle event
-  };
-
-  // 7. Render
-  return (
-    <div>
-      {/* JSX */}
-    </div>
-  );
-}
-```
-
-### File Naming
-- Components: PascalCase (e.g., `DeliveryList.tsx`)
-- Hooks: camelCase with 'use' prefix (e.g., `useDeliveries.ts`)
-- Utilities: camelCase (e.g., `formatDate.ts`)
-- Types: PascalCase (e.g., `Delivery.ts`)
-
-### Best Practices
-- Use React Query for all server state
-- Implement optimistic updates where appropriate
-- Handle loading and error states
-- Use TypeScript for type safety
-- Follow existing component patterns
-- Write clean, self-documenting code
-
-## Common Issues & Solutions
-
-### CORS errors
-- Check `VITE_API_URL` in `.env`
-- Ensure API CORS is configured correctly
-
-### Build errors
-- Clear node_modules: `rm -rf node_modules && bun install`
-- Clear Vite cache: `rm -rf .vite && bun run dev`
-
-### Hot module replacement not working
-- Restart dev server
-- Check Vite version compatibility
-
-## Browser Support
-
-- Chrome (recommended)
-- Firefox
-- Safari
-- Edge
-
----
-
-Last updated: 2026-01-25
+Copyright © 2026 Blok F RT 024
