@@ -187,4 +187,4 @@ docker-compose up -d
 
 ## 📄 License
 
-Copyright © 2026 Blok F RT 024
+Copyright © 2026 PT Hadir Bersama Teknologi
