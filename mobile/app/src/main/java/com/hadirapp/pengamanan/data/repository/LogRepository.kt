@@ -120,21 +120,32 @@ class LogRepository @Inject constructor(
                     val errorMessage = try {
                         val errorResponse = json.decodeFromString<ErrorResponse>(errorBody)
 
-                        // Check if this is a Zod validation error (400 with details)
-                        if (response.code() == 400 && errorResponse.details != null) {
-                            Log.e("API_CALL", "Validation Errors: ${errorResponse.details.size}")
+                        when (response.code()) {
+                            // 400: Zod validation errors
+                            400 -> {
+                                if (errorResponse.details != null) {
+                                    Log.e("API_CALL", "Validation Errors: ${errorResponse.details.size}")
 
-                            // Format Zod validation errors
-                            val formattedErrors = errorResponse.details.mapNotNull { error ->
-                                val field = error.path?.firstOrNull() ?: "Field"
-                                val message = error.message ?: "Invalid value"
-                                "• $field: $message"
-                            }.joinToString("\n")
+                                    // Format Zod validation errors
+                                    val formattedErrors = errorResponse.details.mapNotNull { error ->
+                                        val field = error.path?.firstOrNull() ?: "Field"
+                                        val message = error.message ?: "Invalid value"
+                                        "• $field: $message"
+                                    }.joinToString("\n")
 
-                            "$formattedErrors"
-                        } else {
-                            // Use error or message from response
-                            errorResponse.error ?: errorResponse.message ?: "Unknown error"
+                                    "$formattedErrors"
+                                } else {
+                                    errorResponse.error ?: errorResponse.message ?: "Validation Error"
+                                }
+                            }
+                            // 500: Internal Server Error - prioritize message field
+                            500 -> {
+                                errorResponse.message ?: errorResponse.error ?: "Internal Server Error"
+                            }
+                            // Other errors: use error or message
+                            else -> {
+                                errorResponse.error ?: errorResponse.message ?: "HTTP ${response.code()}: ${response.message()}"
+                            }
                         }
                     } catch (e: Exception) {
                         Log.e("API_CALL", "Failed to parse error response: ${e.message}")
@@ -273,18 +284,32 @@ class LogRepository @Inject constructor(
                         Log.e("SYNC_LOGS", "  ❌ Sync failed: HTTP ${response.code()}")
 
                         if (errorBody != null) {
-                            // Parse and format Zod validation errors
+                            // Parse and format errors based on status code
                             val formattedError = try {
                                 val errorResponse = json.decodeFromString<ErrorResponse>(errorBody)
-                                if (response.code() == 400 && errorResponse.details != null) {
-                                    val formattedErrors = errorResponse.details.mapNotNull { error ->
-                                        val field = error.path?.firstOrNull() ?: "Field"
-                                        val message = error.message ?: "Invalid value"
-                                        "• $field: $message"
-                                    }.joinToString(", ")
-                                    "Validation Error: $formattedErrors"
-                                } else {
-                                    errorResponse.error ?: errorResponse.message ?: "Unknown error"
+
+                                when (response.code()) {
+                                    // 400: Zod validation errors
+                                    400 -> {
+                                        if (errorResponse.details != null) {
+                                            val formattedErrors = errorResponse.details.mapNotNull { error ->
+                                                val field = error.path?.firstOrNull() ?: "Field"
+                                                val message = error.message ?: "Invalid value"
+                                                "• $field: $message"
+                                            }.joinToString(", ")
+                                            "Validation Error: $formattedErrors"
+                                        } else {
+                                            errorResponse.error ?: errorResponse.message ?: "Validation Error"
+                                        }
+                                    }
+                                    // 500: Internal Server Error - prioritize message field
+                                    500 -> {
+                                        errorResponse.message ?: errorResponse.error ?: "Internal Server Error"
+                                    }
+                                    // Other errors: use error or message
+                                    else -> {
+                                        errorResponse.error ?: errorResponse.message ?: "Unknown error"
+                                    }
                                 }
                             } catch (e: Exception) {
                                 errorBody
