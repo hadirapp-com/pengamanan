@@ -43,7 +43,9 @@
       "Bash(pnpm install:*)",
       "Bash(pkill:*)",
       "Bash(lsof:*)",
-      "Bash(xargs kill:*)"
+      "Bash(xargs kill:*)",
+      "Bash(python3:*)",
+      "Bash(pip3 install:*)"
     ]
   }
 }

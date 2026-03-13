@@ -9,8 +9,8 @@ Sistem pengamanan berbasis QR Code untuk Lebaran 2026 di Blok F RT 024. Sistem i
 │  Mobile App     │──────│                 │──────│  Admin Web      │
 │  (Petugas)      │      │                 │      │  (Dashboard)    │
 └─────────────────┘      │                 │      └─────────────────┘
-                          │     API/Server   │
-┌─────────────────┐      │    (Bun + Hono) │
+                         │    API/Server   │
+┌─────────────────┐      │   (Bun + Hono)  │
 │  QR Code        │──────│                 │
 │  (Warga)        │      │                 │
 └─────────────────┘      └─────────────────┘

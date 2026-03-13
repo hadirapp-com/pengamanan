@@ -41,4 +41,3 @@ prisma/dev.db
 prisma/dev.db-journal
 
 # generated files
-openapi.json
