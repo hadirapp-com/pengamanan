@@ -71,7 +71,7 @@ jobs:
       - name: Deploy to server
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
-            cd api
+            cd ~/projects/pengamanan/api
 
             # Pull latest image from GHCR
             docker-compose -f docker-compose.prod.yml pull pengamanan-api
