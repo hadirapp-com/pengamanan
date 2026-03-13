@@ -31,6 +31,10 @@ selectUnsyncedLogs:
 SELECT * FROM Logs
 WHERE synced = 0;
 
+selectLogById:
+SELECT * FROM Logs
+WHERE id = ?;
+
 insertLog:
 INSERT INTO Logs (
     id, qrCode, guestName, guestType, scanType, scannedAt,

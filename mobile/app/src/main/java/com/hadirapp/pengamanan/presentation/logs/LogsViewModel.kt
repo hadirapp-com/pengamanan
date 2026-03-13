@@ -13,7 +13,8 @@ import javax.inject.Inject
 data class LogsUiState(
     val isLoading: Boolean = true,
     val logs: List<com.hadirapp.pengamanan.data.model.LogModel> = emptyList(),
-    val error: String? = null
+    val error: String? = null,
+    val deleteError: String? = null
 )
 
 @HiltViewModel
@@ -50,5 +51,23 @@ class LogsViewModel @Inject constructor(
 
     fun refresh() {
         loadLogs()
+    }
+
+    fun deleteLog(logId: String) {
+        viewModelScope.launch {
+            val result = logRepository.deleteLog(logId)
+
+            if (result.isFailure) {
+                _uiState.value = _uiState.value.copy(
+                    deleteError = result.exceptionOrNull()?.message
+                )
+            }
+            // If success, the log will be automatically removed from the list
+            // because we're using Flow
+        }
+    }
+
+    fun clearDeleteError() {
+        _uiState.value = _uiState.value.copy(deleteError = null)
     }
 }

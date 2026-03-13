@@ -107,6 +107,36 @@ class LogRepository @Inject constructor(
         }
     }
 
+    /**
+     * Delete a log from local database
+     * Only logs that have been synced (synced=true) can be deleted
+     * @param logId The ID of the log to delete
+     * @return Result<Unit> Success if deleted, Failure if not synced or error
+     */
+    suspend fun deleteLog(logId: String): Result<Unit> {
+        return try {
+            val database = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
+
+            // Get the log to check if synced
+            val log = database.logsQueries.selectLogById(logId).executeAsOneOrNull()
+
+            if (log == null) {
+                return Result.failure(Exception("Log not found"))
+            }
+
+            // Check if synced - only allow delete if synced = true
+            if (log.synced == 0L) {
+                return Result.failure(Exception("Tidak bisa menghapus data yang belum disinkronkan ke server"))
+            }
+
+            // Delete the log
+            database.logsQueries.deleteLog(logId)
+            Result.success(Unit)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     private fun generateOfflineId(): String {
         return "offline_${System.currentTimeMillis()}"
     }

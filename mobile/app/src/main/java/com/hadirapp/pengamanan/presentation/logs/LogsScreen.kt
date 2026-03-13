@@ -1,5 +1,6 @@
 package com.hadirapp.pengamanan.presentation.logs
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -10,6 +11,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,6 +28,14 @@ fun LogsScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     val listState = rememberLazyListState()
+
+    // Handle delete result
+    LaunchedEffect(uiState.deleteError) {
+        uiState.deleteError?.let { error ->
+            // Show snackbar or handle error
+            viewModel.clearDeleteError()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -48,6 +58,20 @@ fun LogsScreen(
                     actionIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
+        },
+        snackbarHost = {
+            if (uiState.deleteError != null) {
+                Snackbar(
+                    modifier = Modifier.padding(16.dp),
+                    action = {
+                        TextButton(onClick = { viewModel.clearDeleteError() }) {
+                            Text("OK")
+                        }
+                    }
+                ) {
+                    Text(uiState.deleteError ?: "Error menghapus data")
+                }
+            }
         }
     ) { paddingValues ->
         if (uiState.isLoading) {
@@ -92,11 +116,64 @@ fun LogsScreen(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                items(uiState.logs) { log ->
-                    LogCard(log = log)
+                items(
+                    items = uiState.logs,
+                    key = { it.id }
+                ) { log ->
+                    SwipeToDeleteLog(
+                        log = log,
+                        onDelete = { viewModel.deleteLog(log.id) },
+                        canDelete = log.synced // Only allow delete if synced
+                    )
                 }
             }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeToDeleteLog(
+    log: com.hadirapp.pengamanan.data.model.LogModel,
+    onDelete: () -> Unit,
+    canDelete: Boolean
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = {
+            if (it == SwipeToDismissBoxValue.StartToEnd) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    if (canDelete) {
+        SwipeToDismissBox(
+            state = dismissState,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Red)
+                        .padding(horizontal = 20.dp),
+                    contentAlignment = Alignment.CenterStart
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Delete,
+                        contentDescription = "Hapus",
+                        tint = Color.White
+                    )
+                }
+            },
+            enableDismissFromStartToEnd = true,
+            enableDismissFromEndToStart = false
+        ) {
+            LogCard(log = log)
+        }
+    } else {
+        LogCard(log = log)
     }
 }
 
@@ -197,6 +274,33 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
                 label = "Waktu",
                 value = formatScanTime(log.scannedAt)
             )
+
+            // Hint for unsynced logs
+            if (!log.synced) {
+                Spacer(modifier = Modifier.height(4.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.errorContainer,
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            modifier = Modifier.size(14.dp),
+                            tint = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "Belum disinkronkan - tidak bisa dihapus",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onErrorContainer
+                        )
+                    }
+                }
+            }
         }
     }
 }
