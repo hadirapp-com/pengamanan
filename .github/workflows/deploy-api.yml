@@ -9,7 +9,7 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-api
+  IMAGE_NAME: pengamanan-api
 
 jobs:
   build-and-push:
@@ -33,7 +33,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/hadirapp-com/${{ env.IMAGE_NAME }}
           tags: |
             type=sha
             latest
@@ -48,8 +48,8 @@ jobs:
 
   deploy:
     needs: build-and-push
-    runs-on: self-hosted # This targets your local runner
-    
+    runs-on: self-hosted
+
     steps:
       - name: Log in to GHCR
         uses: docker/login-action@v3
@@ -57,20 +57,28 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
       - name: Deploy to server
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} << 'EOF'
             cd api
-            docker compose up -d --no-deps api 
-            docker image prune -f
-            docker compose up --build -d
+
+            # Pull latest image from GHCR
+            docker-compose -f docker-compose.prod.yml pull pengamanan-api
+
+            # Restart service with new image
+            docker-compose -f docker-compose.prod.yml up -d pengamanan-api
+
+            # Cleanup old images (keep last 10 images)
+            docker image prune -af --filter "until=24h"
           EOF
-      
