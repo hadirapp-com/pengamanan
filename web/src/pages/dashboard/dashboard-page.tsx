@@ -14,6 +14,16 @@ import {
   MapPin,
   Loader2,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -176,34 +186,88 @@ export default function DashboardPage() {
           ) : (
             <div className="space-y-4">
               {stats?.last7Days && stats.last7Days.length > 0 ? (
-                <div className="space-y-2">
-                  {stats.last7Days.map((day) => (
-                    <div
-                      key={day.date}
-                      className="flex items-center justify-between rounded-lg border p-3"
-                    >
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900">
-                          {format(new Date(day.date), "EEEE, dd MMM yyyy")}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-6">
-                        <div className="flex items-center gap-2">
-                          <ArrowDown className="h-4 w-4 text-green-600" />
-                          <span className="text-sm font-semibold text-green-600">
-                            {day.masuk}
-                          </span>
+                <>
+                  {/* Chart */}
+                  <div className="h-80">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart
+                        data={stats.last7Days.map((day) => ({
+                          tanggal: format(new Date(day.date), "dd MMM"),
+                          masuk: day.masuk,
+                          keluar: day.keluar,
+                        }))}
+                        margin={{
+                          top: 20,
+                          right: 30,
+                          left: 20,
+                          bottom: 5,
+                        }}
+                      >
+                        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                        <XAxis
+                          dataKey="tanggal"
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          tickLine={{ stroke: "hsl(var(--border))" }}
+                        />
+                        <YAxis
+                          tick={{ fill: "hsl(var(--muted-foreground))" }}
+                          tickLine={{ stroke: "hsl(var(--border))" }}
+                        />
+                        <Tooltip
+                          contentStyle={{
+                            backgroundColor: "hsl(var(--card))",
+                            border: "1px solid hsl(var(--border))",
+                            borderRadius: "8px",
+                          }}
+                          itemStyle={{ color: "hsl(var(--foreground))" }}
+                        />
+                        <Legend />
+                        <Bar
+                          dataKey="masuk"
+                          name="Masuk"
+                          fill="hsl(var(--chart-masuk))"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar
+                          dataKey="keluar"
+                          name="Keluar"
+                          fill="hsl(var(--chart-keluar))"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+
+                  {/* Summary Table */}
+                  <div className="mt-6 space-y-2">
+                    {stats.last7Days.map((day) => (
+                      <div
+                        key={day.date}
+                        className="flex items-center justify-between rounded-lg border p-3"
+                      >
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-gray-900">
+                            {format(new Date(day.date), "EEEE, dd MMM yyyy")}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <ArrowUp className="h-4 w-4 text-red-600" />
-                          <span className="text-sm font-semibold text-red-600">
-                            {day.keluar}
-                          </span>
+                        <div className="flex items-center gap-6">
+                          <div className="flex items-center gap-2">
+                            <ArrowDown className="h-4 w-4 text-green-600" />
+                            <span className="text-sm font-semibold text-green-600">
+                              {day.masuk}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <ArrowUp className="h-4 w-4 text-red-600" />
+                            <span className="text-sm font-semibold text-red-600">
+                              {day.keluar}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </>
               ) : (
                 <p className="py-8 text-center text-sm text-gray-500">
                   Belum ada data statistik
