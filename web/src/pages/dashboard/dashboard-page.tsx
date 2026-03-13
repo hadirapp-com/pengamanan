@@ -318,11 +318,11 @@ export default function DashboardPage() {
                           {scan.qrNama || "Unknown"}
                         </p>
                         <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span>{scan.qrPenanggungJawab || "-"}</span>
+                          <span>PJ: {scan.qrPenanggungJawab || "-"}</span>
                           <span>•</span>
-                          <span>{scan.petugasNama || "-"}</span>
+                          <span>Petugas: {scan.petugasNama || "-"}</span>
                           <span>•</span>
-                          <span>{scan.posNama || "-"}</span>
+                          <span>Pos: {scan.posNama || "-"}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
