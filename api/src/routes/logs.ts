@@ -162,7 +162,7 @@ logsRoutes.get("/stats", async (c) => {
     const todayStatsResult = await db
       .select({
         tipeScan: scanLogs.tipeScan,
-        count: sql<number>`count(*)`,
+        count: sql<number>`cast(count(*) as integer)`,
       })
       .from(scanLogs)
       .where(gte(scanLogs.scannedAt, today))
@@ -175,9 +175,9 @@ logsRoutes.get("/stats", async (c) => {
 
     for (const stat of todayStatsResult) {
       if (stat.tipeScan === "masuk") {
-        todayStats.masuk = stat.count;
+        todayStats.masuk = Number(stat.count);
       } else if (stat.tipeScan === "keluar") {
-        todayStats.keluar = stat.count;
+        todayStats.keluar = Number(stat.count);
       }
     }
 
@@ -189,7 +189,7 @@ logsRoutes.get("/stats", async (c) => {
       .select({
         date: sql<string>`date(${scanLogs.scannedAt})`,
         tipeScan: scanLogs.tipeScan,
-        count: sql<number>`count(*)`,
+        count: sql<number>`cast(count(*) as integer)`,
       })
       .from(scanLogs)
       .where(gte(scanLogs.scannedAt, sevenDaysAgo))
