@@ -4,6 +4,7 @@ import app.cash.sqldelight.db.SqlDriver
 import com.hadirapp.pengamanan.data.remote.api.SyncApi
 import com.hadirapp.pengamanan.data.model.PetugasModel
 import com.hadirapp.pengamanan.data.model.PosModel
+import com.hadirapp.pengamanan.data.model.QrCodeModel
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -77,6 +78,16 @@ class SyncRepository @Inject constructor(
         return database.posQueries.selectAllPos().executeAsList().map { it.toModel() }
     }
 
+    fun getAllQrCodes(): List<QrCodeModel> {
+        val database = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
+        return database.qrCodeQueries.selectAllQrCodes().executeAsList().map { it.toModel() }
+    }
+
+    fun getQrCodeByCode(qrCode: String): QrCodeModel? {
+        val database = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
+        return database.qrCodeQueries.selectQrCodeByCode(qrCode).executeAsOneOrNull()?.toModel()
+    }
+
     private fun com.hadirapp.pengamanan.db.Petugas.toModel(): PetugasModel {
         return PetugasModel(
             id = id,
@@ -94,6 +105,20 @@ class SyncRepository @Inject constructor(
             id = id,
             nama = nama,
             lokasi = lokasi,
+            isActive = true,  // All synced records are active
+            createdAt = createdAt,
+            updatedAt = updatedAt
+        )
+    }
+
+    private fun com.hadirapp.pengamanan.db.QrCode.toModel(): QrCodeModel {
+        return QrCodeModel(
+            id = id,
+            qrCode = qrCode,
+            nama = nama,
+            penanggungJawab = penanggungJawab,
+            validFrom = validFrom,
+            validUntil = validUntil,
             isActive = true,  // All synced records are active
             createdAt = createdAt,
             updatedAt = updatedAt

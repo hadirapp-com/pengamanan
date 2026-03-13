@@ -4,6 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hadirapp.pengamanan.data.repository.AuthRepository
 import com.hadirapp.pengamanan.data.repository.LogRepository
+import com.hadirapp.pengamanan.data.repository.SyncRepository
+import com.hadirapp.pengamanan.data.model.QrCodeModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,13 +18,15 @@ data class QRScannerUiState(
     val hasRequiredInfo: Boolean = false,
     val petugasNama: String? = null,
     val posNama: String? = null,
-    val error: String? = null
+    val error: String? = null,
+    val qrData: QrCodeModel? = null
 )
 
 @HiltViewModel
 class QRScannerViewModel @Inject constructor(
     private val logRepository: LogRepository,
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val syncRepository: SyncRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(QRScannerUiState())
@@ -73,8 +77,21 @@ class QRScannerViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isProcessing = true, error = null)
+            _uiState.value = _uiState.value.copy(isProcessing = true, error = null, qrData = null)
 
+            // Step 1: Validate QR code in local database first
+            val localQrData = syncRepository.getQrCodeByCode(qrCode)
+
+            if (localQrData == null) {
+                // QR code not found in local database
+                _uiState.value = _uiState.value.copy(
+                    isProcessing = false,
+                    error = "QR Code tidak terdaftar"
+                )
+                return@launch
+            }
+
+            // Step 2: QR code found locally, now send to server
             val result = logRepository.scanQR(qrCode, petugasId, posId)
 
             _uiState.value = _uiState.value.copy(isProcessing = false)
@@ -84,6 +101,7 @@ class QRScannerViewModel @Inject constructor(
                 lastScannedQR = qrCode
                 lastScanTime = currentTime
                 scanResult = qrCode
+                _uiState.value = _uiState.value.copy(qrData = localQrData)
             } else {
                 _uiState.value = _uiState.value.copy(
                     error = result.exceptionOrNull()?.message
@@ -100,5 +118,6 @@ class QRScannerViewModel @Inject constructor(
         scanResult = null
         lastScannedQR = null
         lastScanTime = 0L
+        _uiState.value = _uiState.value.copy(qrData = null)
     }
 }

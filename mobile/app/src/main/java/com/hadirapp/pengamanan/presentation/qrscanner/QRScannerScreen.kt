@@ -8,6 +8,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -17,6 +18,7 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.shouldShowRationale
 import com.hadirapp.pengamanan.presentation.qrscanner.DrawCorner
+import com.hadirapp.pengamanan.util.SoundManager
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
@@ -26,25 +28,36 @@ fun QRScannerScreen(
     onScanSuccess: (String) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
+    val context = LocalContext.current
+
+    // Initialize SoundManager
+    val soundManager = remember { SoundManager(context) }
 
     // Camera permission
     val cameraPermissionState = rememberPermissionState(
         android.Manifest.permission.CAMERA
     )
 
-    // Check for scan result
+    // Check for scan result - Play success sound
     LaunchedEffect(viewModel.scanResult) {
         viewModel.scanResult?.let { qrCode ->
+            soundManager.playSuccess()
             onScanSuccess(qrCode)
         }
     }
 
-    // Handle errors
+    // Handle errors - Play error sound
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
+            soundManager.playError()
             viewModel.clearError()
-            // Show snackbar or handle error
+        }
+    }
+
+    // Dispose soundManager when composable is disposed
+    DisposableEffect(Unit) {
+        onDispose {
+            soundManager.release()
         }
     }
 
