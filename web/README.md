@@ -255,4 +255,4 @@ pnpm build
 
 ## 📄 License
 
-Copyright © 2026 Blok F RT 024
+Copyright © PT Hadir Bersama Teknologi

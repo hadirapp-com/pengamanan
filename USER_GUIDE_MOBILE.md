@@ -178,7 +178,7 @@ Jika scan berhasil:
 │                                 │
 │  QR: Block A-101                │
 │  Penanggung Jawab:              │
-│  Bpk. Ahmad                      │
+│  Bpk. Ahmad                     │
 │                                 │
 │  Tipe: MASUK                    │
 │  Waktu: 13-03-2026, 18:30       │
@@ -233,25 +233,25 @@ Riwayat scan menampilkan semua scan yang sudah Anda lakukan.
 ### Informasi yang Ditampilkan:
 
 ```
-┌─────────────────────────────────────┐
+┌────────────────────────────────────┐
 │  📋 RIWAYAT SCAN                   │
-├─────────────────────────────────────┤
-│                                     │
+├────────────────────────────────────┤
+│                                    │
 │  13 Maret 2026, 18:30              │
 │  Block A-101                       │
 │  Penanggung Jawab: Bpk. Ahmad      │
 │  Petugas: Anda                     │
-│  Pos: Pos 1 Utara                 │
+│  Pos: Pos 1 Utara                  │
 │  Tipe: MASUK ✅                    │
-│                                     │
+│                                    │
 │  13 Maret 2026, 17:45              │
 │  Block B-205                       │
 │  Penanggung Jawab: Ibu Siti        │
 │  Petugas: Anda                     │
-│  Pos: Pos 1 Utara                 │
-│  Tipe: KELUAR 🔼                  │
-│                                     │
-└─────────────────────────────────────┘
+│  Pos: Pos 1 Utara                  │
+│  Tipe: KELUAR 🔼                   │
+│                                    │
+└────────────────────────────────────┘
 ```
 
 ### Ikon Status:
@@ -296,17 +296,17 @@ Menu ini menampilkan pengumuman penting dari admin.
 
 ```
 ┌─────────────────────────────────────┐
-│  📢 PENGUMUMAN PENTING             │
+│  📢 PENGUMUMAN PENTING              │
 ├─────────────────────────────────────┤
 │                                     │
-│  Jam Malam Dimulai                 │
-│  Pukul 22:00 WIB                   │
+│  Jam Malam Dimulai                  │
+│  Pukul 22:00 WIB                    │
 │                                     │
-│  Diberitahukan kepada seluruh      │
-│  petugas jaga bahwa jam malam      │
-│  dimulai pukul 22:00 WIB           │
+│  Diberitahukan kepada seluruh       │
+│  petugas jaga bahwa jam malam       │
+│  dimulai pukul 22:00 WIB            │
 │                                     │
-│  Ditetapkan: 13 Maret 2026         │
+│  Ditetapkan: 13 Maret 2026          │
 └─────────────────────────────────────┘
 ```
 

@@ -79,25 +79,25 @@ Dashboard adalah halaman utama yang menampilkan ringkasan aktivitas pengamanan.
 ### Komponen Dashboard:
 
 ```
-┌─────────────────────────────────────────────────────────┐
+┌────────────────────────────────────────────────────────┐
 │  DASHBOARD PENGAMANAN LEBARAN                          │
-├─────────────────────────────────────────────────────────┤
-│                                                         │
-│  📊 STATISTIK HARI INI                                  │
+├────────────────────────────────────────────────────────┤
+│                                                        │
+│  📊 STATISTIK HARI INI                                 │
 │  ┌─────────┬─────────┬─────────┬─────────┐             │
 │  │ Total   │ Masuk   │ Keluar  │ Unik    │             │
 │  │ Scan    │         │         │         │             │
 │  │ 150     │ 80      │ 70      │ 45      │             │
 │  └─────────┴─────────┴─────────┴─────────┘             │
-│                                                         │
+│                                                        │
 │  📈 AKTIVITAS SCAN TERBARU                             │
 │  ┌─────────────────────────────────────────┐           │
-│  │ 13 Maret 2026, 18:30                     │           │
-│  │ Block A-101 - Masuk                      │           │
-│  │ Petugas: Bpk. Ahmad - Pos 1 Utama        │           │
+│  │ 13 Maret 2026, 18:30                    │           │
+│  │ Block A-101 - Masuk                     │           │
+│  │ Petugas: Bpk. Ahmad - Pos 1 Utama       │           │
 │  └─────────────────────────────────────────┘           │
-│                                                         │
-└─────────────────────────────────────────────────────────┘
+│                                                        │
+└────────────────────────────────────────────────────────┘
 ```
 
 ### Informasi yang Ditampilkan:
@@ -365,8 +365,8 @@ Klik judul kolom untuk mengurutkan:
 
 Format Excel:
 ```
-| Waktu | Nama | Penanggung Jawab | Petugas | Pos | Tipe Scan |
-|-------|------|------------------|---------|-----|-----------|
+| Waktu            | Nama | Penanggung Jawab | Petugas | Pos  | Tipe Scan |
+|------------------|------|------------------|---------|------|-----------|
 | 13-03-2026 18:30 | Block A-101 | Bpk. Ahmad | Bpk. Joko | Pos 1 | Masuk |
 ```
 
