@@ -74,10 +74,10 @@ jobs:
             cd ~/projects/pengamanan/api
 
             # Pull latest image from GHCR
-            docker-compose -f docker-compose.prod.yml pull pengamanan-api
+            docker compose -f docker-compose.prod.yml pull pengamanan-api
 
             # Restart service with new image
-            docker-compose -f docker-compose.prod.yml up -d pengamanan-api
+            docker compose -f docker-compose.prod.yml up -d pengamanan-api
 
             # Cleanup old images (keep last 10 images)
             docker image prune -af --filter "until=24h"
