@@ -183,18 +183,18 @@ logsRoutes.get("/stats", async (c) => {
 
     // Get last 7 days stats
     const sevenDaysAgo = new Date(today);
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
 
     const last7DaysResult = await db
       .select({
-        date: sql<string>`date(${scanLogs.scannedAt})`,
+        date: sql<string>`date(${scanLogs.scannedAt} at time zone 'utc' at time zone 'asia/jakarta')`,
         tipeScan: scanLogs.tipeScan,
         count: sql<number>`cast(count(*) as integer)`,
       })
       .from(scanLogs)
       .where(gte(scanLogs.scannedAt, sevenDaysAgo))
-      .groupBy(sql`date(${scanLogs.scannedAt})`, scanLogs.tipeScan)
-      .orderBy(sql`date(${scanLogs.scannedAt})`);
+      .groupBy(sql`date(${scanLogs.scannedAt} at time zone 'utc' at time zone 'asia/jakarta')`, scanLogs.tipeScan)
+      .orderBy(sql`date(${scanLogs.scannedAt} at time zone 'utc' at time zone 'asia/jakarta')`);
 
     // Format last 7 days data
     const last7DaysData: Array<{
