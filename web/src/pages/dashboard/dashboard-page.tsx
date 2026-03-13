@@ -191,7 +191,7 @@ export default function DashboardPage() {
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
-                        data={stats.last7Days.map((day, index) => ({
+                        data={stats.last7Days.map((day) => ({
                           tanggal: format(new Date(day.date), "dd MMM"),
                           masuk: day.masuk,
                           keluar: day.keluar,
@@ -225,35 +225,29 @@ export default function DashboardPage() {
                         <Bar
                           dataKey="masuk"
                           name="Masuk"
-                          fill={(entry: any) => {
-                            const colors = [
-                              '#ef4444', // red-500
-                              '#f97316', // orange-500
-                              '#eab308', // yellow-500
-                              '#22c55e', // green-500
-                              '#06b6d4', // cyan-500
-                              '#3b82f6', // blue-500
-                              '#8b5cf6', // violet-500
-                            ];
-                            return colors[entry?.index % 7] || '#22c55e';
-                          }}
+                          fill={stats.last7Days.map((_, index) => [
+                            '#ef4444', // red-500
+                            '#f97316', // orange-500
+                            '#eab308', // yellow-500
+                            '#22c55e', // green-500
+                            '#06b6d4', // cyan-500
+                            '#3b82f6', // blue-500
+                            '#8b5cf6', // violet-500
+                          ][index % 7])}
                           radius={[4, 4, 0, 0]}
                         />
                         <Bar
                           dataKey="keluar"
                           name="Keluar"
-                          fill={(entry: any) => {
-                            const colors = [
-                              '#ef4444', // red-500
-                              '#f97316', // orange-500
-                              '#eab308', // yellow-500
-                              '#22c55e', // green-500
-                              '#06b6d4', // cyan-500
-                              '#3b82f6', // blue-500
-                              '#8b5cf6', // violet-500
-                            ];
-                            return colors[entry?.index % 7] || '#ef4444';
-                          }}
+                          fill={stats.last7Days.map((_, index) => [
+                            '#ef4444', // red-500
+                            '#f97316', // orange-500
+                            '#eab308', // yellow-500
+                            '#22c55e', // green-500
+                            '#06b6d4', // cyan-500
+                            '#3b82f6', // blue-500
+                            '#8b5cf6', // violet-500
+                          ][index % 7])}
                           radius={[4, 4, 0, 0]}
                         />
                       </BarChart>
