@@ -38,6 +38,7 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
@@ -138,6 +139,9 @@ dependencies {
 
     // Permissions (TODO: Add back when CameraX is integrated)
     // implementation("com.google.accompanist:accompanist-permissions:0.36.0")
+
+    // Core library desugaring for java.time API support on API < 26
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.2")
 
     // Testing
     testImplementation("junit:junit:4.13.2")
