@@ -53,11 +53,10 @@ export default function LogsTablePage() {
   const dateTo = dateRange.to ? format(new Date(dateRange.to), 'yyyy-MM-dd') : undefined;
 
   // Local filters specific to logs page
-  const [posFilter, setPosFilter] = useState<string>("all");
   const [tipeScanFilter, setTipeScanFilter] = useState<"masuk" | "keluar" | "all">("all");
 
   // Create stable reference for filters debouncing
-  const filtersString = useMemo(() => JSON.stringify({ posFilter, tipeScanFilter }), [posFilter, tipeScanFilter]);
+  const filtersString = useMemo(() => JSON.stringify({ tipeScanFilter }), [tipeScanFilter]);
   const [debouncedFiltersString] = useDebounce(filtersString, 500);
   const debouncedFilters = useMemo(() => JSON.parse(debouncedFiltersString || '{}'), [debouncedFiltersString]);
 
