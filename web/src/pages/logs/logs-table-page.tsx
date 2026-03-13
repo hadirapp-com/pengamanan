@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { useQueryService } from "@/lib/react-query";
 import { SCAN_TYPE_LABELS, SCAN_TYPE_COLORS } from "@/config/constants";
@@ -136,48 +136,63 @@ export default function LogsTablePage() {
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-5">
-        {/* Global search with debouncing */}
+      <div className="space-y-4">
+        {/* Global search with debouncing - full width on top */}
         <Input
           placeholder="Cari..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
         />
 
-        {/* Date range filters */}
-        <Input
-          type="date"
-          value={dateRange.from ? format(new Date(dateRange.from), 'yyyy-MM-dd') : ''}
-          onChange={(e) => setDateRange({ ...dateRange, from: e.target.value ? new Date(e.target.value) : undefined })}
-        />
-        <Input
-          type="date"
-          value={dateRange.to ? format(new Date(dateRange.to), 'yyyy-MM-dd') : ''}
-          onChange={(e) => setDateRange({ ...dateRange, to: e.target.value ? new Date(e.target.value) : undefined })}
-        />
+        {/* Filters in 2 columns on mobile, 4 columns on larger screens */}
+        <div className="grid gap-4 grid-cols-2 md:grid-cols-4">
+          {/* Date range filters */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Tanggal Mulai</label>
+            <Input
+              type="date"
+              value={dateRange.from ? format(new Date(dateRange.from), 'yyyy-MM-dd') : ''}
+              onChange={(e) => setDateRange({ ...dateRange, from: e.target.value ? new Date(e.target.value) : undefined })}
+            />
+          </div>
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Tanggal Selesai</label>
+            <Input
+              type="date"
+              value={dateRange.to ? format(new Date(dateRange.to), 'yyyy-MM-dd') : ''}
+              onChange={(e) => setDateRange({ ...dateRange, to: e.target.value ? new Date(e.target.value) : undefined })}
+            />
+          </div>
 
-        {/* Pos filter with debouncing */}
-        <Select value={posFilter} onValueChange={setPosFilter}>
-          <SelectTrigger>
-            <SelectValue placeholder="Filter Pos" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Pos</SelectItem>
-            {/* Pos options would be fetched from API */}
-          </SelectContent>
-        </Select>
+          {/* Pos filter with debouncing */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Pos Jaga</label>
+            <Select value={posFilter} onValueChange={setPosFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Semua Pos" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua Pos</SelectItem>
+                {/* Pos options would be fetched from API */}
+              </SelectContent>
+            </Select>
+          </div>
 
-        {/* Tipe scan filter with debouncing */}
-        <Select value={tipeScanFilter} onValueChange={(v) => setTipeScanFilter(v as "masuk" | "keluar" | "all")}>
-          <SelectTrigger>
-            <SelectValue placeholder="Tipe Scan" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua</SelectItem>
-            <SelectItem value="masuk">Masuk</SelectItem>
-            <SelectItem value="keluar">Keluar</SelectItem>
-          </SelectContent>
-        </Select>
+          {/* Tipe scan filter with debouncing */}
+          <div>
+            <label className="mb-1.5 block text-sm font-medium text-gray-700">Tipe Scan</label>
+            <Select value={tipeScanFilter} onValueChange={(v) => setTipeScanFilter(v as "masuk" | "keluar" | "all")}>
+              <SelectTrigger>
+                <SelectValue placeholder="Semua" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Semua</SelectItem>
+                <SelectItem value="masuk">Masuk</SelectItem>
+                <SelectItem value="keluar">Keluar</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="rounded-lg border bg-white shadow">
@@ -201,7 +216,7 @@ export default function LogsTablePage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 text-center">
-                  <Loader className="mx-auto h-6 w-6" />
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                 </TableCell>
               </TableRow>
             ) : logs.length === 0 ? (

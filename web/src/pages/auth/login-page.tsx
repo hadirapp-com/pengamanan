@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { useAuthStore } from "@/store/auth";
 import { authApi } from "@/lib/api";
@@ -69,8 +69,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600">
-      <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-xl">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-900 via-blue-700 to-blue-600 p-4">
+      <div className="w-full max-w-md rounded-lg bg-white p-6 sm:p-8 shadow-xl">
         {/* Logo/Title */}
         <div className="mb-8 text-center">
           <div className="mb-4 flex justify-center">
@@ -138,7 +138,7 @@ export default function LoginPage() {
           >
             {isLoading ? (
               <span className="flex items-center gap-2">
-                <Loader className="h-4 w-4 animate-spin" />
+                <Loader2 className="h-4 w-4 animate-spin" />
                 Memproses...
               </span>
             ) : (

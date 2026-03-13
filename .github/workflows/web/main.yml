@@ -4,11 +4,13 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'web'
 
 jobs:
   publish:
     name: Build Project
-    runs-on: [self-hosted, linux, x64, pokayoke]
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -22,24 +24,16 @@ jobs:
           version: latest
       - name: Install dependencies
         run: pnpm install
-      - name: Build & deploy locally
-        run: |
-          pnpm build
-          sudo cp -r dist/* /var/www/html/
+      - name: Compile project
+        run: pnpm build
         env:
-          VITE_APP_ENVIRONMENT: production
-          VITE_API_URL: http://172.20.88.203:8080
-      - name: Build for cloudflare pages
-        run: |
-          pnpm build
-        env:
-          VITE_APP_ENVIRONMENT: production
-          VITE_API_URL: https://kasai-public-api.hadirapp.com
+          VITE_APP_ENVIRONMENT: ${{ vars.VITE_APP_ENVIRONMENT }}
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: 05b0906ce2488aa5647a275a274c9436
-          projectName: kasai-public
+          projectName: blokf
           directory: dist
-          branch: main
+          branch: development

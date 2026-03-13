@@ -43,7 +43,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
@@ -155,7 +155,7 @@ export default function UserTablePage() {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center">
-                  <Loader className="mx-auto h-6 w-6" />
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin" />
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
@@ -257,7 +257,7 @@ export default function UserTablePage() {
             >
               {deleteMutation.isPending ? (
                 <span className="flex items-center gap-2">
-                  <Loader className="h-4 w-4 animate-spin" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   Menghapus...
                 </span>
               ) : (
