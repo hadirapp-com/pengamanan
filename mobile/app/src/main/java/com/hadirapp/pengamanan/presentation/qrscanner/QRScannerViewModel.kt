@@ -1,5 +1,6 @@
 package com.hadirapp.pengamanan.presentation.qrscanner
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.hadirapp.pengamanan.data.repository.AuthRepository
@@ -91,10 +92,15 @@ class QRScannerViewModel @Inject constructor(
             )
 
             // Step 1: Validate QR code in local database first
+            Log.d("QRScanner", "=== SCAN DETECTED ===")
+            Log.d("QRScanner", "QR Code scanned: $qrCode")
+            Log.d("QRScanner", "Petugas ID: $petugasId, Pos ID: $posId")
+
             val localQrData = syncRepository.getQrCodeByCode(qrCode)
 
             if (localQrData == null) {
                 // QR code not found in local database
+                Log.e("QRScanner", "❌ QR Code NOT FOUND in local database")
                 _uiState.value = _uiState.value.copy(
                     isProcessing = false,
                     error = "QR Code tidak terdaftar",
@@ -105,6 +111,13 @@ class QRScannerViewModel @Inject constructor(
             }
 
             // Step 2: QR code found locally, now send to server
+            Log.d("QRScanner", "✅ QR Code FOUND in local database:")
+            Log.d("QRScanner", "  - ID: ${localQrData.id}")
+            Log.d("QRScanner", "  - Nama: ${localQrData.nama}")
+            Log.d("QRScanner", "  - Penanggung Jawab: ${localQrData.penanggungJawab}")
+            Log.d("QRScanner", "  - Valid From: ${localQrData.validFrom}")
+            Log.d("QRScanner", "  - Valid Until: ${localQrData.validUntil}")
+
             val result = logRepository.scanQR(qrCode, petugasId, posId, localQrData)
 
             _uiState.value = _uiState.value.copy(isProcessing = false, cameraEnabled = false)
@@ -114,13 +127,22 @@ class QRScannerViewModel @Inject constructor(
                 lastScannedQR = qrCode
                 lastScanTime = currentTime
                 scanResult = qrCode
+                val logData = result.getOrNull()
+                Log.d("QRScanner", "✅ SCAN SUCCESS - Log saved:")
+                Log.d("QRScanner", "  - Log ID: ${logData?.id}")
+                Log.d("QRScanner", "  - QR Nama: ${logData?.qrNama}")
+                Log.d("QRScanner", "  - QR Penanggung Jawab: ${logData?.qrPenanggungJawab}")
+                Log.d("QRScanner", "  - Guest Name: ${logData?.guestName}")
+                Log.d("QRScanner", "  - Synced: ${logData?.synced}")
                 _uiState.value = _uiState.value.copy(
                     qrData = localQrData,
                     showSuccessDialog = true
                 )
             } else {
+                val error = result.exceptionOrNull()?.message
+                Log.e("QRScanner", "❌ SCAN FAILED: $error")
                 _uiState.value = _uiState.value.copy(
-                    error = result.exceptionOrNull()?.message,
+                    error = error,
                     showErrorDialog = true
                 )
             }

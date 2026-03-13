@@ -1,5 +1,6 @@
 package com.hadirapp.pengamanan.data.repository
 
+import android.util.Log
 import app.cash.sqldelight.db.SqlDriver
 import com.hadirapp.pengamanan.data.model.LogModel
 import com.hadirapp.pengamanan.data.model.QrCodeModel
@@ -25,11 +26,31 @@ class LogRepository @Inject constructor(
         qrData: QrCodeModel? = null
     ): Result<LogModel> {
         return try {
+            Log.d("LogRepository", "→ Sending scan request to API:")
+            Log.d("LogRepository", "  QR Code: $qrCode")
+            Log.d("LogRepository", "  Petugas ID: $petugasJagaId")
+            Log.d("LogRepository", "  Pos ID: $posId")
+
             // Always send scan to server (unless offline)
             val response = scanApi.scanQR(
                 ScanRequest(qrCode, petugasJagaId, posId, "masuk")
             )
+
+            Log.d("LogRepository", "← API Response received:")
+            Log.d("LogRepository", "  Success: ${response.success}")
+            Log.d("LogRepository", "  Error: ${response.error}")
+            Log.d("LogRepository", "  Message: ${response.message}")
+
             if (response.success && response.data != null) {
+                Log.d("LogRepository", "  Scan ID: ${response.data.scan.id}")
+                Log.d("LogRepository", "  Tipe Scan: ${response.data.tipeScan}")
+                Log.d("LogRepository", "  Scanned At: ${response.data.scan.scannedAt}")
+                Log.d("LogRepository", "  QR Info from API:")
+                Log.d("LogRepository", "    - Nama: ${response.data.qr.nama}")
+                Log.d("LogRepository", "    - Penanggung Jawab: ${response.data.qr.penanggungJawab}")
+                Log.d("LogRepository", "  Petugas: ${response.data.petugas}")
+                Log.d("LogRepository", "  Pos: ${response.data.pos}")
+
                 // Convert API response to LogModel
                 val log = LogModel(
                     id = response.data.scan.id,
@@ -50,9 +71,11 @@ class LogRepository @Inject constructor(
                 saveLogLocally(log)
                 Result.success(log)
             } else {
+                Log.e("LogRepository", "❌ API returned failure")
                 Result.failure(Exception(response.error ?: response.message ?: "Scan failed"))
             }
         } catch (e: Exception) {
+            Log.e("LogRepository", "❌ Exception during scan: ${e.message}")
             // Save to local database as unsynced (for offline mode)
             val offlineLog = LogModel(
                 id = generateOfflineId(),
