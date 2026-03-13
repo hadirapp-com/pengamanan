@@ -1,0 +1,18 @@
+# Cloudflare Pages Configuration for Web App
+# This is for manual deployment using: wrangler pages deploy
+
+compatibility_date = "2024-01-01"
+
+# Build configuration
+[build]
+command = "bun run build"
+cwd = "."
+watch_paths = ["src/**", "index.html", "package.json"]
+
+# Production environment
+[env.production]
+vars = { ENVIRONMENT = "production" }
+
+# Staging environment
+[env.staging]
+vars = { ENVIRONMENT = "staging" }

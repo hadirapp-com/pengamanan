@@ -46,7 +46,8 @@
       "Bash(xargs kill:*)",
       "Bash(python3:*)",
       "Bash(pip3 install:*)",
-      "Bash($ANDROID_HOME/build-tools/35.0.0/apksigner verify:*)"
+      "Bash($ANDROID_HOME/build-tools/35.0.0/apksigner verify:*)",
+      "Bash(xargs git show:*)"
     ]
   }
 }
