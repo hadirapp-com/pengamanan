@@ -244,12 +244,34 @@ logsRoutes.get("/stats", async (c) => {
       .orderBy(desc(scanLogs.scannedAt))
       .limit(10);
 
+    // Get active petugas count (petugas who have scanned today)
+    const activePetugasResult = await db
+      .select({
+        count: sql<number>`cast(count(distinct ${scanLogs.petugasId}) as integer)`,
+      })
+      .from(scanLogs)
+      .where(gte(scanLogs.scannedAt, today));
+
+    const activePetugasCount = Number(activePetugasResult[0]?.count || 0);
+
+    // Get active pos count (pos that have been used today)
+    const activePosResult = await db
+      .select({
+        count: sql<number>`cast(count(distinct ${scanLogs.posId}) as integer)`,
+      })
+      .from(scanLogs)
+      .where(gte(scanLogs.scannedAt, today));
+
+    const activePosCount = Number(activePosResult[0]?.count || 0);
+
     return c.json({
       success: true,
       data: {
         today: todayStats,
         last7Days: last7DaysData,
         recentScans,
+        activePetugasCount,
+        activePosCount,
       },
     });
   } catch (error) {

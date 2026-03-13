@@ -43,6 +43,8 @@ interface DashboardStats {
     keluar: number;
   }[];
   recentScans: RecentScan[];
+  activePetugasCount: number;
+  activePosCount: number;
 }
 
 interface RecentScan {
@@ -65,6 +67,7 @@ export default function DashboardPage() {
       const response = await axiosInstance.get<{ data: DashboardStats }>("/api/logs/stats");
       return response.data.data;
     },
+    refetchInterval: 15000, // Auto-refetch every 15 seconds
   });
 
   const handleRefresh = async () => {
@@ -120,7 +123,7 @@ export default function DashboardPage() {
                 {stats?.today.masuk ?? 0}
               </div>
             )}
-            <p className="mt-1 text-xs text-gray-500">Tamu masuk hari ini</p>
+            <p className="mt-1 text-xs text-gray-500">Warga masuk hari ini</p>
           </CardContent>
         </Card>
 
@@ -140,7 +143,7 @@ export default function DashboardPage() {
                 {stats?.today.keluar ?? 0}
               </div>
             )}
-            <p className="mt-1 text-xs text-gray-500">Tamu keluar hari ini</p>
+            <p className="mt-1 text-xs text-gray-500">Warga keluar hari ini</p>
           </CardContent>
         </Card>
 
@@ -153,8 +156,14 @@ export default function DashboardPage() {
             <Shield className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">-</div>
-            <p className="mt-1 text-xs text-gray-500">Petugas jaga aktif</p>
+            {isLoading ? (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            ) : (
+              <div className="text-3xl font-bold text-blue-600">
+                {stats?.activePetugasCount ?? 0}
+              </div>
+            )}
+            <p className="mt-1 text-xs text-gray-500">Petugas jaga aktif hari ini</p>
           </CardContent>
         </Card>
 
@@ -167,8 +176,14 @@ export default function DashboardPage() {
             <MapPin className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-purple-600">-</div>
-            <p className="mt-1 text-xs text-gray-500">Pos jaga aktif</p>
+            {isLoading ? (
+              <Loader2 className="h-8 w-8 animate-spin" />
+            ) : (
+              <div className="text-3xl font-bold text-purple-600">
+                {stats?.activePosCount ?? 0}
+              </div>
+            )}
+            <p className="mt-1 text-xs text-gray-500">Pos jaga aktif hari ini</p>
           </CardContent>
         </Card>
       </div>
