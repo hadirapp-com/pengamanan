@@ -586,7 +586,7 @@ qrRoutes.post("/pdf", async (c) => {
 
     // Title
     pdf.setFontSize(16);
-    pdf.text("QR Codes - Pengamanan Lebaran 2026", pageWidth / 2, 15, { align: "center" });
+    pdf.text(`QR Codes - Pengamanan Lebaran ${new Date().getFullYear()}`, pageWidth / 2, 15, { align: "center" });
     pdf.setFontSize(10);
     pdf.text(`Generated: ${new Date().toLocaleString("id-ID")}`, pageWidth / 2, 22, { align: "center" });
 

@@ -1,7 +1,7 @@
 {
-  "name": "Admin Pengamanan Lebaran 2026",
+  "name": "Admin Pengamanan Lebaran",
   "short_name": "Admin Pengamanan",
-  "description": "Sistem Pengamanan Lebaran 2026 - Kelola pos jaga, scan QR code, dan pantau lalu lintas tamu",
+  "description": "Sistem Pengamanan Lebaran - Kelola pos jaga, scan QR code, dan pantau lalu lintas tamu",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e3a8a",

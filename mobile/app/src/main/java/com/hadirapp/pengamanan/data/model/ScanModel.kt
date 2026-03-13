@@ -5,9 +5,9 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ScanRequest(
     val qrCode: String,
-    val petugasJagaId: String,
+    val petugasId: String,
     val posId: String,
-    val tipeScan: String = "masuk"
+    val tipeScan: String
 )
 
 @Serializable

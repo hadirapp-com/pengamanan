@@ -242,7 +242,7 @@ export default function QrTablePage() {
 
       // Title
       pdf.setFontSize(16);
-      pdf.text("QR Codes - Pengamanan Lebaran 2026", pageWidth / 2, 15, { align: "center" });
+      pdf.text(`QR Codes - Pengamanan Lebaran ${new Date().getFullYear()}`, pageWidth / 2, 15, { align: "center" });
       pdf.setFontSize(10);
       pdf.text(`Generated: ${new Date().toLocaleString("id-ID")}`, pageWidth / 2, 22, { align: "center" });
 
@@ -587,7 +587,7 @@ export default function QrTablePage() {
 
                       {/* Title */}
                       <div className="text-center mb-6">
-                        <div className="text-lg font-bold">QR Codes - Pengamanan Lebaran 2026</div>
+                        <div className="text-lg font-bold">QR Codes - Pengamanan Lebaran {new Date().getFullYear()}</div>
                         <div className="text-xs">{new Date().toLocaleString("id-ID")}</div>
                       </div>
 

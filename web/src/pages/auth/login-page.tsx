@@ -91,7 +91,7 @@ export default function LoginPage() {
             </div>
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
-            Pengamanan Lebaran 2026
+            Pengamanan Lebaran {new Date().getFullYear()}
           </h1>
           <p className="mt-2 text-sm text-gray-600">Login ke dashboard admin</p>
         </div>
@@ -150,7 +150,7 @@ export default function LoginPage() {
         {/* Footer */}
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
-            Sistem Pengamanan Lebaran 2026
+            Sistem Pengamanan Lebaran {new Date().getFullYear()}
           </p>
           <p className="mt-1 text-xs text-gray-400">
             Supported by{" "}

@@ -13,9 +13,9 @@ val BlueGrey40 = Color(0xFF78909C)
 private val Blue40 = Color(0xFF4267B2)
 private val BlueGrey30 = Color(0xFF546E7A)
 
-val PengamananBlue = Color(0xFF2563EB)
-val PengamananBlueDark = Color(0xFF1E40AF)
-val PengamananBlueLight = Color(0xFF3B82F6)
+val PengamananBlue = Color(0xFF050272) // HSL(242.12, 96.58%, 22.94%)
+val PengamananBlueDark = Color(0xFF030146) // Darker variant
+val PengamananBlueLight = Color(0xFF3B3BAA) // Lighter variant
 
 // Custom Colors
 val MasukGreen = Color(0xFF10B981)
@@ -24,8 +24,8 @@ val KeluarRed = Color(0xFFEF4444)
 val LightColorScheme = lightColorScheme(
     primary = PengamananBlue,
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFDBEAFE), // Light blue container
-    onPrimaryContainer = PengamananBlueDark,
+    primaryContainer = PengamananBlueLight, // Light blue container matching new primary
+    onPrimaryContainer = Color.White,
     secondary = Blue40,
     onSecondary = Color.White,
     tertiary = BlueGrey30,

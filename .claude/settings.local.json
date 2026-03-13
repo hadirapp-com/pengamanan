@@ -38,7 +38,12 @@
       "Bash(adb:*)",
       "Bash(git restore:*)",
       "Bash(read:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(kotlinc:*)",
+      "Bash(pnpm install:*)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)"
     ]
   }
 }

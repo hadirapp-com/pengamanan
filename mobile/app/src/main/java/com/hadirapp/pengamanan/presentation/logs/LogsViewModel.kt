@@ -61,9 +61,10 @@ class LogsViewModel @Inject constructor(
                 _uiState.value = _uiState.value.copy(
                     deleteError = result.exceptionOrNull()?.message
                 )
+            } else {
+                // Refresh logs after successful delete
+                loadLogs()
             }
-            // If success, the log will be automatically removed from the list
-            // because we're using Flow
         }
     }
 

@@ -145,7 +145,12 @@ fun PengamananNavHost(
 
             composable(Screen.Settings.route) {
                 SettingsScreen(
-                    onNavigateBack = { /* No-op, handled by bottom nav */ }
+                    onNavigateBack = { /* No-op, handled by bottom nav */ },
+                    onLogout = {
+                        navController.navigate(Screen.Pin.route) {
+                            popUpTo(Screen.Main.route) { inclusive = true }
+                        }
+                    }
                 )
             }
 

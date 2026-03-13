@@ -15,12 +15,28 @@ class SyncRepository @Inject constructor(
     private val driver: SqlDriver
 ) {
     suspend fun syncData(): Result<Unit> {
+        val API_ENDPOINT = "GET /mobile/sync"
+
         return try {
+            Log.d("SYNC_DATA", "========================================")
+            Log.d("SYNC_DATA", "🔄 STARTING MANUAL DATA SYNC")
+            Log.d("SYNC_DATA", "========================================")
+            Log.d("SYNC_DATA", "Endpoint: $API_ENDPOINT")
+            Log.d("SYNC_DATA", "Method: GET")
+            Log.d("SYNC_DATA", "----------------------------------------")
+
             val response = syncApi.sync()
+
+            Log.d("SYNC_DATA", "← API RESPONSE RECEIVED")
+            Log.d("SYNC_DATA", "Success: ${response.success}")
+
             if (response.success) {
                 val database = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
 
                 // Sync Petugas
+                Log.d("SYNC_DATA", "")
+                Log.d("SYNC_DATA", "📥 Syncing Petugas...")
+                Log.d("SYNC_DATA", "  Total: ${response.data.petugasJaga.size} records")
                 database.petugasQueries.deleteAllPetugas()
                 response.data.petugasJaga.forEach { petugas ->
                     database.petugasQueries.insertPetugas(
@@ -32,8 +48,12 @@ class SyncRepository @Inject constructor(
                         updatedAt = petugas.updatedAt
                     )
                 }
+                Log.d("SYNC_DATA", "  ✅ Petugas synced successfully")
 
                 // Sync Pos
+                Log.d("SYNC_DATA", "")
+                Log.d("SYNC_DATA", "📥 Syncing Pos...")
+                Log.d("SYNC_DATA", "  Total: ${response.data.posJaga.size} records")
                 database.posQueries.deleteAllPos()
                 response.data.posJaga.forEach { pos ->
                     database.posQueries.insertPos(
@@ -44,8 +64,12 @@ class SyncRepository @Inject constructor(
                         updatedAt = pos.updatedAt
                     )
                 }
+                Log.d("SYNC_DATA", "  ✅ Pos synced successfully")
 
                 // Sync QrCodes
+                Log.d("SYNC_DATA", "")
+                Log.d("SYNC_DATA", "📥 Syncing QR Codes...")
+                Log.d("SYNC_DATA", "  Total: ${response.data.qrCodes.size} records")
                 database.qrCodeQueries.deleteAllQrCodes()
                 response.data.qrCodes.forEach { qr ->
                     database.qrCodeQueries.insertQrCode(
@@ -59,12 +83,29 @@ class SyncRepository @Inject constructor(
                         updatedAt = qr.updatedAt
                     )
                 }
+                Log.d("SYNC_DATA", "  ✅ QR Codes synced successfully")
+
+                Log.d("SYNC_DATA", "")
+                Log.d("SYNC_DATA", "========================================")
+                Log.d("SYNC_DATA", "✅ MANUAL SYNC COMPLETE")
+                Log.d("SYNC_DATA", "========================================")
+                Log.d("SYNC_DATA", "Petugas: ${response.data.petugasJaga.size}")
+                Log.d("SYNC_DATA", "Pos: ${response.data.posJaga.size}")
+                Log.d("SYNC_DATA", "QR Codes: ${response.data.qrCodes.size}")
+                Log.d("SYNC_DATA", "========================================")
 
                 Result.success(Unit)
             } else {
+                Log.e("SYNC_DATA", "❌ SYNC FAILED")
+                Log.e("SYNC_DATA", "========================================")
                 Result.failure(Exception("Sync failed"))
             }
         } catch (e: Exception) {
+            Log.e("SYNC_DATA", "❌ SYNC EXCEPTION")
+            Log.e("SYNC_DATA", "Exception: ${e.javaClass.simpleName}")
+            Log.e("SYNC_DATA", "Message: ${e.message}")
+            Log.e("SYNC_DATA", "Stack Trace: ${e.stackTraceToString()}")
+            Log.e("SYNC_DATA", "========================================")
             Result.failure(e)
         }
     }

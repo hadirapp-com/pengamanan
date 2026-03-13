@@ -20,6 +20,7 @@ data class HomeUiState(
     val selectedPosNama: String? = null,
     val lastSyncTime: String? = null,
     val hasPetugasAndPos: Boolean = false,
+    val appTitle: String = "Pengamanan Lebaran",
     val error: String? = null
 )
 
@@ -40,6 +41,14 @@ class HomeViewModel @Inject constructor(
     private fun loadData() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isLoading = true)
+
+            // Fetch app title from API
+            val appTitle = try {
+                val result = authRepository.fetchConfig("APP_TITLE")
+                result.getOrNull() ?: "Pengamanan Lebaran"
+            } catch (e: Exception) {
+                "Pengamanan Lebaran"
+            }
 
             // Auto-sync if no petugas/pos data locally
             val localPetugas = syncRepository.getAllPetugas()
@@ -65,7 +74,8 @@ class HomeViewModel @Inject constructor(
                         pengumuman = pengumuman,
                         selectedPetugasNama = selectedPetugasNama,
                         selectedPosNama = selectedPosNama,
-                        hasPetugasAndPos = hasPetugasAndPos
+                        hasPetugasAndPos = hasPetugasAndPos,
+                        appTitle = appTitle
                     )
                 }
             } catch (e: Exception) {
@@ -74,6 +84,7 @@ class HomeViewModel @Inject constructor(
                     selectedPetugasNama = selectedPetugasNama,
                     selectedPosNama = selectedPosNama,
                     hasPetugasAndPos = hasPetugasAndPos,
+                    appTitle = appTitle,
                     error = e.message
                 )
             }

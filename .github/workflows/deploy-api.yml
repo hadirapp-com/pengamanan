@@ -73,11 +73,4 @@ jobs:
             docker image prune -f
             docker compose up --build -d
           EOF
-
-      # - name: Pull and Restart Container
-      #   run: |
-      #     docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-      #     # Assuming you have a docker-compose.yml on the local runner machine:
-      #     docker compose up -d --no-deps api 
-      #     docker image prune -f
       

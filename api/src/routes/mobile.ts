@@ -533,41 +533,14 @@ protectedMobileRoutes.post("/scan", async (c) => {
       );
     }
 
-    // Check if this QR was scanned today by this petugas at this pos
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-
-    const existingScan = await db
-      .select({ id: scanLogs.id, tipeScan: scanLogs.tipeScan })
-      .from(scanLogs)
-      .where(
-        and(
-          eq(scanLogs.qrId, qrData.id),
-          eq(scanLogs.petugasId, petugasId),
-          eq(scanLogs.posId, posId),
-          sql`${scanLogs.scannedAt} >= ${today} AND ${scanLogs.scannedAt} < ${tomorrow}`
-        )
-      )
-      .orderBy(desc(scanLogs.scannedAt))
-      .limit(1);
-
-    // Determine scan type (masuk/keluar) based on previous scan
-    let finalTipeScan = tipeScan;
-    if (existingScan.length > 0) {
-      // If already scanned today, toggle the type
-      finalTipeScan = existingScan[0].tipeScan === "masuk" ? "keluar" : "masuk";
-    }
-
-    // Insert scan log
+    // Insert scan log directly without checking previous scans
     const newLogResult = await db
       .insert(scanLogs)
       .values({
         qrId: qrData.id,
         petugasId,
         posId,
-        tipeScan: finalTipeScan,
+        tipeScan,
         scannedAt: new Date(),
         syncedAt: new Date(),
       })
@@ -584,7 +557,7 @@ protectedMobileRoutes.post("/scan", async (c) => {
         },
         petugas: petugasResult[0].nama,
         pos: posResult[0].nama,
-        tipeScan: finalTipeScan,
+        tipeScan,
       },
     });
   } catch (error) {

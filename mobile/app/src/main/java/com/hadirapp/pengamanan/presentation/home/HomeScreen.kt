@@ -33,7 +33,7 @@ fun HomeScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Pengamanan Lebaran 2026") },
+                title = { Text(uiState.appTitle) },
                 actions = {
                     IconButton(onClick = { viewModel.syncData() }, enabled = !uiState.isSyncing) {
                         if (uiState.isSyncing) {
@@ -212,7 +212,7 @@ private fun SelectionRow(
                 imageVector = icon,
                 contentDescription = null,
                 modifier = Modifier.size(20.dp),
-                tint = MaterialTheme.colorScheme.onSurfaceVariant
+                tint = MaterialTheme.colorScheme.surfaceVariant
             )
             Spacer(modifier = Modifier.width(8.dp))
             Text(
@@ -227,7 +227,7 @@ private fun SelectionRow(
             color = if (value == "Belum dipilih") {
                 MaterialTheme.colorScheme.error
             } else {
-                MaterialTheme.colorScheme.primary
+                MaterialTheme.colorScheme.surfaceVariant
             }
         )
     }

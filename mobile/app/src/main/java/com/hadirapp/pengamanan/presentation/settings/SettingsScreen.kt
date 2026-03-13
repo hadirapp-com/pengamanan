@@ -9,6 +9,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -19,9 +20,11 @@ import com.hadirapp.pengamanan.data.model.PosModel
 @Composable
 fun SettingsScreen(
     viewModel: SettingsViewModel = hiltViewModel(),
-    onNavigateBack: () -> Unit
+    onNavigateBack: () -> Unit,
+    onLogout: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    var showLogoutDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.loadData()
@@ -103,6 +106,43 @@ fun SettingsScreen(
                     }
                 }
 
+                // Unsynced Logs Info
+                if (uiState.unsyncedLogsCount > 0) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Warning,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = "${uiState.unsyncedLogsCount} data scan belum disinkronkan",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onErrorContainer
+                                    )
+                                    Text(
+                                        text = "Data akan otomatis disinkronkan",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Petugas Selection
                 item {
                     Text(
@@ -137,8 +177,75 @@ fun SettingsScreen(
                         onClick = { viewModel.selectPos(pos) }
                     )
                 }
+
+                // Logout Button
+                item {
+                    Button(
+                        onClick = { showLogoutDialog = true },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = !uiState.isLoggingOut,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error
+                        )
+                    ) {
+                        if (uiState.isLoggingOut) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(20.dp),
+                                color = MaterialTheme.colorScheme.onError
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                        }
+                        Text(if (uiState.isLoggingOut) "Keluar..." else "Keluar")
+                    }
+                }
             }
         }
+    }
+
+    // Logout Confirmation Dialog
+    if (showLogoutDialog) {
+        val unsyncedCount = uiState.unsyncedLogsCount
+
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = { Text("Konfirmasi Keluar") },
+            text = {
+                Column {
+                    Text("Apakah Anda yakin ingin keluar?")
+                    if (unsyncedCount > 0) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            "Terdapat $unsyncedCount data scan yang belum disinkronkan. Data akan disinkronkan terlebih dahulu.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        "Semua data pada device akan dihapus.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel.logout {
+                            showLogoutDialog = false
+                            onLogout()
+                        }
+                    }
+                ) {
+                    Text("Ya, Keluar")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showLogoutDialog = false }) {
+                    Text("Batal")
+                }
+            }
+        )
     }
 }
 
@@ -159,7 +266,7 @@ private fun SelectionRow(
             text = value,
             style = MaterialTheme.typography.bodyMedium,
             fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary
+            color = MaterialTheme.colorScheme.surfaceVariant
         )
     }
 }
@@ -173,6 +280,13 @@ private fun PetugasItem(
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
+        colors = if (isSelected) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            CardDefaults.cardColors()
+        },
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(
                 2.dp,
@@ -191,24 +305,25 @@ private fun PetugasItem(
                 Text(
                     text = petugas.nama,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = "NIK: ${petugas.nik}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isSelected) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
                 Text(
                     text = "No HP: ${petugas.noHp}",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isSelected) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Dipilih",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = Color.White
                 )
             }
         }
@@ -224,6 +339,13 @@ private fun PosItem(
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
+        colors = if (isSelected) {
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            CardDefaults.cardColors()
+        },
         border = if (isSelected) {
             androidx.compose.foundation.BorderStroke(
                 2.dp,
@@ -242,19 +364,20 @@ private fun PosItem(
                 Text(
                     text = pos.nama,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    color = if (isSelected) Color.White else MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = pos.lokasi,
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = if (isSelected) Color.White.copy(alpha = 0.8f) else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
             if (isSelected) {
                 Icon(
                     imageVector = Icons.Default.CheckCircle,
                     contentDescription = "Dipilih",
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = Color.White
                 )
             }
         }

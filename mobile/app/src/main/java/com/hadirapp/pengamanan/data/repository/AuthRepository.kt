@@ -82,6 +82,36 @@ class AuthRepository @Inject constructor(
         database.userPrefsQueries.deletePref("user_username")
         database.userPrefsQueries.deletePref("user_nama")
         database.userPrefsQueries.deletePref("user_role")
+
+        // Clear petugas and pos selection
+        database.userPrefsQueries.deletePref("petugas_id")
+        database.userPrefsQueries.deletePref("petugas_nama")
+        database.userPrefsQueries.deletePref("selected_petugas_id")
+        database.userPrefsQueries.deletePref("selected_petugas_nama")
+        database.userPrefsQueries.deletePref("selected_pos_id")
+        database.userPrefsQueries.deletePref("selected_pos_nama")
+        database.userPrefsQueries.deletePref("selected_pos_lokasi")
+
+        // Clear token expiry
+        database.userPrefsQueries.deletePref("token_expiry_time")
+
+        // Clear welcome popup and banner
+        database.userPrefsQueries.deletePref("welcome_popup_shown")
+        database.userPrefsQueries.deletePref("popup_image_url")
+    }
+
+    /**
+     * Delete all data from database (for logout)
+     */
+    suspend fun deleteAllData() {
+        val db = com.hadirapp.pengamanan.db.PengamananDatabase(driver)
+
+        // Delete all data from tables
+        db.logsQueries.deleteAllLogs()
+        db.petugasQueries.deleteAllPetugas()
+        db.posQueries.deleteAllPos()
+        db.qrCodeQueries.deleteAllQrCodes()
+        db.pengumumanQueries.deleteAllPengumuman()
     }
 
     // PIN Authentication for Mobile

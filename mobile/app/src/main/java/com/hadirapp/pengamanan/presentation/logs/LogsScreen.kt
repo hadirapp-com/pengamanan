@@ -1,6 +1,5 @@
 package com.hadirapp.pengamanan.presentation.logs
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,7 +10,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -104,7 +102,7 @@ fun LogsScreen(
                         imageVector = Icons.Default.History,
                         contentDescription = null,
                         modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.outline
+                        tint = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     Text(
@@ -127,10 +125,10 @@ fun LogsScreen(
                     items = uiState.logs,
                     key = { it.id }
                 ) { log ->
-                    SwipeToDeleteLog(
+                    LogCard(
                         log = log,
                         onDelete = { viewModel.deleteLog(log.id) },
-                        canDelete = log.synced // Only allow delete if synced
+                        canDelete = log.synced
                     )
                 }
             }
@@ -138,54 +136,12 @@ fun LogsScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun SwipeToDeleteLog(
+private fun LogCard(
     log: com.hadirapp.pengamanan.data.model.LogModel,
     onDelete: () -> Unit,
     canDelete: Boolean
 ) {
-    val dismissState = rememberSwipeToDismissBoxState(
-        confirmValueChange = {
-            if (it == SwipeToDismissBoxValue.StartToEnd) {
-                onDelete()
-                true
-            } else {
-                false
-            }
-        }
-    )
-
-    if (canDelete) {
-        SwipeToDismissBox(
-            state = dismissState,
-            backgroundContent = {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Red)
-                        .padding(horizontal = 20.dp),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Delete,
-                        contentDescription = "Hapus",
-                        tint = Color.White
-                    )
-                }
-            },
-            enableDismissFromStartToEnd = true,
-            enableDismissFromEndToStart = false
-        ) {
-            LogCard(log = log)
-        }
-    } else {
-        LogCard(log = log)
-    }
-}
-
-@Composable
-private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
     Card(
         modifier = Modifier.fillMaxWidth()
     ) {
@@ -230,6 +186,20 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
                     }
                 }
 
+                // Delete Button (only if synced)
+                if (canDelete) {
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.size(48.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Hapus",
+                            tint = MaterialTheme.colorScheme.error,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
+                }
             }
 
             // Guest Name (from QR)
@@ -240,20 +210,16 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
             )
 
             // Penanggung Jawab
-            Text(
-                text = "Penanggung Jawab: ${log.qrPenanggungJawab}",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            LogDetailRow(
+                icon = Icons.Default.Person,
+                label = "Penanggung Jawab",
+                value = log.qrPenanggungJawab
             )
 
-            // Guest Type
-            Text(
-                text = log.guestType,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.outline
+            HorizontalDivider(
+                modifier = Modifier.padding(vertical = 8.dp),
+                color = MaterialTheme.colorScheme.outlineVariant
             )
-
-            Divider()
 
             // Details
             LogDetailRow(
@@ -291,13 +257,13 @@ private fun LogDetailRow(
             imageVector = icon,
             contentDescription = null,
             modifier = Modifier.size(16.dp),
-            tint = MaterialTheme.colorScheme.outline
+            tint = MaterialTheme.colorScheme.onSurface
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = "$label: ",
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.outline
+            color = MaterialTheme.colorScheme.onSurface
         )
         Text(
             text = value,
