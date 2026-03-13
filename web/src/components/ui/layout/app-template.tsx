@@ -50,7 +50,8 @@ export function AppTemplate() {
         </main>
       </div>
       {/* Hadirapp Signature Footer */}
-      <footer className="h-8 border-t bg-muted/50 flex items-center justify-end px-4 text-xs text-muted-foreground">
+      <footer className="h-8 border-t bg-muted/50 flex items-center justify-between px-4 text-xs text-muted-foreground">
+        <span className="font-medium">v{import.meta.env.PACKAGE_VERSION || "1.0.0"}</span>
         <span>
           Supported by{" "}
           <a

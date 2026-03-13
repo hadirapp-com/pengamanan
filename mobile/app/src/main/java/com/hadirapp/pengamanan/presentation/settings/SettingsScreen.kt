@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.hadirapp.pengamanan.BuildConfig
 import com.hadirapp.pengamanan.data.model.PetugasModel
 import com.hadirapp.pengamanan.data.model.PosModel
 
@@ -176,6 +177,40 @@ fun SettingsScreen(
                         isSelected = uiState.selectedPosId == pos.id,
                         onClick = { viewModel.selectPos(pos) }
                     )
+                }
+
+                // App Info
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant
+                        )
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Info Aplikasi",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Divider(modifier = Modifier.padding(vertical = 4.dp))
+                            Text(
+                                text = "Versi: ${BuildConfig.VERSION_NAME}",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Text(
+                                text = "Build: ${BuildConfig.VERSION_CODE}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                        }
+                    }
                 }
 
                 // Logout Button
