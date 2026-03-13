@@ -65,7 +65,7 @@ export default function ConfigTablePage() {
   const query = {
     search: debouncedGlobalFilter || undefined,
     page,
-    perPage,
+    limit: perPage,
     sortCol,
     sortDir,
     // Add active filter if not "all"
@@ -85,7 +85,7 @@ export default function ConfigTablePage() {
     debouncedActiveFilterString,
   ];
 
-  const { data: configsData, isLoading, refetch } = useQueryService(
+  const configsQuery = useQueryService(
     "/api/configs",
     query,
     {
@@ -93,6 +93,7 @@ export default function ConfigTablePage() {
     }
   );
 
+  const { data: configsData, meta: configsMeta, isLoading, refetch } = configsQuery;
   const configsList = Array.isArray(configsData) ? configsData : [];
 
   // Reset filters on unmount
@@ -180,7 +181,10 @@ export default function ConfigTablePage() {
       {/* Pagination controls using store */}
       {configsList.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((configsData?.total || 0) / perPage)}</div>
+          <div className="text-sm text-gray-600">
+            Halaman {configsMeta?.page || page} dari {configsMeta?.totalPages || Math.ceil((configsMeta?.totalCount || 0) / (configsMeta?.limit || perPage))}
+            {configsMeta?.totalCount !== undefined && ` (${configsMeta.totalCount} total)`}
+          </div>
           <div className="flex items-center gap-2">
             <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
               <SelectTrigger className="w-[70px]">
@@ -193,8 +197,8 @@ export default function ConfigTablePage() {
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={configsList.length < perPage}>Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1 || configsMeta?.hasPreviousPage === false}>Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={configsMeta?.hasNextPage === false}>Next</Button>
           </div>
         </div>
       )}

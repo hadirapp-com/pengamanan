@@ -67,7 +67,7 @@ export default function PetugasTablePage() {
   const query = {
     search: debouncedGlobalFilter || undefined,
     page,
-    perPage,
+    limit: perPage,
     sortCol,
     sortDir,
     // Add active filter if not "all"
@@ -87,13 +87,15 @@ export default function PetugasTablePage() {
     debouncedActiveFilterString,
   ];
 
-  const { data: petugasData, isLoading, refetch } = useQueryService(
+  const petugasQuery = useQueryService(
     petugasEndpoint.root,
     query,
     {
       queryKey,
     }
   );
+
+  const { data: petugasData, meta: petugasMeta, isLoading, refetch } = petugasQuery;
 
   let petugasList = Array.isArray(petugasData) ? petugasData : [];
 
@@ -257,7 +259,8 @@ export default function PetugasTablePage() {
       {petugasList.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            Halaman {page} dari {Math.ceil((petugasData?.total || 0) / perPage)}
+            Halaman {petugasMeta?.page || page} dari {petugasMeta?.totalPages || Math.ceil((petugasMeta?.totalCount || 0) / (petugasMeta?.limit || perPage))}
+            {petugasMeta?.totalCount !== undefined && ` (${petugasMeta.totalCount} total)`}
           </div>
           <div className="flex items-center gap-2">
             <Select
@@ -278,7 +281,7 @@ export default function PetugasTablePage() {
               variant="outline"
               size="sm"
               onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
+              disabled={page === 1 || petugasMeta?.hasPreviousPage === false}
             >
               Previous
             </Button>
@@ -286,7 +289,7 @@ export default function PetugasTablePage() {
               variant="outline"
               size="sm"
               onClick={() => setPage(page + 1)}
-              disabled={petugasList.length < perPage}
+              disabled={petugasMeta?.hasNextPage === false}
             >
               Next
             </Button>

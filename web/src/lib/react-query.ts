@@ -33,6 +33,9 @@ export const useQueryService = (
     return {
       ...query,
       data: defaultData,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      meta: undefined,
     };
   }
 
@@ -40,6 +43,9 @@ export const useQueryService = (
     return {
       ...query,
       data: defaultData,
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      meta: undefined,
     };
   }
 
@@ -48,6 +54,9 @@ export const useQueryService = (
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     data: query.data?.data?.data,
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    meta: query.data?.data?.meta,
   };
 };
 

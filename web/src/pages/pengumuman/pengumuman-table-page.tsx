@@ -67,7 +67,7 @@ export default function PengumumanTablePage() {
   const query = {
     search: debouncedGlobalFilter || undefined,
     page,
-    perPage,
+    limit: perPage,
     sortCol,
     sortDir,
     // Add active filter if not "all"
@@ -87,7 +87,7 @@ export default function PengumumanTablePage() {
     debouncedActiveFilterString,
   ];
 
-  const { data: pengumumanData, isLoading, refetch } = useQueryService(
+  const pengumumanQuery = useQueryService(
     pengumumanEndpoint.root,
     query,
     {
@@ -95,6 +95,7 @@ export default function PengumumanTablePage() {
     }
   );
 
+  const { data: pengumumanData, meta: pengumumanMeta, isLoading, refetch } = pengumumanQuery;
   const pengumumanList = Array.isArray(pengumumanData) ? pengumumanData : [];
 
   // Helper function to get priority icon
@@ -211,7 +212,10 @@ export default function PengumumanTablePage() {
       {/* Pagination controls using store */}
       {pengumumanList.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((pengumumanData?.total || 0) / perPage)}</div>
+          <div className="text-sm text-gray-600">
+            Halaman {pengumumanMeta?.page || page} dari {pengumumanMeta?.totalPages || Math.ceil((pengumumanMeta?.totalCount || 0) / (pengumumanMeta?.limit || perPage))}
+            {pengumumanMeta?.totalCount !== undefined && ` (${pengumumanMeta.totalCount} total)`}
+          </div>
           <div className="flex items-center gap-2">
             <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
               <SelectTrigger className="w-[70px]">
@@ -224,8 +228,8 @@ export default function PengumumanTablePage() {
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={pengumumanList.length < perPage}>Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1 || pengumumanMeta?.hasPreviousPage === false}>Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={pengumumanMeta?.hasNextPage === false}>Next</Button>
           </div>
         </div>
       )}

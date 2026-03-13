@@ -64,7 +64,7 @@ export default function LogsTablePage() {
   const query = {
     search: debouncedGlobalFilter || undefined,
     page,
-    perPage,
+    limit: perPage,
     sortCol,
     sortDir,
     // Add date range filters if available
@@ -88,7 +88,7 @@ export default function LogsTablePage() {
     debouncedFiltersString,
   ];
 
-  const { data: logsData, isLoading } = useQueryService(
+  const { data: logsData, meta: logsMeta, isLoading } = useQueryService(
     logsEndpoint.root,
     query,
     {
@@ -239,7 +239,8 @@ export default function LogsTablePage() {
       {logs.length > 0 && (
         <div className="flex items-center justify-between">
           <div className="text-sm text-gray-600">
-            Halaman {page} dari {Math.ceil((logsData?.total || 0) / perPage)}
+            Halaman {logsMeta?.page || page} dari {logsMeta?.totalPages || Math.ceil((logsMeta?.totalCount || 0) / (logsMeta?.limit || perPage))}
+            {logsMeta?.totalCount !== undefined && ` (${logsMeta.totalCount} total)`}
           </div>
           <div className="flex items-center gap-2">
             <Select
@@ -260,7 +261,7 @@ export default function LogsTablePage() {
               variant="outline"
               size="sm"
               onClick={() => setPage(Math.max(1, page - 1))}
-              disabled={page === 1}
+              disabled={page === 1 || logsMeta?.hasPreviousPage === false}
             >
               Previous
             </Button>
@@ -268,7 +269,7 @@ export default function LogsTablePage() {
               variant="outline"
               size="sm"
               onClick={() => setPage(page + 1)}
-              disabled={logs.length < perPage}
+              disabled={logsMeta?.hasNextPage === false}
             >
               Next
             </Button>

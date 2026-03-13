@@ -116,7 +116,7 @@ export default function QrTablePage() {
   const query = {
     search: debouncedGlobalFilter || undefined,
     page,
-    perPage,
+    limit: perPage,
     sortCol,
     sortDir,
     // Add active filter if not "all"
@@ -136,7 +136,7 @@ export default function QrTablePage() {
     debouncedActiveFilterString,
   ];
 
-  const { data: qrData, isLoading, refetch } = useQueryService(
+  const qrQuery = useQueryService(
     qrEndpoint.root,
     query,
     {
@@ -144,7 +144,8 @@ export default function QrTablePage() {
     }
   );
 
-  let qrList = Array.isArray(qrData) ? qrData : [];
+  const { data: qrData, meta: qrMeta, isLoading, refetch } = qrQuery;
+  const qrList = Array.isArray(qrData) ? qrData : [];
 
   // Local state for dialogs and selection
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -433,7 +434,10 @@ export default function QrTablePage() {
       {/* Pagination controls using store */}
       {qrList.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((qrData?.total || 0) / perPage)}</div>
+          <div className="text-sm text-gray-600">
+            Halaman {qrMeta?.page || page} dari {qrMeta?.totalPages || Math.ceil((qrMeta?.totalCount || 0) / (qrMeta?.limit || perPage))}
+            {qrMeta?.totalCount !== undefined && ` (${qrMeta.totalCount} total)`}
+          </div>
           <div className="flex items-center gap-2">
             <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
               <SelectTrigger className="w-[70px]">
@@ -446,8 +450,8 @@ export default function QrTablePage() {
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={qrList.length < perPage}>Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1 || qrMeta?.hasPreviousPage === false}>Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={qrMeta?.hasNextPage === false}>Next</Button>
           </div>
         </div>
       )}

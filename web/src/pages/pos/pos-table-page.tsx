@@ -66,7 +66,7 @@ export default function PosTablePage() {
   const query = {
     search: debouncedGlobalFilter || undefined,
     page,
-    perPage,
+    limit: perPage,
     sortCol,
     sortDir,
     // Add active filter if not "all"
@@ -86,7 +86,7 @@ export default function PosTablePage() {
     debouncedActiveFilterString,
   ];
 
-  const { data: posData, isLoading, refetch } = useQueryService(
+  const posQuery = useQueryService(
     posEndpoint.root,
     query,
     {
@@ -94,7 +94,8 @@ export default function PosTablePage() {
     }
   );
 
-  let posList = Array.isArray(posData) ? posData : [];
+  const { data: posData, meta: posMeta, isLoading, refetch } = posQuery;
+  const posList = Array.isArray(posData) ? posData : [];
 
   // Reset filters on unmount
   useEffect(() => {
@@ -229,7 +230,10 @@ export default function PosTablePage() {
       {/* Pagination controls using store */}
       {posList.length > 0 && (
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">Halaman {page} dari {Math.ceil((posData?.total || 0) / perPage)}</div>
+          <div className="text-sm text-gray-600">
+            Halaman {posMeta?.page || page} dari {posMeta?.totalPages || Math.ceil((posMeta?.totalCount || 0) / (posMeta?.limit || perPage))}
+            {posMeta?.totalCount !== undefined && ` (${posMeta.totalCount} total)`}
+          </div>
           <div className="flex items-center gap-2">
             <Select value={String(perPage)} onValueChange={(v) => setPerPage(Number(v))}>
               <SelectTrigger className="w-[70px]">
@@ -242,8 +246,8 @@ export default function PosTablePage() {
                 <SelectItem value="100">100</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1}>Previous</Button>
-            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={posList.length < perPage}>Next</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(Math.max(1, page - 1))} disabled={page === 1 || posMeta?.hasPreviousPage === false}>Previous</Button>
+            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)} disabled={posMeta?.hasNextPage === false}>Next</Button>
           </div>
         </div>
       )}
