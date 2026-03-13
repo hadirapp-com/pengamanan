@@ -69,7 +69,9 @@ class QRScannerViewModel @Inject constructor(
         Log.d("QRScanner", "==========================================")
         allQrCodes.forEachIndexed { index, qr ->
             Log.d("QRScanner", """
-                |QR [$index]: ${qr.qrCode}
+                |QR [$index]:
+                |  ID: ${qr.id}
+                |  QR Code: ${qr.qrCode}
                 |  Nama: ${qr.nama}
                 |  Penanggung Jawab: ${qr.penanggungJawab}
                 |  Valid From: ${qr.validFrom}

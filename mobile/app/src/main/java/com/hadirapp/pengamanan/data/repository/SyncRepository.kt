@@ -94,8 +94,8 @@ class SyncRepository @Inject constructor(
         allQrCodes.forEachIndexed { index, qr ->
             Log.d("All Data", """
                 |QR [$index]:
-                |  ID: ${qr.id}
-                |  QR Code: ${qr.qrCode}
+                |  Database ID: ${qr.id}
+                |  QR Code Value: ${qr.qrCode}
                 |  Nama: ${qr.nama}
                 |  Penanggung Jawab: ${qr.penanggungJawab}
                 |  Valid From: ${qr.validFrom}
@@ -106,8 +106,9 @@ class SyncRepository @Inject constructor(
         }
         Log.d("All Data", "================================================")
 
-        // Log the QR code being searched
+        // Log the QR code being searched (both for clarity)
         Log.d("All Data", "Searching for QR Code: $qrCode")
+        Log.d("All Data", "  Checking against 'qrCode' field in database")
 
         val result = database.qrCodeQueries.selectQrCodeByCode(qrCode).executeAsOneOrNull()
         if (result != null) {
