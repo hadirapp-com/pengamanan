@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { axiosInstance } from "@/lib/api";
 import { configFormSchema, type ConfigFormValues } from "@/lib/validations";
@@ -133,7 +133,7 @@ export default function ConfigFormPage() {
       <div className="max-w-2xl rounded-lg border bg-white p-6 shadow">
         {isLoadingConfig ? (
           <div className="flex items-center justify-center py-12">
-            <Loader className="h-8 w-8" />
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
           <form
@@ -213,7 +213,7 @@ export default function ConfigFormPage() {
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
-                    <Loader className="h-4 w-4 animate-spin" /> Memproses...
+                    <Loader2 className="h-4 w-4 animate-spin" /> Memproses...
                   </span>
                 ) : isEdit ? (
                   "Simpan"

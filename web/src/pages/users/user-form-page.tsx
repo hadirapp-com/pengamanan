@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { axiosInstance } from "@/lib/api";
 import { userFormSchema, type UserFormValues } from "@/lib/validations";
@@ -161,7 +161,7 @@ export default function UserFormPage() {
       <div className="max-w-2xl rounded-lg border bg-white p-6 shadow">
         {isLoadingUser ? (
           <div className="flex items-center justify-center py-12">
-            <Loader className="h-8 w-8" />
+            <Loader2 className="h-8 w-8 animate-spin" />
           </div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -289,7 +289,7 @@ export default function UserFormPage() {
               >
                 {isLoading ? (
                   <span className="flex items-center gap-2">
-                    <Loader className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                     Memproses...
                   </span>
                 ) : (

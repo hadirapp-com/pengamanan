@@ -57,6 +57,7 @@ fun PengamananNavHost(
             if (showBottomNav) {
                 NavigationBar {
                     bottomNavScreens.forEach { screen ->
+                        val selected = currentRoute == screen.route
                         NavigationBarItem(
                             icon = {
                                 Icon(
@@ -65,14 +66,13 @@ fun PengamananNavHost(
                                 )
                             },
                             label = { Text(screen.label!!) },
-                            selected = currentRoute == screen.route,
+                            selected = selected,
                             onClick = {
-                                navController.navigate(screen.route) {
-                                    popUpTo(Screen.Home.route) {
-                                        saveState = true
+                                if (!selected) {
+                                    navController.navigate(screen.route) {
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
                             }
                         )

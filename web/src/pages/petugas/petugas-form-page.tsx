@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { axiosInstance } from "@/lib/api";
 import { petugasFormSchema, type PetugasFormValues } from "@/lib/validations";
@@ -121,7 +121,7 @@ export default function PetugasFormPage() {
 
       <div className="max-w-2xl rounded-lg border bg-white p-6 shadow">
         {isLoadingPetugas ? (
-          <div className="flex items-center justify-center py-12"><Loader className="h-8 w-8" /></div>
+          <div className="flex items-center justify-center py-12"><Loader2 className="h-8 w-8 animate-spin" /></div>
         ) : (
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">
@@ -163,7 +163,7 @@ export default function PetugasFormPage() {
             <div className="flex items-center justify-end gap-4 pt-4">
               <Button type="button" variant="outline" onClick={() => navigate(appRoutes.petugas)} disabled={isLoading}>Batal</Button>
               <Button type="submit" disabled={isLoading} className="min-w-[100px]">
-                {isLoading ? <span className="flex items-center gap-2"><Loader className="h-4 w-4 animate-spin" /> Memproses...</span> : (isEdit ? "Simpan" : "Buat")}
+                {isLoading ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Memproses...</span> : (isEdit ? "Simpan" : "Buat")}
               </Button>
             </div>
           </form>

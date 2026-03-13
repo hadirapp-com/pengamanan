@@ -12,12 +12,12 @@ import {
   ArrowUp,
   Shield,
   MapPin,
+  Loader2,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Loader } from "@/components/ui/loader";
 import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
 import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT } from "@/config/constants";
@@ -122,7 +122,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <Loader className="h-8 w-8" />
+              <Loader2 className="h-8 w-8 animate-spin" />
             ) : (
               <div className="text-3xl font-bold text-green-600">
                 {stats?.totalMasuk ?? 0}
@@ -142,7 +142,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {isLoading ? (
-              <Loader className="h-8 w-8" />
+              <Loader2 className="h-8 w-8 animate-spin" />
             ) : (
               <div className="text-3xl font-bold text-red-600">
                 {stats?.totalKeluar ?? 0}
@@ -189,7 +189,7 @@ export default function DashboardPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader className="h-8 w-8" />
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : (
             <div className="space-y-4">
@@ -240,7 +240,7 @@ export default function DashboardPage() {
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader className="h-8 w-8" />
+              <Loader2 className="h-8 w-8 animate-spin" />
             </div>
           ) : (
             <div className="space-y-4">

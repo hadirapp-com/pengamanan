@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
@@ -151,7 +151,7 @@ export default function ConfigTablePage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {isLoading ? <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader className="mx-auto h-6 w-6" /></TableCell></TableRow> : configsList.length === 0 ? <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-500">{globalFilter ? "Tidak ada hasil" : "Belum ada config"}</TableCell></TableRow> : configsList.map((c: Config) => (
+            {isLoading ? <TableRow><TableCell colSpan={6} className="h-24 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></TableCell></TableRow> : configsList.length === 0 ? <TableRow><TableCell colSpan={6} className="h-24 text-center text-gray-500">{globalFilter ? "Tidak ada hasil" : "Belum ada config"}</TableCell></TableRow> : configsList.map((c: Config) => (
               <TableRow key={c.id}>
                 <TableCell className="font-medium font-mono text-sm">{c.key}</TableCell>
                 <TableCell className="max-w-md truncate text-sm text-gray-600" title={c.value}>{c.value}</TableCell>

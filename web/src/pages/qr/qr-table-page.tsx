@@ -61,7 +61,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader } from "@/components/ui/loader";
+import { Loader2 } from "lucide-react";
 
 import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
@@ -388,7 +388,7 @@ export default function QrTablePage() {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader className="mx-auto h-6 w-6" /></TableCell></TableRow>
+              <TableRow><TableCell colSpan={7} className="h-24 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin" /></TableCell></TableRow>
             ) : qrList.length === 0 ? (
               <TableRow><TableCell colSpan={7} className="h-24 text-center text-gray-500">{globalFilter ? "Tidak ada QR yang cocok dengan pencarian" : "Belum ada QR"}</TableCell></TableRow>
             ) : (
@@ -464,7 +464,7 @@ export default function QrTablePage() {
           <AlertDialogFooter>
             <AlertDialogCancel>Batal</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700" disabled={deleteMutation.isPending}>
-              {deleteMutation.isPending ? <span className="flex items-center gap-2"><Loader className="h-4 w-4 animate-spin" /> Menghapus...</span> : "Hapus"}
+              {deleteMutation.isPending ? <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Menghapus...</span> : "Hapus"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
