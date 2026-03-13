@@ -12,9 +12,19 @@
 #   public *;
 #}
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# PRESERVE STACK TRACE FOR DEBUGGING
+-keepattributes SourceFile,LineNumberTable
+-renamesourcefileattribute SourceFile
+
+# Keep exception classes for better crash reporting
+-keepattributes *Annotation*
+-keep class * extends java.lang.Throwable { *; }
+
+# Keep all stack trace elements
+-keepclassmembers class * {
+    public ** with*(...);
+    public ** *(...);
+}
 
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
@@ -55,8 +65,26 @@
 -keep class javax.inject.** { *; }
 -keep class * extends dagger.hilt.android.internal.managers.ViewComponentManager$FragmentContextWrapper
 -keepclasseswithmembernames class * {
-    @dagger.hilt.android.* <fields>;
+  @dagger.hilt.android.* <fields>;
 }
 -keepclasseswithmembernames class * {
-    @dagger.hilt.android.* <methods>;
+  @dagger.hilt.android.* <methods>;
 }
+
+# SQLDelight
+-keep class app.cash.sqldelight.** { *; }
+-dontwarn app.cash.sqldelight.**
+
+# Jetpack Compose
+-keep class androidx.compose.** { *; }
+-keep interface androidx.compose.** { *; }
+
+# Coroutines
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepclassmembernames class kotlinx.coroutines.internal.MainDispatcherFactory {
+    public <methods>;
+}
+
+# WorkManager
+-keep class androidx.work.** { *; }
+-keep interface androidx.work.** { *; }
