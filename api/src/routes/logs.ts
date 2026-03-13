@@ -181,9 +181,10 @@ logsRoutes.get("/stats", async (c) => {
       }
     }
 
-    // Get last 7 days stats
+    // Get last 7 days stats (including today)
     const sevenDaysAgo = new Date(today);
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 6);
+    sevenDaysAgo.setHours(0, 0, 0, 0);
 
     const last7DaysResult = await db
       .select({
@@ -196,7 +197,7 @@ logsRoutes.get("/stats", async (c) => {
       .groupBy(sql`date(${scanLogs.scannedAt} at time zone 'utc' at time zone 'asia/jakarta')`, scanLogs.tipeScan)
       .orderBy(sql`date(${scanLogs.scannedAt} at time zone 'utc' at time zone 'asia/jakarta')`);
 
-    // Format last 7 days data
+    // Format last 7 days data (from 6 days ago to today)
     const last7DaysData: Array<{
       date: string;
       masuk: number;
@@ -206,7 +207,13 @@ logsRoutes.get("/stats", async (c) => {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split("T")[0];
+      d.setHours(0, 0, 0, 0);
+
+      // Format date as YYYY-MM-DD in local timezone
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
 
       const dayData = last7DaysResult.filter((row) => row.date === dateStr);
       const masukCount = dayData.find((row) => row.tipeScan === "masuk")?.count || 0;
