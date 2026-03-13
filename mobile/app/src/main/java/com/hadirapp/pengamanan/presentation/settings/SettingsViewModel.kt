@@ -86,7 +86,7 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun selectPos(pos: PosModel) {
-        authRepository.saveSelectedPos(pos.id, pos.nama)
+        authRepository.saveSelectedPos(pos.id, pos.nama, pos.lokasi)
         _uiState.value = _uiState.value.copy(
             selectedPosId = pos.id,
             selectedPosNama = pos.nama

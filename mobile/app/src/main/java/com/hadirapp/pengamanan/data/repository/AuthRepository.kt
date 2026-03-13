@@ -134,9 +134,10 @@ class AuthRepository @Inject constructor(
         return database.userPrefsQueries.getPref("selected_petugas_nama").executeAsOneOrNull()
     }
 
-    fun saveSelectedPos(id: String, nama: String) {
+    fun saveSelectedPos(id: String, nama: String, lokasi: String = "") {
         database.userPrefsQueries.setPref("selected_pos_id", id)
         database.userPrefsQueries.setPref("selected_pos_nama", nama)
+        database.userPrefsQueries.setPref("selected_pos_lokasi", lokasi)
     }
 
     fun getSelectedPosId(): String? {
@@ -145,6 +146,10 @@ class AuthRepository @Inject constructor(
 
     fun getSelectedPosNama(): String? {
         return database.userPrefsQueries.getPref("selected_pos_nama").executeAsOneOrNull()
+    }
+
+    fun getSelectedPosLokasi(): String? {
+        return database.userPrefsQueries.getPref("selected_pos_lokasi").executeAsOneOrNull()
     }
 
     private fun saveTokenExpiryTime(timestamp: Long) {

@@ -17,7 +17,8 @@ import javax.inject.Singleton
 @Singleton
 class LogRepository @Inject constructor(
     private val scanApi: ScanApi,
-    private val driver: SqlDriver
+    private val driver: SqlDriver,
+    private val authRepository: AuthRepository
 ) {
     suspend fun scanQR(
         qrCode: String,
@@ -26,10 +27,15 @@ class LogRepository @Inject constructor(
         qrData: QrCodeModel? = null
     ): Result<LogModel> {
         return try {
+            // Get petugas and pos names from local storage
+            val petugasNama = authRepository.getSelectedPetugasNama() ?: "Unknown"
+            val posNama = authRepository.getSelectedPosNama() ?: "Unknown"
+            val posLokasi = authRepository.getSelectedPosLokasi() ?: "Unknown"
+
             Log.d("LogRepository", "→ Sending scan request to API:")
             Log.d("LogRepository", "  QR Code: $qrCode")
-            Log.d("LogRepository", "  Petugas ID: $petugasJagaId")
-            Log.d("LogRepository", "  Pos ID: $posId")
+            Log.d("LogRepository", "  Petugas ID: $petugasJagaId, Nama: $petugasNama")
+            Log.d("LogRepository", "  Pos ID: $posId, Nama: $posNama, Lokasi: $posLokasi")
 
             // Always send scan to server (unless offline)
             val response = scanApi.scanQR(
@@ -48,8 +54,6 @@ class LogRepository @Inject constructor(
                 Log.d("LogRepository", "  QR Info from API:")
                 Log.d("LogRepository", "    - Nama: ${response.data.qr.nama}")
                 Log.d("LogRepository", "    - Penanggung Jawab: ${response.data.qr.penanggungJawab}")
-                Log.d("LogRepository", "  Petugas: ${response.data.petugas}")
-                Log.d("LogRepository", "  Pos: ${response.data.pos}")
 
                 // Convert API response to LogModel
                 val log = LogModel(
@@ -60,11 +64,11 @@ class LogRepository @Inject constructor(
                     qrValidFrom = qrData?.validFrom ?: "",
                     qrValidUntil = qrData?.validUntil ?: "",
                     guestName = response.data.qr.nama,
-                    guestType = "QR",
+                    guestType = "Tamu",  // Changed from "QR" to "Tamu"
                     scanType = if (response.data.tipeScan == "masuk") ScanType.MASUK else ScanType.KELUAR,
                     scannedAt = response.data.scan.scannedAt,
-                    petugasJaga = com.hadirapp.pengamanan.data.model.PetugasJagaInfo(petugasJagaId, response.data.petugas),
-                    pos = com.hadirapp.pengamanan.data.model.PosInfo(posId, response.data.pos, ""),
+                    petugasJaga = com.hadirapp.pengamanan.data.model.PetugasJagaInfo(petugasJagaId, petugasNama),
+                    pos = com.hadirapp.pengamanan.data.model.PosInfo(posId, posNama, posLokasi),
                     synced = true
                 )
                 // Save to local database
@@ -76,6 +80,13 @@ class LogRepository @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("LogRepository", "❌ Exception during scan: ${e.message}")
+            Log.e("LogRepository", "  Stack trace: ${e.stackTraceToString()}")
+
+            // Get petugas and pos names from local storage for offline mode
+            val petugasNama = authRepository.getSelectedPetugasNama() ?: "Unknown"
+            val posNama = authRepository.getSelectedPosNama() ?: "Unknown"
+            val posLokasi = authRepository.getSelectedPosLokasi() ?: "Unknown"
+
             // Save to local database as unsynced (for offline mode)
             val offlineLog = LogModel(
                 id = generateOfflineId(),
@@ -85,11 +96,11 @@ class LogRepository @Inject constructor(
                 qrValidFrom = qrData?.validFrom ?: "",
                 qrValidUntil = qrData?.validUntil ?: "",
                 guestName = qrData?.nama ?: "Unknown",
-                guestType = "GUEST",
+                guestType = "Tamu",  // Changed from "GUEST" to "Tamu"
                 scanType = ScanType.MASUK,
                 scannedAt = Clock.System.now().toString(),
-                petugasJaga = com.hadirapp.pengamanan.data.model.PetugasJagaInfo(petugasJagaId, "Unknown"),
-                pos = com.hadirapp.pengamanan.data.model.PosInfo(posId, "Unknown", "Unknown"),
+                petugasJaga = com.hadirapp.pengamanan.data.model.PetugasJagaInfo(petugasJagaId, petugasNama),
+                pos = com.hadirapp.pengamanan.data.model.PosInfo(posId, posNama, posLokasi),
                 synced = false
             )
             saveLogLocally(offlineLog)

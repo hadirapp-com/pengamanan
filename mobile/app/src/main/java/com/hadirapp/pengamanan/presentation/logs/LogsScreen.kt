@@ -230,15 +230,6 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
                     }
                 }
 
-                // Sync Status
-                if (!log.synced) {
-                    Icon(
-                        imageVector = Icons.Default.CloudOff,
-                        contentDescription = "Belum disinkronkan",
-                        modifier = Modifier.size(16.dp),
-                        tint = MaterialTheme.colorScheme.outline
-                    )
-                }
             }
 
             // Guest Name (from QR)
@@ -246,6 +237,13 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
                 text = log.qrNama,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
+            )
+
+            // Penanggung Jawab
+            Text(
+                text = "Penanggung Jawab: ${log.qrPenanggungJawab}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
 
             // Guest Type
@@ -257,19 +255,7 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
 
             Divider()
 
-            // QR Details
-            LogDetailRow(
-                icon = Icons.Default.QrCode,
-                label = "QR Code",
-                value = log.qrCode
-            )
-
-            LogDetailRow(
-                icon = Icons.Default.Person,
-                label = "Penanggung Jawab",
-                value = log.qrPenanggungJawab
-            )
-
+            // Details
             LogDetailRow(
                 icon = Icons.Default.Shield,
                 label = "Petugas",
@@ -279,7 +265,7 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
             LogDetailRow(
                 icon = Icons.Default.LocationOn,
                 label = "Pos",
-                value = log.pos.nama
+                value = "${log.pos.nama} (${log.pos.lokasi})"
             )
 
             LogDetailRow(
@@ -288,32 +274,6 @@ private fun LogCard(log: com.hadirapp.pengamanan.data.model.LogModel) {
                 value = formatScanTime(log.scannedAt)
             )
 
-            // Hint for unsynced logs
-            if (!log.synced) {
-                Spacer(modifier = Modifier.height(4.dp))
-                Surface(
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    shape = MaterialTheme.shapes.small
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Info,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text(
-                            text = "Belum disinkronkan - tidak bisa dihapus",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onErrorContainer
-                        )
-                    }
-                }
-            }
         }
     }
 }
