@@ -19,7 +19,10 @@ data class QRScannerUiState(
     val petugasNama: String? = null,
     val posNama: String? = null,
     val error: String? = null,
-    val qrData: QrCodeModel? = null
+    val qrData: QrCodeModel? = null,
+    val showSuccessDialog: Boolean = false,
+    val showErrorDialog: Boolean = false,
+    val cameraEnabled: Boolean = true
 )
 
 @HiltViewModel
@@ -71,13 +74,21 @@ class QRScannerViewModel @Inject constructor(
 
         if (petugasId == null || posId == null) {
             _uiState.value = _uiState.value.copy(
-                error = "Petugas dan Pos Jaga harus dipilih terlebih dahulu"
+                error = "Petugas dan Pos Jaga harus dipilih terlebih dahulu",
+                showErrorDialog = true,
+                cameraEnabled = false
             )
             return
         }
 
         viewModelScope.launch {
-            _uiState.value = _uiState.value.copy(isProcessing = true, error = null, qrData = null)
+            _uiState.value = _uiState.value.copy(
+                isProcessing = true,
+                error = null,
+                qrData = null,
+                showErrorDialog = false,
+                showSuccessDialog = false
+            )
 
             // Step 1: Validate QR code in local database first
             val localQrData = syncRepository.getQrCodeByCode(qrCode)
@@ -86,7 +97,9 @@ class QRScannerViewModel @Inject constructor(
                 // QR code not found in local database
                 _uiState.value = _uiState.value.copy(
                     isProcessing = false,
-                    error = "QR Code tidak terdaftar"
+                    error = "QR Code tidak terdaftar",
+                    showErrorDialog = true,
+                    cameraEnabled = false
                 )
                 return@launch
             }
@@ -94,17 +107,21 @@ class QRScannerViewModel @Inject constructor(
             // Step 2: QR code found locally, now send to server
             val result = logRepository.scanQR(qrCode, petugasId, posId)
 
-            _uiState.value = _uiState.value.copy(isProcessing = false)
+            _uiState.value = _uiState.value.copy(isProcessing = false, cameraEnabled = false)
 
             if (result.isSuccess) {
                 // Update last scan info only on success
                 lastScannedQR = qrCode
                 lastScanTime = currentTime
                 scanResult = qrCode
-                _uiState.value = _uiState.value.copy(qrData = localQrData)
+                _uiState.value = _uiState.value.copy(
+                    qrData = localQrData,
+                    showSuccessDialog = true
+                )
             } else {
                 _uiState.value = _uiState.value.copy(
-                    error = result.exceptionOrNull()?.message
+                    error = result.exceptionOrNull()?.message,
+                    showErrorDialog = true
                 )
             }
         }
@@ -114,10 +131,24 @@ class QRScannerViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(error = null)
     }
 
+    fun dismissSuccessDialog() {
+        _uiState.value = _uiState.value.copy(showSuccessDialog = false)
+    }
+
+    fun dismissErrorDialog() {
+        _uiState.value = _uiState.value.copy(showErrorDialog = false, error = null)
+    }
+
     fun resetScan() {
         scanResult = null
         lastScannedQR = null
         lastScanTime = 0L
-        _uiState.value = _uiState.value.copy(qrData = null)
+        _uiState.value = _uiState.value.copy(
+            qrData = null,
+            showSuccessDialog = false,
+            showErrorDialog = false,
+            error = null,
+            cameraEnabled = true
+        )
     }
 }

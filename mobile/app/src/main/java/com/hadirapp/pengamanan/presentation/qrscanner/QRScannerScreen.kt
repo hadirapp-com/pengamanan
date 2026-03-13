@@ -38,19 +38,18 @@ fun QRScannerScreen(
         android.Manifest.permission.CAMERA
     )
 
-    // Check for scan result - Play success sound
-    LaunchedEffect(viewModel.scanResult) {
-        viewModel.scanResult?.let { qrCode ->
+
+    // Play success sound when success dialog is shown
+    LaunchedEffect(uiState.showSuccessDialog) {
+        if (uiState.showSuccessDialog) {
             soundManager.playSuccess()
-            onScanSuccess(qrCode)
         }
     }
 
-    // Handle errors - Play error sound
-    LaunchedEffect(uiState.error) {
-        uiState.error?.let { error ->
+    // Play error sound when error dialog is shown
+    LaunchedEffect(uiState.showErrorDialog) {
+        if (uiState.showErrorDialog) {
             soundManager.playError()
-            viewModel.clearError()
         }
     }
 
@@ -107,11 +106,13 @@ fun QRScannerScreen(
                                 .fillMaxWidth()
                                 .weight(1f)
                         ) {
-                            CameraPreview(
-                                onQRCodeDetected = { qrCode ->
-                                    viewModel.onQRCodeDetected(qrCode)
-                                }
-                            )
+                            if (uiState.cameraEnabled) {
+                                CameraPreview(
+                                    onQRCodeDetected = { qrCode ->
+                                        viewModel.onQRCodeDetected(qrCode)
+                                    }
+                                )
+                            }
 
                             // QR Scanner overlay
                             Box(
@@ -212,10 +213,116 @@ fun QRScannerScreen(
                                         )
                                     }
                                 }
+                                // Show "Scan Lagi" button when camera is disabled
+                                if (!uiState.cameraEnabled && !uiState.showSuccessDialog && !uiState.showErrorDialog) {
+                                    Button(
+                                        onClick = { viewModel.resetScan() },
+                                        modifier = Modifier.fillMaxWidth()
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.QrCodeScanner,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(18.dp)
+                                        )
+                                        Spacer(modifier = Modifier.width(8.dp))
+                                        Text("Scan Lagi")
+                                    }
+                                }
                             }
                         }
                     }
                 }
+            }
+        }
+
+        // Success Dialog
+        if (uiState.showSuccessDialog) {
+            val qrData = uiState.qrData
+            if (qrData != null) {
+                AlertDialog(
+                    onDismissRequest = {
+                        viewModel.dismissSuccessDialog()
+                        onNavigateBack()
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    title = {
+                        Text(text = "Scan Berhasil")
+                    },
+                    text = {
+                        Column(
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "Nama: ${qrData.nama}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "Penanggung Jawab: ${qrData.penanggungJawab}",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "QR Code: ${qrData.qrCode}",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                viewModel.dismissSuccessDialog()
+                                onNavigateBack()
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
+            }
+        }
+
+        // Error Dialog
+        if (uiState.showErrorDialog) {
+            val errorMessage = uiState.error
+            if (errorMessage != null) {
+                AlertDialog(
+                    onDismissRequest = {
+                        viewModel.dismissErrorDialog()
+                        onNavigateBack()
+                    },
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.Error,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                    },
+                    title = {
+                        Text(text = "Scan Gagal")
+                    },
+                    text = {
+                        Text(
+                            text = errorMessage,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                viewModel.dismissErrorDialog()
+                                onNavigateBack()
+                            }
+                        ) {
+                            Text("OK")
+                        }
+                    }
+                )
             }
         }
     }
