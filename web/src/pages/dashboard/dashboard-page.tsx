@@ -18,34 +18,29 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useQueryService } from "@/lib/react-query";
 import { axiosInstance } from "@/lib/api";
 import { GENERAL_SUCCESS_TEXT, GENERAL_ERROR_TEXT } from "@/config/constants";
 import { SCAN_TYPE_LABELS } from "@/config/constants";
-import { logsEndpoint } from "@/config/endpoints";
 
 interface DashboardStats {
-  totalMasuk: number;
-  totalKeluar: number;
+  today: {
+    masuk: number;
+    keluar: number;
+  };
   last7Days: {
     date: string;
     masuk: number;
     keluar: number;
   }[];
+  recentScans: RecentScan[];
 }
 
 interface RecentScan {
   id: string;
-  qrCode: {
-    nama: string;
-    penanggungJawab: string;
-  };
-  petugas: {
-    nama: string;
-  };
-  pos: {
-    nama: string;
-  };
+  qrNama: string;
+  qrPenanggungJawab: string;
+  petugasNama: string;
+  posNama: string;
   tipeScan: "masuk" | "keluar";
   scannedAt: string;
 }
@@ -54,28 +49,17 @@ export default function DashboardPage() {
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Fetch dashboard statistics
-  const { data: stats, isLoading: statsLoading, refetch: refetchStats } = useQuery<DashboardStats>({
+  const { data: stats, isLoading, refetch } = useQuery<DashboardStats>({
     queryKey: ["dashboard-stats", refreshKey],
     queryFn: async () => {
-      const response = await axiosInstance.get("/api/logs/stats");
-      return response.data;
+      const response = await axiosInstance.get<{ data: DashboardStats }>("/api/logs/stats");
+      return response.data.data;
     },
   });
 
-  // Fetch recent scans (last 10)
-  const { data: recentScans, isLoading: scansLoading, refetch: refetchScans } = useQueryService(
-    logsEndpoint.root,
-    { limit: 10, sort: "scanned_at", order: "desc" },
-    undefined,
-    []
-  );
-
   const handleRefresh = async () => {
     try {
-      await Promise.all([
-        refetchStats(),
-        refetchScans(),
-      ]);
+      await refetch();
       setRefreshKey(prev => prev + 1);
       toast.success(GENERAL_SUCCESS_TEXT, {
         description: "Data berhasil diperbarui",
@@ -86,8 +70,6 @@ export default function DashboardPage() {
       });
     }
   };
-
-  const isLoading = statsLoading || scansLoading;
 
   return (
     <div className="space-y-6">
@@ -125,7 +107,7 @@ export default function DashboardPage() {
               <Loader2 className="h-8 w-8 animate-spin" />
             ) : (
               <div className="text-3xl font-bold text-green-600">
-                {stats?.totalMasuk ?? 0}
+                {stats?.today.masuk ?? 0}
               </div>
             )}
             <p className="mt-1 text-xs text-gray-500">Tamu masuk hari ini</p>
@@ -145,7 +127,7 @@ export default function DashboardPage() {
               <Loader2 className="h-8 w-8 animate-spin" />
             ) : (
               <div className="text-3xl font-bold text-red-600">
-                {stats?.totalKeluar ?? 0}
+                {stats?.today.keluar ?? 0}
               </div>
             )}
             <p className="mt-1 text-xs text-gray-500">Tamu keluar hari ini</p>
@@ -244,23 +226,23 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {recentScans && Array.isArray(recentScans) && recentScans.length > 0 ? (
+              {stats?.recentScans && Array.isArray(stats.recentScans) && stats.recentScans.length > 0 ? (
                 <div className="space-y-2">
-                  {recentScans.slice(0, 10).map((scan: RecentScan) => (
+                  {stats.recentScans.map((scan: RecentScan) => (
                     <div
                       key={scan.id}
                       className="flex items-center justify-between rounded-lg border p-3 hover:bg-muted/50"
                     >
                       <div className="flex-1 space-y-1">
                         <p className="text-sm font-medium text-gray-900">
-                          {scan.qrCode?.nama || "Unknown"}
+                          {scan.qrNama || "Unknown"}
                         </p>
                         <div className="flex items-center gap-3 text-xs text-gray-500">
-                          <span>{scan.qrCode?.penanggungJawab || "-"}</span>
+                          <span>{scan.qrPenanggungJawab || "-"}</span>
                           <span>•</span>
-                          <span>{scan.petugas?.nama || "-"}</span>
+                          <span>{scan.petugasNama || "-"}</span>
                           <span>•</span>
-                          <span>{scan.pos?.nama || "-"}</span>
+                          <span>{scan.posNama || "-"}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
