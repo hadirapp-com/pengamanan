@@ -47,7 +47,10 @@
       "Bash(python3:*)",
       "Bash(pip3 install:*)",
       "Bash($ANDROID_HOME/build-tools/35.0.0/apksigner verify:*)",
-      "Bash(xargs git show:*)"
+      "Bash(xargs git show:*)",
+      "Bash(md5:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(git remote get-url:*)"
     ]
   }
 }
