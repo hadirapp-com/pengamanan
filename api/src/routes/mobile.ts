@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { configs, petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { verifyPin, generateMobileToken } from "../lib/auth";
 import { mobileAuthMiddleware } from "../middleware/auth";
 
@@ -266,13 +266,6 @@ protectedMobileRoutes.get("/sync", async (c) => {
         updatedAt: qrCodes.updatedAt,
       })
       .from(qrCodes)
-      // .where(
-      //   and(
-      //     eq(qrCodes.isActive, true),
-      //     sql`${qrCodes.validFrom} <= ${today}`,
-      //     sql`${qrCodes.validUntil} >= ${today}`
-      //   )
-      // )
       .orderBy(qrCodes.nama);
 
     // Get 10 latest active pengumuman

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { posJaga } from "../lib/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { eq, and, asc, sql } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
 
 const posRoutes = new Hono();
@@ -102,7 +102,7 @@ posRoutes.get("/", async (c) => {
       })
       .from(posJaga)
       .where(whereClause)
-      .orderBy(desc(posJaga.createdAt))
+      .orderBy(asc(posJaga.nama))
       .limit(limit)
       .offset(offset);
 

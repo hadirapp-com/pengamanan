@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { qrCodes } from "../lib/schema";
-import { eq, and, desc, sql, or } from "drizzle-orm";
+import { eq, and, asc, sql, or } from "drizzle-orm";
 import { authMiddleware } from "../middleware/auth";
 import QRCode from "qrcode";
 import { jsPDF } from "jspdf";
@@ -132,7 +132,7 @@ qrRoutes.get("/", async (c) => {
       })
       .from(qrCodes)
       .where(whereClause)
-      .orderBy(desc(qrCodes.createdAt))
+      .orderBy(asc(qrCodes.nama))
       .limit(limit)
       .offset(offset);
 
