@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { configs, petugasJaga, posJaga, qrCodes, pengumuman, scanLogs, pengumumanReads } from "../lib/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, asc } from "drizzle-orm";
 import { verifyPin, generateMobileToken } from "../lib/auth";
 import { mobileAuthMiddleware } from "../middleware/auth";
 
@@ -266,7 +266,7 @@ protectedMobileRoutes.get("/sync", async (c) => {
         updatedAt: qrCodes.updatedAt,
       })
       .from(qrCodes)
-      .orderBy(qrCodes.nama);
+      .orderBy(asc(qrCodes.urutan), asc(qrCodes.nama))
 
     // Get 10 latest active pengumuman
     const pengumumanList = await db
