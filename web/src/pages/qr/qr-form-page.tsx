@@ -26,6 +26,7 @@ interface QrCode {
   qrCode: string;
   nama: string;
   penanggungJawab: string;
+  urutan: number | null;
   validFrom: string;
   validUntil: string;
   isActive: boolean;
@@ -45,7 +46,7 @@ export default function QrFormPage() {
 
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<QrFormValues>({
     resolver: zodResolver(qrFormSchema) as any,
-    defaultValues: { nama: "", penanggungJawab: "", validFrom: "", validUntil: "", isActive: true },
+    defaultValues: { nama: "", penanggungJawab: "", urutan: undefined, validFrom: "", validUntil: "", isActive: true },
   });
 
   const { data: qrData, isLoading: isLoadingQr } = useQuery<QrCode>({
@@ -62,6 +63,7 @@ export default function QrFormPage() {
     if (qrData) {
       setValue("nama", qrData.nama);
       setValue("penanggungJawab", qrData.penanggungJawab);
+      setValue("urutan", qrData.urutan || undefined);
       setValue("validFrom", qrData.validFrom?.split("T")[0]);
       setValue("validUntil", qrData.validUntil?.split("T")[0]);
       setValue("isActive", qrData.isActive);
@@ -123,6 +125,21 @@ export default function QrFormPage() {
                 <Label htmlFor="penanggungJawab">Penanggung Jawab *</Label>
                 <Input id="penanggungJawab" type="text" placeholder="Nama penanggung jawab" disabled={isLoading} {...register("penanggungJawab")} className={errors.penanggungJawab ? "border-red-500" : ""} />
                 {errors.penanggungJawab && <p className="text-sm text-red-500">{errors.penanggungJawab.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="urutan">Urutan</Label>
+                <Input
+                  id="urutan"
+                  type="number"
+                  min="1"
+                  placeholder="Urutan pengurutan blok (opsional)"
+                  disabled={isLoading}
+                  {...register("urutan", { valueAsNumber: true })}
+                  className={errors.urutan ? "border-red-500" : ""}
+                />
+                {errors.urutan && <p className="text-sm text-red-500">{errors.urutan.message}</p>}
+                <p className="text-xs text-gray-500">Nomor urutan untuk pengurutan nama blok</p>
               </div>
 
               <div className="space-y-2">

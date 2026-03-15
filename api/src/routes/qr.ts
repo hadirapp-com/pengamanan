@@ -19,6 +19,7 @@ qrRoutes.use("/*", authMiddleware);
 const createQrSchema = z.object({
   nama: z.string().min(1, "Nama is required").max(255, "Nama must not exceed 255 characters"),
   penanggungJawab: z.string().min(1, "Penanggung jawab is required").max(255),
+  urutan: z.coerce.number().int().positive().optional(),
   validFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Valid from must be in YYYY-MM-DD format"),
   validUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Valid until must be in YYYY-MM-DD format"),
 });
@@ -26,6 +27,7 @@ const createQrSchema = z.object({
 const updateQrSchema = z.object({
   nama: z.string().min(1).max(255).optional(),
   penanggungJawab: z.string().min(1).max(255).optional(),
+  urutan: z.coerce.number().int().positive().optional(),
   validFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   validUntil: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   isActive: z.boolean().optional(),
@@ -124,6 +126,7 @@ qrRoutes.get("/", async (c) => {
         qrCode: qrCodes.qrCode,
         nama: qrCodes.nama,
         penanggungJawab: qrCodes.penanggungJawab,
+        urutan: qrCodes.urutan,
         validFrom: qrCodes.validFrom,
         validUntil: qrCodes.validUntil,
         isActive: qrCodes.isActive,
@@ -132,7 +135,7 @@ qrRoutes.get("/", async (c) => {
       })
       .from(qrCodes)
       .where(whereClause)
-      .orderBy(asc(qrCodes.nama))
+      .orderBy(asc(qrCodes.urutan), asc(qrCodes.nama))
       .limit(limit)
       .offset(offset);
 
@@ -224,7 +227,7 @@ qrRoutes.post("/", async (c) => {
       );
     }
 
-    const { nama, penanggungJawab, validFrom, validUntil } = validationResult.data;
+    const { nama, penanggungJawab, urutan, validFrom, validUntil } = validationResult.data;
 
     // Validate validity period - compare date strings directly since they're in YYYY-MM-DD format
     if (validFrom > validUntil) {
@@ -248,6 +251,7 @@ qrRoutes.post("/", async (c) => {
         qrCode: qrCodeId,
         nama,
         penanggungJawab,
+        urutan: urutan || null,
         validFrom, // Keep as string in YYYY-MM-DD format
         validUntil, // Keep as string in YYYY-MM-DD format
         createdBy: currentUser.userId,
@@ -342,6 +346,7 @@ qrRoutes.put("/:id", async (c) => {
     // Only include fields that are provided in the request
     if (updateData.nama !== undefined) finalUpdateData.nama = updateData.nama;
     if (updateData.penanggungJawab !== undefined) finalUpdateData.penanggungJawab = updateData.penanggungJawab;
+    if (updateData.urutan !== undefined) finalUpdateData.urutan = updateData.urutan;
     if (updateData.isActive !== undefined) finalUpdateData.isActive = updateData.isActive;
     // For date fields, keep them as strings in YYYY-MM-DD format for PostgreSQL DATE type
     if (updateData.validFrom !== undefined) finalUpdateData.validFrom = updateData.validFrom;

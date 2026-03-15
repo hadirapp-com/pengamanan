@@ -75,6 +75,7 @@ interface QrCode {
   qrCode: string;
   nama: string;
   penanggungJawab: string;
+  urutan: number | null;
   validFrom: string;
   validUntil: string;
   isActive: boolean;
@@ -382,6 +383,7 @@ export default function QrTablePage() {
               </TableHead>
               <TableHead>Nama</TableHead>
               <TableHead>Penanggung Jawab</TableHead>
+              <TableHead className="w-24 text-center">Urutan</TableHead>
               <TableHead>Validity Period</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Aksi</TableHead>
@@ -400,6 +402,7 @@ export default function QrTablePage() {
                   </TableCell>
                   <TableCell className="font-medium">{qr.nama}</TableCell>
                   <TableCell>{qr.penanggungJawab}</TableCell>
+                  <TableCell className="text-center">{qr.urutan || "-"}</TableCell>
                   <TableCell>
                     <div className="text-xs">
                       <div>{format(new Date(qr.validFrom), "dd MMM yyyy")}</div>

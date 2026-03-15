@@ -7,8 +7,7 @@ import {
   boolean,
   date,
   uuid,
-  AnyPgColumn,
-  sql,
+  integer,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
 
@@ -121,6 +120,7 @@ export const qrCodes = pengamananSchema.table(
     qrCode: varchar("qr_code", { length: 255 }).unique().notNull(), // UUID for scanning
     nama: varchar("nama", { length: 255 }).notNull(), // Display name (Block A-123, etc)
     penanggungJawab: varchar("penanggung_jawab", { length: 255 }).notNull(),
+    urutan: integer("urutan"), // Use integer (not bigint) to avoid JSON serialization issues
     validFrom: date("valid_from").notNull(),
     validUntil: date("valid_until").notNull(),
     isActive: boolean("is_active").notNull().default(true),
@@ -133,6 +133,7 @@ export const qrCodes = pengamananSchema.table(
   (table) => ({
     qrCodeIdx: index("qr_codes_qr_code_idx").on(table.qrCode),
     namaIdx: index("qr_codes_nama_idx").on(table.nama),
+    urutanIdx: index("qr_codes_urutan_idx").on(table.urutan),
     isActiveIdx: index("qr_codes_is_active_idx").on(table.isActive),
     validFromIdx: index("qr_codes_valid_from_idx").on(table.validFrom),
     validUntilIdx: index("qr_codes_valid_until_idx").on(table.validUntil),

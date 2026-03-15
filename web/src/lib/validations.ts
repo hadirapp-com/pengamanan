@@ -80,6 +80,7 @@ export type PosFormValues = z.infer<typeof posFormSchema>;
 export const qrFormSchema = z.object({
   nama: z.string().min(1, "Nama (block/rumah) harus diisi"),
   penanggungJawab: z.string().min(1, "Penanggung jawab harus diisi"),
+  urutan: z.number().int().positive().optional(),
   validFrom: z.string().min(1, "Tanggal mulai berlaku harus diisi"),
   validUntil: z.string().min(1, "Tanggal selesai berlaku harus diisi"),
   isActive: z.boolean().default(true),
