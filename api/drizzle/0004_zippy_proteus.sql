@@ -1,0 +1,1 @@
+ALTER TABLE "pengamanan"."qr_codes" ALTER COLUMN "urutan" SET DATA TYPE integer;

@@ -22,6 +22,20 @@
       "when": 1773162914747,
       "tag": "0002_ambiguous_dakota_north",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1773538189355,
+      "tag": "0003_brown_madame_masque",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1773538841236,
+      "tag": "0004_zippy_proteus",
+      "breakpoints": true
     }
   ]
 }
